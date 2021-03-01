@@ -25,3 +25,19 @@ Inventory management and production tracking systems
 - production
     - dashboard
     - inventory updates
+
+#### Design UI
+- layout
+- assets
+- style
+
+#### Test and verify
+- id and run tests
+- document/automate:
+    - standard uses
+    - database backup and migration
+- create proper alerts and logging
+
+#### Deploy v1
+- test backups and alerts
+- schedule follow-up
