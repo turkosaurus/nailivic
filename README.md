@@ -1,7 +1,12 @@
 # Nailivic Studios
 Inventory management and production tracking systems
 
-## bootstraping
+## TODO
+- buildout online hello nailivic in flask
+- get squareup credentials
+- get shopify credentials
+
+## first steps
 #### Flask
 - make "hello nail" website, published, in maintenance (CI/CD)
 
