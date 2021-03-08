@@ -1,0 +1,13 @@
+main, body, .card, .list-group-item {
+    color:lightgray;
+    background-color: black;
+}
+
+.navbar-dark, .bg-dark {
+    background-color: black;    
+}
+
+.form-control {
+    background-color: hsl(0, 0%, 95%);
+}
+/* .linkbutton */
