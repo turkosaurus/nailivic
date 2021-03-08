@@ -6,7 +6,13 @@ Inventory management and production tracking systems
 - get squareup credentials
 - get shopify credentials
 
-## first steps
+## Specifications:
+- Production Dashboard
+    - Parts Inventory
+    - Product Inventory
+- Shipping Dashboard
+
+## first steps (rough outline)
 #### Flask
 - make "hello nail" website, published, in maintenance (CI/CD)
 
@@ -14,7 +20,7 @@ Inventory management and production tracking systems
 - keys
     - sizes
     - items
-        - parts
+    - parts
     - colors
 
 - inventories
