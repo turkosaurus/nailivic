@@ -2,9 +2,11 @@
 Inventory management and production tracking systems
 
 ## TODO
-- buildout online hello nailivic in flask
+- ~~buildout online hello nailivic in flask~~
 - get squareup credentials
 - get shopify credentials
+- design db structure
+- confirm main routes
 
 ## Specifications:
 - Production Dashboard
