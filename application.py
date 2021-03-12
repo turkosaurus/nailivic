@@ -54,23 +54,28 @@ def dashboard():
         tmp = loterias[key]
         print(tmp)
 
-    return render_template('index.html')
-
-@app.route('/parts')
-def parts():
-    return 'hello parts'
+    return render_template('index.html', colors=colors, sizes=sizes, loterias=loterias)
 
 @app.route('/items')
 def items():
-    return 'hello items'
+    return render_template('items.html')
+
+@app.route('/parts')
+def parts():
+    return render_template('parts.html')
+
+@app.route('/projections')
+def projections():
+    return render_template('projections.html')
 
 @app.route('/shipping')
 def shipping():
-    return 'hello shipping'
+    return render_template('shipping.html')
 
 @app.route('/register')
 def register():
-    return 'hello register'
+    return "todo"
+    # return render_template('register.html')
 
 @app.route('/login')
 def login():

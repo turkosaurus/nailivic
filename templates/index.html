@@ -1,9 +1,14 @@
 {% extends "layout.html" %}
 
 {% block title %}
-Home
+Dashboard
 {% endblock %}
-
 {% block main %}
-<h1>homepage stuff</h1>
+<h1>Dashboard</h1>
+<hr>
+{% for color in colors %}
+<h2>{{ color }}</h2>
+<hr>
+{% endfor %}
+<h2>boxes</h2>
 {% endblock %}
