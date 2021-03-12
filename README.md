@@ -1,48 +1,24 @@
 # Nailivic Studios
 Inventory management and production tracking systems
 
-## TODO
-- ~~buildout online hello nailivic in flask~~
-- get squareup credentials
-- get shopify credentials
-- design db structure
-- confirm main routes
 
 ## Specifications:
-- Production Dashboard
-    - Parts Inventory
-    - Product Inventory
+- Laser Production Dashboard
+- Parts Inventory (list and form)
+- Product Inventory (list and form)
+    - updated from Square
 - Shipping Dashboard
+    - updated from Shopify
 
-## first steps (rough outline)
-#### Flask
-- make "hello nail" website, published, in maintenance (CI/CD)
+## TODO
+- confirm main routes
+- setup register and login
+- design db structure
 
-#### Design db
-- keys
-    - sizes
-    - items
-    - parts
-    - colors
-
-- inventories
-    - items
-    - parts
-
-#### Design UX
-- login
-- keys setup/edit pages
-- inventory
-    - items
-    - parts
-- production
-    - dashboard
-    - inventory updates
-
-#### Design UI
-- layout
-- assets
-- style
+## DONE
+- buildout online hello nailivic in flask
+- get squareup credentials
+- get shopify credentials
 
 #### Test and verify
 - id and run tests
@@ -50,7 +26,11 @@ Inventory management and production tracking systems
     - standard uses
     - database backup and migration
 - create proper alerts and logging
+- test backups and alerts
 
 #### Deploy v1
-- test backups and alerts
 - schedule follow-up
+
+## Possible Features
+- route to produce csv of backup data
+
