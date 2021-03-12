@@ -26,7 +26,11 @@ loterias = {
 
 @dataclass
 class loteria:
-    a: 
+    size: str
+    a: str
+    b: str
+    c: str
+
 
 @app.route('/')
 def dashboard():
