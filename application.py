@@ -1,5 +1,18 @@
-from flask import Flask, redirect, render_template, url_for
+import os
+import requests
+import urllib.parse
+
+from flask import Flask, redirect, render_template, request, session, url_for
+from flask_session import Session
+from functools import wraps
 from dataclasses import dataclass
+
+
+
+
+
+
+
 
 
 app = Flask(__name__)
@@ -62,3 +75,17 @@ def register():
 @app.route('/login')
 def login():
     return 'hello login'
+
+
+def login_required(f):
+    """
+    Decorate routes to require login.
+
+    http://flask.pocoo.org/docs/1.0/patterns/viewdecorators/
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("user_id") is None:
+            return redirect("/login")
+        return f(*args, **kwargs)
+    return decorated_function
