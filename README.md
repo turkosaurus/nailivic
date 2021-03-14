@@ -11,7 +11,6 @@ Inventory management and production tracking systems
     - updated from Shopify
 
 ## TODO
-- confirm main routes
 - setup register and login
 - design db structure
 
@@ -19,6 +18,7 @@ Inventory management and production tracking systems
 - buildout online hello nailivic in flask
 - get squareup credentials
 - get shopify credentials
+- confirm main routes
 
 #### Test and verify
 - id and run tests
