@@ -23,6 +23,8 @@ Dashboard
     </div>
     <div class="row">
         <form action="/items" method="post">
+
+            <!-- Item -->
             <div class="form-group">
                 <label for="item">Item</label>
                 <select name="item" id="item">
@@ -32,6 +34,16 @@ Dashboard
                 </select>
             </div>
 
+            <!-- Size -->
+            <div class="form-group">
+                <label for="size">Size</label>
+                {% for size in sizes %}
+                    <input type="radio" id="{{ size }}" name="size A" value="{{ size }}">
+                    <label for="{{ size }}">{{ size }}</label>
+                {% endfor %}
+            </div>
+
+
             <!-- Color A -->
             <h6>Color A</h6>
             <div class="form-group">
@@ -40,25 +52,21 @@ Dashboard
                     <label for="{{ color }}">{{ color }}</label>
                 {% endfor %}
             </div>
-
-
-
-            <!-- dropdowns -->
+            <!-- Color B -->
+            <h6>Color B</h6>
             <div class="form-group">
-                <label for="b_color">Color B</label>
-                <select name="b_color" id="b_color">
-                    {% for color in colors %}
-                        <option value="{{ color }}">{{ color }}</option>
-                    {% endfor %}
-                </select>
+                {% for color in colors %}
+                    <input type="radio" id="{{ color }}" name="Color B" value="{{ color }}">
+                    <label for="{{ color }}">{{ color }}</label>
+                {% endfor %}
             </div>
+            <!-- Color C -->
+            <h6>Color C</h6>
             <div class="form-group">
-                <label for="c_color">Color C</label>
-                <select name="c_color" id="c_color">
-                    {% for color in colors %}
-                        <option value="{{ color }}">{{ color }}</option>
-                    {% endfor %}
-                </select>
+                {% for color in colors %}
+                    <input type="radio" id="{{ color }}" name="Color C" value="{{ color }}">
+                    <label for="{{ color }}">{{ color }}</label>
+                {% endfor %}
             </div>
             <div class="form-group">
                 <label for="number">Number</label>

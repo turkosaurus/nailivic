@@ -42,7 +42,7 @@ authusers = []
 authusers.append(os.getenv('USERA'))
 authusers.append(os.getenv('USERB'))
 
-###### DATA STRUCTURES ######
+###### TEMPLATES ######
 # Set type variables
 # Loteria
 colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
@@ -67,6 +67,7 @@ class loteria:
     a: str
     b: str
     c: str
+
 
 ###### Helper Functions ######
 
@@ -138,7 +139,7 @@ def dashboard():
 @app.route('/items')
 @login_required
 def items():
-    return render_template('items.html', loterias=loterias, colors=colors)
+    return render_template('items.html', loterias=loterias, sizes=sizes, colors=colors)
 
 @app.route('/parts')
 @login_required
