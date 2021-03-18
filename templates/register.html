@@ -4,5 +4,23 @@
 Register
 {% endblock %}
 {% block main %}
-<h1>Register</h1>
+<container>
+    <div class="row">
+        <h1>Register</h1>
+    </div>
+    <div class="row">
+        <form action="/register" method="post">
+            <div class="form-group">
+                <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
+            </div>
+            <div class="form-group">
+                <input class="form-control" name="password" placeholder="Password" type="password">
+            </div>
+            <div class="form-group">
+                <input class="form-control" name="passwordconfirm" placeholder="Password (confirm)" type="password">
+                <small id="passwordhelp" class="form-text text-muted">Pro Tip: password managers FTW (8 character minimum)</small>
+            </div>
+            <button class="btn btn-primary" type="submit">Register</button>
+        </form>    
+</container>
 {% endblock %}

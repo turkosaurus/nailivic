@@ -1,6 +1,7 @@
 import os
 import requests
 import urllib.parse
+import datetime
 
 from cs50 import SQL
 from flask import Flask, redirect, render_template, request, session, url_for
@@ -8,6 +9,9 @@ from flask_session import Session
 from tempfile import mkdtemp
 from functools import wraps
 from dataclasses import dataclass
+from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
+from werkzeug.security import check_password_hash, generate_password_hash
+
 
 ###### CONFIGURATION ######
 # Initialize Flask App Ojbect
@@ -59,8 +63,31 @@ class loteria:
     b: str
     c: str
 
+###### Helper Functions ######
+
+def login_required(f):
+    """
+    Decorate routes to require login.
+
+    http://flask.pocoo.org/docs/1.0/patterns/viewdecorators/
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("user_id") is None:
+            return redirect("/login")
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+
+
 @app.route('/')
+@login_required
 def dashboard():
+    
+    time=datetime.datetime.utcnow().isoformat()
+    print(time)
+
     # print(loteria)
     for key in loterias:
         # i = 0
@@ -68,21 +95,29 @@ def dashboard():
         tmp = loterias[key]
         print(tmp)
 
-    return render_template('index.html', colors=colors, sizes=sizes, loterias=loterias)
+    time=datetime.datetime.utcnow().isoformat()
+    print(time)
+    user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
+    print(user)
+    return render_template('index.html', user=user, colors=colors, sizes=sizes, loterias=loterias)
 
 @app.route('/items')
+@login_required
 def items():
     return render_template('items.html')
 
 @app.route('/parts')
+@login_required
 def parts():
     return render_template('parts.html')
 
 @app.route('/projections')
+@login_required
 def projections():
     return render_template('projections.html')
 
 @app.route('/shipping')
+@login_required
 def shipping():
     return render_template('shipping.html')
 
@@ -122,12 +157,18 @@ def register():
         username = request.form.get("username")
         hashedpass = generate_password_hash(request.form.get("password"))
 
+        users = ["test", "Turkosaurus", "Nailivic"]
+
+        if username not in users:
+            return render_template("error.html", errcode=403, errmsg="Unauthorized username.")
+
         # Check if username is already taken
         if not db.execute("SELECT username FROM users WHERE username LIKE (?)", username):
 
             # Add the username
-            db.execute("INSERT INTO users (username, hash) VALUES (:username, :hashedpass)",
-                        username=username, hashedpass=hashedpass)
+            time = datetime.datetime.utcnow().isoformat()
+            db.execute("INSERT INTO users (username, password, created_on) VALUES (:username, :hashedpass, :time)",
+                        username=username, hashedpass=hashedpass, time=time)
             return redirect("/")
 
         else:
@@ -161,15 +202,15 @@ def login():
             return render_template("register.html", errmsg="Username not found.")
 
         # Ensure username exists and password is correct
-        if not check_password_hash(rows[0]["hash"], request.form.get("password")):
+        if not check_password_hash(rows[0]["password"], request.form.get("password")):
             return render_template("error.html", errcode=403, errmsg="Incorrect password.")
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
 
-        # Store login timestamp
-        db.execute("INSERT INTO activity (user_id, action) VALUES (:user_id, :action)", user_id=session["user_id"], action="login")
-
+        # Update "last_login"
+        time = datetime.datetime.utcnow().isoformat()
+        db.execute("UPDATE users SET last_login=:time WHERE id=:id", time=time, id=session["user_id"])
 
         # Redirect user to home page
         return redirect("/")
@@ -179,15 +220,16 @@ def login():
         return render_template("login.html")
 
 
-def login_required(f):
-    """
-    Decorate routes to require login.
+@app.route("/logout")
+def logout():
+    """Log user out"""
 
-    http://flask.pocoo.org/docs/1.0/patterns/viewdecorators/
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if session.get("user_id") is None:
-            return redirect("/login")
-        return f(*args, **kwargs)
-    return decorated_function
+   # Forget any user_id
+    session.clear()
+
+    # Redirect user to login form
+    return redirect("/")
+
+
+
+
