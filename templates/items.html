@@ -4,13 +4,69 @@
 Dashboard
 {% endblock %}
 {% block main %}
-<h1>Items</h1>
-<h2>On Hand</h2>
-<ul>
-    <li>item</li>
-    <li>item</li>
-    <li>item</li>
-</ul>
-<h2>Produce Item</h2>
-<p>form here</p>
+<container>
+    <div class="row">
+        <h1>Items</h1>
+    </div>    
+    <div class="row">
+        <h2>On Hand</h2>
+    </div>
+    <div class="row">
+        <ul>
+            <li>item</li>
+            <li>item</li>
+            <li>item</li>
+        </ul>
+    </div>
+    <div class="row">
+        <h2>Produce Item</h2>
+    </div>
+    <div class="row">
+        <form action="/items" method="post">
+            <div class="form-group">
+                <label for="item">Item</label>
+                <select name="item" id="item">
+                    {% for loteria in loterias %}
+                        <option value="{{ loteria }}">{{ loteria }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Color A -->
+            <h6>Color A</h6>
+            <div class="form-group">
+                {% for color in colors %}
+                    <input type="radio" id="{{ color }}" name="Color A" value="{{ color }}">
+                    <label for="{{ color }}">{{ color }}</label>
+                {% endfor %}
+            </div>
+
+
+
+            <!-- dropdowns -->
+            <div class="form-group">
+                <label for="b_color">Color B</label>
+                <select name="b_color" id="b_color">
+                    {% for color in colors %}
+                        <option value="{{ color }}">{{ color }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="c_color">Color C</label>
+                <select name="c_color" id="c_color">
+                    {% for color in colors %}
+                        <option value="{{ color }}">{{ color }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="number">Number</label>
+                <input type="number" min="1" max="99" step="1" name="number" id="number">
+            </div>
+            <button type="reset" class="btn btn-primary">Reset</button>
+            <button type="submit" class="btn btn-primary" disabled>Submit</button>
+        </form>
+    </div>
+</container>
 {% endblock %}

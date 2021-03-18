@@ -112,17 +112,17 @@ def setup():
         size VARCHAR ( 255 ) NOT NULL, \
         a_color VARCHAR ( 255 ), \
         b_color VARCHAR ( 255 ), \
-        c_color VARCHAR ( 255 ) \
+        c_color VARCHAR ( 255 ), \
+        status VARCHAR ( 255 ) \
         )")
 
-    return "sucessful setup"
+    return "Setup Success!"
 
 
 @app.route('/')
 @login_required
 def dashboard():
-    time=datetime.datetime.utcnow().isoformat()
-    print(time)
+
 
     # print(loteria)
     for key in loterias:
@@ -130,17 +130,15 @@ def dashboard():
         print(f"{key}:")
         tmp = loterias[key]
         print(tmp)
-
-    time=datetime.datetime.utcnow().isoformat()
-    print(time)
+    items = db.execute("SELECT * FROM items")
+    parts = db.execute("SELECT * FROM parts")
     user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
-    print(user)
     return render_template('index.html', user=user, colors=colors, sizes=sizes, loterias=loterias)
 
 @app.route('/items')
 @login_required
 def items():
-    return render_template('items.html')
+    return render_template('items.html', loterias=loterias, colors=colors)
 
 @app.route('/parts')
 @login_required

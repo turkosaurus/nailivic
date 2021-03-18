@@ -4,12 +4,24 @@
 Dashboard
 {% endblock %}
 {% block main %}
+<h6>{{ user[0]['username'] }}</h6>
 <h1>Dashboard</h1>
-<h2>Hello {{ user[0]['username'] }}</h2>
 <hr>
-{% for color in colors %}
-<h2>{{ color }}</h2>
-<hr>
+
+<h2>Parts</h2>
+{% for part in parts %}
+<h6>{{ part }}</h6>
 {% endfor %}
+<hr>
+<h2>Items</h2>
+{% for item in items %}
+<h6>{{ item }}</h6>
+{% endfor %}
+<hr>
+<h2>Colors</h2>
+{% for color in colors %}
+<h6>{{ color }}</h6>
+{% endfor %}
+<hr>
 <h2>boxes</h2>
 {% endblock %}
