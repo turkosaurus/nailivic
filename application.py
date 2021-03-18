@@ -37,6 +37,11 @@ Session(app)
 # Configure Heroku Postgres database
 db = SQL(os.getenv('DATABASE_URL'))
 
+# Import Authorized User List
+authusers = []
+authusers.append(os.getenv('USERA'))
+authusers.append(os.getenv('USERB'))
+
 ###### DATA STRUCTURES ######
 # Set type variables
 # Loteria
@@ -84,7 +89,6 @@ def login_required(f):
 @app.route('/')
 @login_required
 def dashboard():
-    
     time=datetime.datetime.utcnow().isoformat()
     print(time)
 
@@ -157,10 +161,8 @@ def register():
         username = request.form.get("username")
         hashedpass = generate_password_hash(request.form.get("password"))
 
-        users = ["test", "Turkosaurus", "Nailivic"]
-
-        if username not in users:
-            return render_template("error.html", errcode=403, errmsg="Unauthorized username.")
+        if username not in authusers:
+            return render_template("error.html", errcode=403, errmsg="Unauthorized user.")
 
         # Check if username is already taken
         if not db.execute("SELECT username FROM users WHERE username LIKE (?)", username):

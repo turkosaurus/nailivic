@@ -5,6 +5,7 @@ Dashboard
 {% endblock %}
 {% block main %}
 <h1>Dashboard</h1>
+<h2>Hello {{ user[0]['username'] }}</h2>
 <hr>
 {% for color in colors %}
 <h2>{{ color }}</h2>
