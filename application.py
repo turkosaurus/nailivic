@@ -84,6 +84,38 @@ def login_required(f):
     return decorated_function
 
 
+@app.route('/setup-tables')
+@login_required
+def setup():
+
+    # Create table: users
+    db.execute("CREATE TABLE IF NOT EXISTS users ( \
+        id serial PRIMARY KEY NOT NULL, \
+        username VARCHAR ( 255 ) UNIQUE NOT NULL, \
+        password VARCHAR ( 255 ) NOT NULL, \
+        created_on TIMESTAMP, \
+        last_login TIMESTAMP \
+        )")
+
+    # Create table: parts
+    db.execute("CREATE TABLE IF NOT EXISTS parts ( \
+        name VARCHAR ( 255 ) NOT NULL, \
+        size VARCHAR ( 255 ) NOT NULL, \
+        color VARCHAR ( 255 ), \
+        qty INTEGER \
+        )")
+
+    # Create table: items
+    db.execute("CREATE TABLE IF NOT EXISTS items ( \
+        id serial PRIMARY KEY NOT NULL, \
+        name VARCHAR ( 255 ) NOT NULL, \
+        size VARCHAR ( 255 ) NOT NULL, \
+        a_color VARCHAR ( 255 ), \
+        b_color VARCHAR ( 255 ), \
+        c_color VARCHAR ( 255 ) \
+        )")
+
+    return "sucessful setup"
 
 
 @app.route('/')
