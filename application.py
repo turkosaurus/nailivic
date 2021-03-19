@@ -56,26 +56,26 @@ authusers.append(os.getenv('USERB'))
 colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
 sizes = ['s', 'm', 'l']
 loterias = {
-    'La Dama': ['Frida', 'Frida Flowers', ''],
+    'La Dama': ['Frida', 'Frida Flowers', ],
     'La Sirena': ['Mermaid Body', 'Mermaid Hair', 'Mermaid Tail'],
-    'La Mano': ['Hand', 'Hand Swirls', ''],
+    'La Mano': ['Hand', 'Hand Swirls', ],
     'La Bota': ['Boot', 'Boot Swirls', 'Boot Flames'],
-    'El Corazon': ['Heart', 'Heart Swirls', ''],
-    'El Musico': ['Guitar', 'Guitar Hands', ''],
-    'La Estrella': ['Star', 'Star Swirls', ''],
+    'El Corazon': ['Heart', 'Heart Swirls', ],
+    'El Musico': ['Guitar', 'Guitar Hands', ],
+    'La Estrella': ['Star', 'Star Swirls', ],
     'El Pulpo': ['Octopus', 'Octopus Swirls', 'Octopus Tentacles'],
     'La Rosa': ['Rose', 'Rose Swirls', 'Rose Leaves'],
     'La Calavera': ['Skull', 'Skull Flames', 'Skull Swirls'],
-    'El Poder': ['Fist', 'Fist Swirls', 'Fist Wrist', '']
+    'El Poder': ['Fist', 'Fist Swirls', 'Fist Wrist']
 }
 
+#TODO 86 this and the module it came from?
 @dataclass
 class loteria:
     size: str
     a: str
     b: str
     c: str
-
 
 
 
@@ -96,7 +96,6 @@ def login_required(f):
 
 
 
-
 @app.route('/')
 @login_required
 def dashboard():
@@ -113,15 +112,68 @@ def dashboard():
     user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
     return render_template('index.html', user=user, colors=colors, sizes=sizes, loterias=loterias)
 
-@app.route('/items')
+@app.route('/items', methods=['GET', 'POST'])
 @login_required
 def items():
-    return render_template('items.html', loterias=loterias, sizes=sizes, colors=colors)
+    if request.method == 'GET':
+        return render_template('items.html', loterias=loterias, sizes=sizes, colors=colors)
+    # Upon POSTing form submission
+    else:
+        item = request.form.get("item")
+        size = request.form.get("size")
+        a = request.form.get("Color A")
+        b = request.form.get("Color B")
+        c = request.form.get("Color C")
+        qty = request.form.get("qty")
+        print(qty, item, size, a, b, c)
+        return redirect('/items')
 
-@app.route('/parts')
+@app.route('/parts', methods=['GET', 'POST'])
 @login_required
 def parts():
-    return render_template('parts.html')
+    if request.method == 'GET':
+        parts = db.execute("SELECT * FROM parts")
+        return render_template('parts.html', parts=parts, loterias=loterias, sizes=sizes, colors=colors)
+
+    # Upon POSTing form submission
+    else:
+        part = request.form.get("item")
+        size = request.form.get("size")
+        color = request.form.get("color")
+        qty = request.form.get("qty")
+
+        # Does part type already exist? If so, what quantity?
+        onhand = db.execute("SELECT qty FROM parts WHERE \
+                            name=:name AND size=:size AND color=:color", \
+                            name=part, size=size, color=color)
+        print(f"onhand = {onhand}")
+        onhand = onhand[0]['qty']
+        print(f"onhand = {onhand}")
+
+        # Yes, update quantity
+        if onhand >= 0:
+
+            updated = onhand + int(qty)
+            db.execute("UPDATE parts SET qty=:updated WHERE \
+                        name=:name AND size=:size AND color=:color", \
+                        updated=updated, name=part, size=size, color=color)
+            print("Existing parts inventory quantity updated.")                        
+
+        # No, create new entry
+        else:
+            db.execute("INSERT INTO parts (name, size, color, qty) VALUES \
+                        (:name, :size, :color, :updated)", \
+                        updated=updated, name=part, size=size, color=color)
+            print("New parts entry created.")                        
+
+
+            # No, insert type and quantity
+
+            # Yes
+
+        db.execute("INSERT INTO parts (name, size, color, qty) VALUES (:part, :size, :color, :qty)", \
+                    part=part, size=size, color=color, qty=qty)
+        return redirect('/parts')
 
 @app.route('/projections')
 @login_required

@@ -30,7 +30,7 @@ Dashboard
                 <div class="form-group">
                     <label for="size">Size</label>
                     {% for size in sizes %}
-                        <input type="radio" id="{{ size }}" name="size A" value="{{ size }}">
+                        <input type="radio" id="{{ size }}" name="size" value="{{ size }}">
                         <label for="{{ size }}">{{ size }}</label>
                     {% endfor %}
                 </div>
@@ -61,11 +61,11 @@ Dashboard
                     {% endfor %}
                 </div>
                 <div class="form-group">
-                    <label for="number">Number</label>
-                    <input type="number" min="1" max="99" step="1" name="number" id="number">
+                    <label for="qty">Quantity</label>
+                    <input type="number" min="1" max="99" step="1" name="qty" id="qty">
                 </div>
                 <button type="reset" class="btn btn-primary">Reset</button>
-                <button type="submit" class="btn btn-primary" disabled>Submit</button>
+                <button type="submit" class="btn btn-primary">Submit</button>
             </form>
         </div>
         <hr>
