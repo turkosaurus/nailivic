@@ -1,6 +1,5 @@
 # Nailivic Studios
-Inventory management and production tracking systems
-
+Inventory management and production tracking webapp
 
 ## Specifications:
 - Laser Production Dashboard
@@ -10,27 +9,34 @@ Inventory management and production tracking systems
 - Shipping Dashboard
     - updated from Shopify
 
-## TODO
-- setup register and login
-- design db structure
 
-## DONE
+# Upcoming
+## v0.2
+- setup form capture into database
+
+## Unscheduled
+#### style
+- custom dark mode
+#### accessibility
+- complete checklist
+#### test and verify
+- id and run tests
+#### document
+- standard uses
+#### automate
+- database backup and migration
+- alerts and logging
+- test backups and alerts
+
+## Maybe
+- route to produce csv of backup data
+- csv or google forms inventory caputure
+
+# Released
+## v0.1
 - buildout online hello nailivic in flask
 - get squareup credentials
 - get shopify credentials
 - confirm main routes
-
-#### Test and verify
-- id and run tests
-- document/automate:
-    - standard uses
-    - database backup and migration
-- create proper alerts and logging
-- test backups and alerts
-
-#### Deploy v1
-- schedule follow-up
-
-## Possible Features
-- route to produce csv of backup data
-
+- setup register and login
+- design db structure
