@@ -7,74 +7,99 @@ Dashboard
 <container>
     <div class="row">
         <h1>Items</h1>
+        <hr>
     </div>    
     <div class="row">
-        <h2>On Hand</h2>
-    </div>
-    <div class="row">
-        <ul>
-            <li>item</li>
-            <li>item</li>
-            <li>item</li>
-        </ul>
-    </div>
-    <div class="row">
-        <h2>Produce Item</h2>
-    </div>
-    <div class="row">
-        <form action="/items" method="post">
+        <!-- Produce New Item -->
+        <div class="col-lg-6 col-md-12">
+            <h2>Produce Item</h2>
+            <form action="/items" method="post">
 
-            <!-- Item -->
-            <div class="form-group">
-                <label for="item">Item</label>
-                <select name="item" id="item">
-                    {% for loteria in loterias %}
-                        <option value="{{ loteria }}">{{ loteria }}</option>
+                <!-- Item -->
+                <div class="form-group">
+                    <label for="item">Item</label>
+                    <select name="item" id="item">
+                        {% for loteria in loterias %}
+                            <option value="{{ loteria }}">{{ loteria }} : {{ loterias[loteria].0 }} . {{ loterias[loteria].1 }} . {{ loterias[loteria].2 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+
+                <!-- Size -->
+                <div class="form-group">
+                    <label for="size">Size</label>
+                    {% for size in sizes %}
+                        <input type="radio" id="{{ size }}" name="size A" value="{{ size }}">
+                        <label for="{{ size }}">{{ size }}</label>
                     {% endfor %}
-                </select>
-            </div>
-
-            <!-- Size -->
-            <div class="form-group">
-                <label for="size">Size</label>
-                {% for size in sizes %}
-                    <input type="radio" id="{{ size }}" name="size A" value="{{ size }}">
-                    <label for="{{ size }}">{{ size }}</label>
-                {% endfor %}
-            </div>
+                </div>
 
 
-            <!-- Color A -->
-            <h6>Color A</h6>
-            <div class="form-group">
-                {% for color in colors %}
-                    <input type="radio" id="{{ color }}" name="Color A" value="{{ color }}">
-                    <label for="{{ color }}">{{ color }}</label>
-                {% endfor %}
+                <!-- Color A -->
+                <h6>Color A</h6>
+                <div class="form-group">
+                    {% for color in colors %}
+                        <input type="radio" id="{{ color }}" name="Color A" value="{{ color }}">
+                        <label for="{{ color }}">{{ color }}</label>
+                    {% endfor %}
+                </div>
+                <!-- Color B -->
+                <h6>Color B</h6>
+                <div class="form-group">
+                    {% for color in colors %}
+                        <input type="radio" id="{{ color }}" name="Color B" value="{{ color }}">
+                        <label for="{{ color }}">{{ color }}</label>
+                    {% endfor %}
+                </div>
+                <!-- Color C -->
+                <h6>Color C</h6>
+                <div class="form-group">
+                    {% for color in colors %}
+                        <input type="radio" id="{{ color }}" name="Color C" value="{{ color }}">
+                        <label for="{{ color }}">{{ color }}</label>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="number">Number</label>
+                    <input type="number" min="1" max="99" step="1" name="number" id="number">
+                </div>
+                <button type="reset" class="btn btn-primary">Reset</button>
+                <button type="submit" class="btn btn-primary" disabled>Submit</button>
+            </form>
+        </div>
+        <hr>
+
+        <!-- View Inventory -->
+        <div class="col-lg-6 col-md-12">
+            <div class="row">
+                <h2>On Hand</h2>
             </div>
-            <!-- Color B -->
-            <h6>Color B</h6>
-            <div class="form-group">
-                {% for color in colors %}
-                    <input type="radio" id="{{ color }}" name="Color B" value="{{ color }}">
-                    <label for="{{ color }}">{{ color }}</label>
-                {% endfor %}
+            {% for size in sizes %}
+            <div class="row">
+                <h4>Loteria - {{ size }}</h4>
             </div>
-            <!-- Color C -->
-            <h6>Color C</h6>
-            <div class="form-group">
-                {% for color in colors %}
-                    <input type="radio" id="{{ color }}" name="Color C" value="{{ color }}">
-                    <label for="{{ color }}">{{ color }}</label>
-                {% endfor %}
+            <div class="row">
+                <table class="table">
+                    <tr>
+                        <th>Item</th>
+                        {% for color in colors %}
+                            <th>{{ color }}</th>
+                        {% endfor %}
+                    </tr>
+                    {% for loteria in loterias %}
+                        <tr>
+                            <td>{{ loteria }}</td>
+                            {% for color in colors %}
+                                <th>#</th>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </table>
             </div>
-            <div class="form-group">
-                <label for="number">Number</label>
-                <input type="number" min="1" max="99" step="1" name="number" id="number">
-            </div>
-            <button type="reset" class="btn btn-primary">Reset</button>
-            <button type="submit" class="btn btn-primary" disabled>Submit</button>
-        </form>
+            {% endfor %}
+        </div>
+        <hr>
     </div>
 </container>
 {% endblock %}

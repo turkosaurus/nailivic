@@ -12,6 +12,14 @@ from dataclasses import dataclass
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
+###### DEFINITIONS ######
+"""
+item: fully assembled woodcut item
+part: constituent piece that comprises an item, usually one of two or three
+loteria: woodcut loteria pieces
+"""
+
+
 
 ###### CONFIGURATION ######
 # Initialize Flask App Ojbect
@@ -48,17 +56,17 @@ authusers.append(os.getenv('USERB'))
 colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
 sizes = ['s', 'm', 'l']
 loterias = {
-    'La Dama': ['Frida', 'Frida Flowers'],
+    'La Dama': ['Frida', 'Frida Flowers', ''],
     'La Sirena': ['Mermaid Body', 'Mermaid Hair', 'Mermaid Tail'],
-    'La Mano': ['Hand', 'Hand Swirls'],
+    'La Mano': ['Hand', 'Hand Swirls', ''],
     'La Bota': ['Boot', 'Boot Swirls', 'Boot Flames'],
-    'El Corazon': ['Heart', 'Heart Swirls'],
-    'El Musico': ['Guitar', 'Guitar Hands'],
-    'La Estrella': ['Star', 'Star Swirls'],
+    'El Corazon': ['Heart', 'Heart Swirls', ''],
+    'El Musico': ['Guitar', 'Guitar Hands', ''],
+    'La Estrella': ['Star', 'Star Swirls', ''],
     'El Pulpo': ['Octopus', 'Octopus Swirls', 'Octopus Tentacles'],
     'La Rosa': ['Rose', 'Rose Swirls', 'Rose Leaves'],
     'La Calavera': ['Skull', 'Skull Flames', 'Skull Swirls'],
-    'El Poder': ['Fist', 'Fist Swirls', 'Fist Wrist']
+    'El Poder': ['Fist', 'Fist Swirls', 'Fist Wrist', '']
 }
 
 @dataclass
@@ -67,6 +75,8 @@ class loteria:
     a: str
     b: str
     c: str
+
+
 
 
 ###### Helper Functions ######
@@ -85,39 +95,6 @@ def login_required(f):
     return decorated_function
 
 
-@app.route('/setup-tables')
-@login_required
-def setup():
-
-    # Create table: users
-    db.execute("CREATE TABLE IF NOT EXISTS users ( \
-        id serial PRIMARY KEY NOT NULL, \
-        username VARCHAR ( 255 ) UNIQUE NOT NULL, \
-        password VARCHAR ( 255 ) NOT NULL, \
-        created_on TIMESTAMP, \
-        last_login TIMESTAMP \
-        )")
-
-    # Create table: parts
-    db.execute("CREATE TABLE IF NOT EXISTS parts ( \
-        name VARCHAR ( 255 ) NOT NULL, \
-        size VARCHAR ( 255 ) NOT NULL, \
-        color VARCHAR ( 255 ), \
-        qty INTEGER \
-        )")
-
-    # Create table: items
-    db.execute("CREATE TABLE IF NOT EXISTS items ( \
-        id serial PRIMARY KEY NOT NULL, \
-        name VARCHAR ( 255 ) NOT NULL, \
-        size VARCHAR ( 255 ) NOT NULL, \
-        a_color VARCHAR ( 255 ), \
-        b_color VARCHAR ( 255 ), \
-        c_color VARCHAR ( 255 ), \
-        status VARCHAR ( 255 ) \
-        )")
-
-    return "Setup Success!"
 
 
 @app.route('/')
@@ -156,6 +133,43 @@ def projections():
 def shipping():
     return render_template('shipping.html')
 
+
+
+###### SETUP ######
+
+@app.route('/setup-tables')
+@login_required
+def setup():
+
+    # Create table: users
+    db.execute("CREATE TABLE IF NOT EXISTS users ( \
+        id serial PRIMARY KEY NOT NULL, \
+        username VARCHAR ( 255 ) UNIQUE NOT NULL, \
+        password VARCHAR ( 255 ) NOT NULL, \
+        created_on TIMESTAMP, \
+        last_login TIMESTAMP \
+        )")
+
+    # Create table: parts
+    db.execute("CREATE TABLE IF NOT EXISTS parts ( \
+        name VARCHAR ( 255 ) NOT NULL, \
+        size VARCHAR ( 255 ) NOT NULL, \
+        color VARCHAR ( 255 ), \
+        qty INTEGER \
+        )")
+
+    # Create table: items
+    db.execute("CREATE TABLE IF NOT EXISTS items ( \
+        id serial PRIMARY KEY NOT NULL, \
+        name VARCHAR ( 255 ) NOT NULL, \
+        size VARCHAR ( 255 ) NOT NULL, \
+        a_color VARCHAR ( 255 ), \
+        b_color VARCHAR ( 255 ), \
+        c_color VARCHAR ( 255 ), \
+        status VARCHAR ( 255 ) \
+        )")
+
+    return "Setup Success!"
 
 
 ###### ADMINSTRATIVE ######
