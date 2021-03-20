@@ -12,15 +12,16 @@ Dashboard
     <hr>
     </div>    
     <div class="row">
-        <!-- Produce New Item -->
+        <!-- Produce New Part -->
         <div class="col-lg-6 col-md-12">
             <h2>Produce Part</h2>
             <form action="/parts" method="post">
 
-                <!-- Item -->
+                <!-- Part -->
                 <div class="form-group">
-                    <label for="item">Item</label>
-                    <select name="item" id="item">
+                    <h4>Part Name</h4>
+                    <!-- <label for="part">part</label> -->
+                    <select name="part" id="part">
                         {% for loteria in loterias %}
                             {% for part in loterias[loteria] %}
                                 <option value="{{ part }}">{{ part }}</option>
@@ -31,28 +32,34 @@ Dashboard
 
                 <!-- Size -->
                 <div class="form-group">
-                    <h4>
-                        Size
-                    </h4>
+                    <h4>Size</h4>
                     <!-- <label for="size">Size</label> -->
                     {% for size in sizes %}
                         <input type="radio" id="{{ size }}" name="size" value="{{ size }}">
-                        <label for="{{ size }}">{{ size }}</label>
+                        <label for="{{ size }}">{{ size }}</label>        
                     {% endfor %}
                 </div>
 
-                <!-- Color A -->
+                <!-- Color -->
                 <div class="form-group">
-                    <!-- <label for="color">Color</label> -->
+                    <h4>Color</h4>
                     {% for color in colors %}
-                        <input type="radio" id="{{ color }}" name="color" value="{{ color }}">
-                        <label for="{{ color }}">{{ color }}</label>
+                    <div class="row">
+                        <div class="col">
+                            <input type="radio" id="{{ color }}" name="color" value="{{ color }}">
+                            <label for="{{ color }}">{{ color }}</label>
+                        </div>
+                    </div>
                     {% endfor %}
                 </div>
+
+                <!-- Quantity -->
                 <div class="form-group">
-                    <label for="qty">Quantity</label>
-                    <input type="number" min="1" max="99" step="1" name="qty" id="qty">
+                    <h4>Quantity</h4>
+                    <input type="number" min="-99" max="99" step="1" name="qty" id="qty">
                 </div>
+
+                <!-- Submit -->
                 <button type="reset" class="btn btn-primary">Reset</button>
                 <button type="submit" class="btn btn-primary">Submit</button>
             </form>

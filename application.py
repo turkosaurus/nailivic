@@ -132,47 +132,39 @@ def items():
 @login_required
 def parts():
     if request.method == 'GET':
-        parts = db.execute("SELECT * FROM parts")
+        parts = db.execute("SELECT * FROM parts WHERE qty>0")
         return render_template('parts.html', parts=parts, loterias=loterias, sizes=sizes, colors=colors)
 
     # Upon POSTing form submission
     else:
-        part = request.form.get("item")
+        part = request.form.get("part")
         size = request.form.get("size")
         color = request.form.get("color")
         qty = request.form.get("qty")
+        print(part, size, color, qty)
 
-        # Does part type already exist? If so, what quantity?
+        # What quantity of this part already exists?
         onhand = db.execute("SELECT qty FROM parts WHERE \
                             name=:name AND size=:size AND color=:color", \
                             name=part, size=size, color=color)
-        print(f"onhand = {onhand}")
-        onhand = onhand[0]['qty']
-        print(f"onhand = {onhand}")
+        print(f"Fetching onhand ...")
+        print(onhand)
+
+        # None, create new entry
+        if not onhand:
+            db.execute("INSERT INTO parts (name, size, color, qty) VALUES \
+                        (:name, :size, :color, :qty)", \
+                        name=part, size=size, color=color, qty=qty)
+            print("New parts entry created.")                        
 
         # Yes, update quantity
-        if onhand >= 0:
-
-            updated = onhand + int(qty)
+        else:
+            updated = onhand[0]['qty'] + int(qty)
             db.execute("UPDATE parts SET qty=:updated WHERE \
                         name=:name AND size=:size AND color=:color", \
                         updated=updated, name=part, size=size, color=color)
             print("Existing parts inventory quantity updated.")                        
 
-        # No, create new entry
-        else:
-            db.execute("INSERT INTO parts (name, size, color, qty) VALUES \
-                        (:name, :size, :color, :updated)", \
-                        updated=updated, name=part, size=size, color=color)
-            print("New parts entry created.")                        
-
-
-            # No, insert type and quantity
-
-            # Yes
-
-        db.execute("INSERT INTO parts (name, size, color, qty) VALUES (:part, :size, :color, :qty)", \
-                    part=part, size=size, color=color, qty=qty)
         return redirect('/parts')
 
 @app.route('/projections')
