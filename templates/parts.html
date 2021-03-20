@@ -9,8 +9,8 @@ Dashboard
         <div class="col">
             <h1>Parts</h1>
         </div>
-    <hr>
     </div>    
+    <hr>
     <div class="row">
         <!-- Produce New Part -->
         <div class="col-lg-6 col-md-12">
@@ -44,12 +44,8 @@ Dashboard
                 <div class="form-group">
                     <h4>Color</h4>
                     {% for color in colors %}
-                    <div class="row">
-                        <div class="col">
-                            <input type="radio" id="{{ color }}" name="color" value="{{ color }}">
-                            <label for="{{ color }}">{{ color }}</label>
-                        </div>
-                    </div>
+                        <input type="radio" id="{{ color }}" name="color" value="{{ color }}">
+                        <label for="{{ color }}">{{ color }}</label>
                     {% endfor %}
                 </div>
 
