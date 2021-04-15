@@ -13,8 +13,19 @@ Inventory management and production tracking webapp
 # Upcoming
 ## v0.2
 - setup form capture items into database
-- ***CURRENT***
 - setup form to caputre parts into database
+- ***CURRENT***
+- setup form to capture production target
+
+## v0.3
+
+## v0.4
+- setup sort columns and categories for
+    - items
+    - parts
+    - projections
+    - shipping
+    - dashboard
 
 
 ## Unscheduled

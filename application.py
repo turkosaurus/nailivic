@@ -127,12 +127,12 @@ def items():
         c = request.form.get("Color C")
         qty = int(request.form.get("qty"))
         print(qty, item, size, a, b, c)
-        #TODO handle quantity
+
         for i in range(qty):
-            print(f"quantity:{qty}")
+
             db.execute("INSERT INTO items (name, size, a_color, b_color, c_color) VALUES \
                      (:item, :size, :a_color, :b_color, :c_color)", item=item, size=size, a_color=a, b_color=b, c_color=c)
-            print(f"completed run:{i}")
+
         return redirect('/items')
 
 @app.route('/parts', methods=['GET', 'POST'])
