@@ -116,7 +116,8 @@ def dashboard():
 @login_required
 def items():
     if request.method == 'GET':
-        return render_template('items.html', loterias=loterias, sizes=sizes, colors=colors)
+        items = db.execute("SELECT * FROM items")
+        return render_template('items.html', items=items, loterias=loterias, sizes=sizes, colors=colors)
     # Upon POSTing form submission
     else:
         item = request.form.get("item")
@@ -124,8 +125,14 @@ def items():
         a = request.form.get("Color A")
         b = request.form.get("Color B")
         c = request.form.get("Color C")
-        qty = request.form.get("qty")
+        qty = int(request.form.get("qty"))
         print(qty, item, size, a, b, c)
+        #TODO handle quantity
+        for i in range(qty):
+            print(f"quantity:{qty}")
+            db.execute("INSERT INTO items (name, size, a_color, b_color, c_color) VALUES \
+                     (:item, :size, :a_color, :b_color, :c_color)", item=item, size=size, a_color=a, b_color=b, c_color=c)
+            print(f"completed run:{i}")
         return redirect('/items')
 
 @app.route('/parts', methods=['GET', 'POST'])

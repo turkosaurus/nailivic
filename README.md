@@ -12,7 +12,10 @@ Inventory management and production tracking webapp
 
 # Upcoming
 ## v0.2
-- setup form capture into database
+- setup form capture items into database
+- ***CURRENT***
+- setup form to caputre parts into database
+
 
 ## Unscheduled
 #### style
