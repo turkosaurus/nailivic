@@ -4,23 +4,32 @@
 Dashboard
 {% endblock %}
 {% block main %}
-<h6>{{ user[0]['username'] }}</h6>
 <h1>Dashboard</h1>
+<h6>Logged in as: {{ user[0]['username'] }}</h6>
 <hr>
-
-<h2>Parts</h2>
-{% for part in parts %}
-<h6>{{ part }}</h6>
-{% endfor %}
-<hr>
-<h2>Items</h2>
-{% for item in items %}
-<h6>{{ item }}</h6>
+<h2>Loteria Templates</h2>
+{% for loteria in loterias %}
+    <li>{{ loteria }}: {{ loterias[loteria].0 }}, {{ loterias[loteria].1 }}, {{ loterias[loteria].2 }}</li>
 {% endfor %}
 <hr>
 <h2>Colors</h2>
 {% for color in colors %}
-<h6>{{ color }}</h6>
+<li>{{ color }}</li>
+{% endfor %}
+<hr>
+<h2>Sizes</h2>
+{% for size in sizes %}
+<li>{{ size }}</li>
+{% endfor %}
+<hr>
+<h2>Parts</h2>
+{% for part in parts %}
+<li>{{ part }}</li>
+{% endfor %}
+<hr>
+<h2>Items</h2>
+{% for item in items %}
+<li>{{ item }}</li>
 {% endfor %}
 <hr>
 <h2>boxes</h2>

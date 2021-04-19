@@ -13,18 +13,20 @@ Projections
     <hr>
     <div class="row">
         <div class="col">
-            <h2>Active Cycle: #num DATE, CREATED</h2>
+            <h2>Current Projections Cycle: #num DATE, CREATED</h2>
         </div>
     </div>
     <div class="row">
         <div class="col">
+            <select>Change Cycle</select>
             <button>Make New Cycle</button>
         </div>
     </div>
+    <hr>
     <div class="row">
-        <!-- Produce New Item -->
+        <!-- Add Item to Projections -->
         <div class="col-lg-6 col-md-12">
-            <h2>Produce Item</h2>
+            <h2>Add Projected Item</h2>
             <form action="/projections" method="post">
 
                 <!-- Item -->
@@ -37,7 +39,6 @@ Projections
                     </select>
                 </div>
 
-
                 <!-- Size -->
                 <div class="form-group">
                     <label for="size">Size</label>
@@ -47,7 +48,6 @@ Projections
                     {% endfor %}
                 </div>
 
-
                 <!-- Color A -->
                 <h6>Color A</h6>
                 <div class="form-group">
@@ -56,6 +56,7 @@ Projections
                         <label for="{{ color }}">{{ color }}</label>
                     {% endfor %}
                 </div>
+
                 <!-- Color B -->
                 <h6>Color B</h6>
                 <div class="form-group">
@@ -64,6 +65,7 @@ Projections
                         <label for="{{ color }}">{{ color }}</label>
                     {% endfor %}
                 </div>
+
                 <!-- Color C -->
                 <h6>Color C</h6>
                 <div class="form-group">
@@ -82,10 +84,10 @@ Projections
         </div>
         <hr>
 
-        <!-- View Inventory -->
+        <!-- View Current Projections -->
         <div class="col-lg-6 col-md-12">
             <div class="row">
-                <h2>On Hand</h2>
+                <h2>Current Projection Targets</h2>
                 {% for item in items %}
                     <p>{{ item }}</p>
                 {% endfor %}

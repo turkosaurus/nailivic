@@ -1,7 +1,7 @@
 # Nailivic Studios
 Inventory management and production tracking webapp
 
-## Specifications:
+## Initial Specifications:
 - Laser Production Dashboard
 - Parts Inventory (list and form)
 - Product Inventory (list and form)
@@ -9,6 +9,17 @@ Inventory management and production tracking webapp
 - Shipping Dashboard
     - updated from Shopify
 
+## Description
+To capture, calculate, and display all data pertaining to producing laser cut wooden art pieces en mass for Nailivic Studios.
+
+### Menus
+- Parts: Add to, remove from, or view inventory of laser etched parts
+- Items: Add to, remove from, or view inventory of assembled items 
+- Projections: Enter the number of completed items necessary for the upcoming Production Cycle (todo: capture from square)
+- Shipping: #TODO (todo: update from shopify)
+- Dashboard (home): display the current total number of parts required to meet production goals, sorted by color
+
+> Production Cycle: period of time or event before which all production needs should be met
 
 # Upcoming
 ## v0.2
@@ -16,10 +27,11 @@ Inventory management and production tracking webapp
 - setup form to caputre parts into database
 - ***CURRENT***
 - setup form to capture production target
+    - table contains:
+        - cycle # | created date | description
+        - new cycle / cycle selector
 
 ## v0.3
-
-## v0.4
 - setup sort columns and categories for
     - items
     - parts

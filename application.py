@@ -100,17 +100,18 @@ def login_required(f):
 @login_required
 def dashboard():
 
-
     # print(loteria)
     for key in loterias:
         # i = 0
         print(f"{key}:")
         tmp = loterias[key]
         print(tmp)
+
+    user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
     items = db.execute("SELECT * FROM items")
     parts = db.execute("SELECT * FROM parts")
-    user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
-    return render_template('index.html', user=user, colors=colors, sizes=sizes, loterias=loterias)
+    projections = db.execute("SELECT * FROM projections")
+    return render_template('index.html', loterias=loterias, sizes=sizes, colors=colors, user=user, items=items, parts=parts, projections=projections)
 
 
 @app.route('/parts', methods=['GET', 'POST'])
@@ -222,6 +223,17 @@ def setup():
         c_color VARCHAR ( 255 ), \
         status VARCHAR ( 255 ) \
         )")
+
+    # Create table: projections
+    db.execute("CREATE TABLE IF NOT EXISTS projections ( \
+        name VARCHAR ( 255 ) NOT NULL, \
+        size VARCHAR ( 255 ) NOT NULL, \
+        a_color VARCHAR ( 255 ), \
+        b_color VARCHAR ( 255 ), \
+        c_color VARCHAR ( 255 ), \
+        qty INTEGER \
+        )")
+
 
     return "Setup Success!"
 
