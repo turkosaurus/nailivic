@@ -112,28 +112,6 @@ def dashboard():
     user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
     return render_template('index.html', user=user, colors=colors, sizes=sizes, loterias=loterias)
 
-@app.route('/items', methods=['GET', 'POST'])
-@login_required
-def items():
-    if request.method == 'GET':
-        items = db.execute("SELECT * FROM items")
-        return render_template('items.html', items=items, loterias=loterias, sizes=sizes, colors=colors)
-    # Upon POSTing form submission
-    else:
-        item = request.form.get("item")
-        size = request.form.get("size")
-        a = request.form.get("Color A")
-        b = request.form.get("Color B")
-        c = request.form.get("Color C")
-        qty = int(request.form.get("qty"))
-        print(qty, item, size, a, b, c)
-
-        for i in range(qty):
-
-            db.execute("INSERT INTO items (name, size, a_color, b_color, c_color) VALUES \
-                     (:item, :size, :a_color, :b_color, :c_color)", item=item, size=size, a_color=a, b_color=b, c_color=c)
-
-        return redirect('/items')
 
 @app.route('/parts', methods=['GET', 'POST'])
 @login_required
@@ -173,6 +151,31 @@ def parts():
             print("Existing parts inventory quantity updated.")                        
 
         return redirect('/parts')
+
+
+@app.route('/items', methods=['GET', 'POST'])
+@login_required
+def items():
+    if request.method == 'GET':
+        items = db.execute("SELECT * FROM items")
+        return render_template('items.html', items=items, loterias=loterias, sizes=sizes, colors=colors)
+    # Upon POSTing form submission
+    else:
+        item = request.form.get("item")
+        size = request.form.get("size")
+        a = request.form.get("Color A")
+        b = request.form.get("Color B")
+        c = request.form.get("Color C")
+        qty = int(request.form.get("qty"))
+        print(qty, item, size, a, b, c)
+
+        for i in range(qty):
+
+            db.execute("INSERT INTO items (name, size, a_color, b_color, c_color) VALUES \
+                     (:item, :size, :a_color, :b_color, :c_color)", item=item, size=size, a_color=a, b_color=b, c_color=c)
+
+        return redirect('/items')
+
 
 @app.route('/projections')
 @login_required

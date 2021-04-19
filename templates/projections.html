@@ -4,9 +4,94 @@
 Projections
 {% endblock %}
 {% block main %}
-<h1>Projections</h1>
-Enter here Projections
-<p>
-    form here
-</p>
+<container>
+    <div class="row">
+        <div class="col">
+            <h1>Projections</h1>
+        </div>
+    </div>    
+    <hr>
+    <div class="row">
+        <div class="col">
+            <h2>Active Cycle: #num DATE, CREATED</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <button>Make New Cycle</button>
+        </div>
+    </div>
+    <div class="row">
+        <!-- Produce New Item -->
+        <div class="col-lg-6 col-md-12">
+            <h2>Produce Item</h2>
+            <form action="/projections" method="post">
+
+                <!-- Item -->
+                <div class="form-group">
+                    <label for="item">Item</label>
+                    <select name="item" id="item">
+                        {% for loteria in loterias %}
+                            <option value="{{ loteria }}">{{ loteria }} : {{ loterias[loteria].0 }} . {{ loterias[loteria].1 }} . {{ loterias[loteria].2 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+
+                <!-- Size -->
+                <div class="form-group">
+                    <label for="size">Size</label>
+                    {% for size in sizes %}
+                        <input type="radio" id="{{ size }}" name="size" value="{{ size }}">
+                        <label for="{{ size }}">{{ size }}</label>
+                    {% endfor %}
+                </div>
+
+
+                <!-- Color A -->
+                <h6>Color A</h6>
+                <div class="form-group">
+                    {% for color in colors %}
+                        <input type="radio" id="{{ color }}" name="Color A" value="{{ color }}">
+                        <label for="{{ color }}">{{ color }}</label>
+                    {% endfor %}
+                </div>
+                <!-- Color B -->
+                <h6>Color B</h6>
+                <div class="form-group">
+                    {% for color in colors %}
+                        <input type="radio" id="{{ color }}" name="Color B" value="{{ color }}">
+                        <label for="{{ color }}">{{ color }}</label>
+                    {% endfor %}
+                </div>
+                <!-- Color C -->
+                <h6>Color C</h6>
+                <div class="form-group">
+                    {% for color in colors %}
+                        <input type="radio" id="{{ color }}" name="Color C" value="{{ color }}">
+                        <label for="{{ color }}">{{ color }}</label>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label for="qty">Quantity</label>
+                    <input type="number" value="1" min="1" max="99" step="1" name="qty" id="qty">
+                </div>
+                <button type="reset" class="btn btn-primary">Reset</button>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+        <hr>
+
+        <!-- View Inventory -->
+        <div class="col-lg-6 col-md-12">
+            <div class="row">
+                <h2>On Hand</h2>
+                {% for item in items %}
+                    <p>{{ item }}</p>
+                {% endfor %}
+            </div>
+        </div>
+        <hr>
+    </div>
+</container>
 {% endblock %}
