@@ -5,10 +5,9 @@ Dashboard
 {% endblock %}
 {% block main %}
 <h1>Dashboard</h1>
-<h6>Logged in as: {{ user[0]['username'] }}</h6>
 <hr>
 <p>
-    Hello, Mark!
+    Hello, {{ user[0]['username'] }}!
 </p>
 <p>
     Below, you'll see everything that's captured so far. Next, we'll compute and filter that to display a production-friendly dashboard. Sketch out some ideas of your own, if you'd like.
@@ -19,22 +18,22 @@ Dashboard
     <li>{{ loteria }}: {{ loterias[loteria].0 }}, {{ loterias[loteria].1 }}, {{ loterias[loteria].2 }}</li>
 {% endfor %}
 <hr>
-<h2>Colors</h2>
+<h2>Colors in Template</h2>
 {% for color in colors %}
 <li>{{ color }}</li>
 {% endfor %}
 <hr>
-<h2>Sizes</h2>
+<h2>Sizes in Template</h2>
 {% for size in sizes %}
 <li>{{ size }}</li>
 {% endfor %}
 <hr>
-<h2>Parts</h2>
+<h2>Parts On-Hand</h2>
 {% for part in parts %}
 <li>{{ part }}</li>
 {% endfor %}
 <hr>
-<h2>Items</h2>
+<h2>Items On-Hand</h2>
 {% for item in items %}
 <li>{{ item }}</li>
 {% endfor %}

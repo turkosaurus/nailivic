@@ -49,6 +49,8 @@ db = SQL(os.getenv('DATABASE_URL'))
 authusers = []
 authusers.append(os.getenv('USERA'))
 authusers.append(os.getenv('USERB'))
+authusers.append(os.getenv('USERC'))
+
 
 ###### TEMPLATES ######
 # Set type variables
@@ -126,7 +128,7 @@ def parts():
         part = request.form.get("part")
         size = request.form.get("size")
         color = request.form.get("color")
-        qty = request.form.get("qty")
+        qty = int(request.form.get("qty"))
         print(part, size, color, qty)
 
         # What quantity of this part already exists?
@@ -143,9 +145,9 @@ def parts():
                         name=part, size=size, color=color, qty=qty)
             print("New parts entry created.")                        
 
-        # Yes, update quantity
+        # Update existing entry's quantity
         else:
-            updated = onhand[0]['qty'] + int(qty)
+            updated = onhand[0]['qty'] + qty
             db.execute("UPDATE parts SET qty=:updated WHERE \
                         name=:name AND size=:size AND color=:color", \
                         updated=updated, name=part, size=size, color=color)
@@ -179,14 +181,50 @@ def items():
         return redirect('/items')
 
 
-@app.route('/projections')
+@app.route('/projections', methods=['GET', 'POST'])
 @login_required
 def projections():
     if request.method == 'GET':
         projections = db.execute("SELECT * FROM projections")
         return render_template('projections.html', projections=projections, loterias=loterias, sizes=sizes, colors=colors)
 
+    # Upon POSTing form submission
+    else:
+        item = request.form.get("item")
+        size = request.form.get("size")
+        a = request.form.get("Color A")
+        b = request.form.get("Color B")
+        c = request.form.get("Color C")
+        qty = int(request.form.get("qty"))
+
+        # What quantity of this item is already in projections?
+        projected = db.execute("SELECT qty FROM projections WHERE \
+                            name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color", \
+                            name=item, size=size, a_color=a, b_color=b, c_color=c)
+        print(f"Fetching projected ...")
+        print(projected)
+
+        # None, create new entry
+        if not projected:
+            db.execute("INSERT INTO projections (name, size, a_color, b_color, c_color, qty) VALUES \
+                        (:name, :size, :a_color, :b_color, :c_color, :qty)", \
+                        name=item, size=size, a_color=a, b_color=b, c_color=c, qty=qty)
+            print("New projection created.")                        
+
+        # Update existing entry's quantity
+        else:
+            updated = projected[0]['qty'] + qty
+            db.execute("UPDATE projections SET qty=:updated WHERE \
+                        name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color", \
+                        updated=updated, name=item, size=size, a_color=a, b_color=b, c_color=c)
+            print("Existing projection updated.")                        
+
+        return redirect('/projections')
+
+
+
     return render_template('projections.html')
+
 
 @app.route('/shipping')
 @login_required
@@ -236,7 +274,8 @@ def setup():
         a_color VARCHAR ( 255 ), \
         b_color VARCHAR ( 255 ), \
         c_color VARCHAR ( 255 ), \
-        qty INTEGER \
+        qty INTEGER, \
+        cycle INTEGER \
         )")
 
 
