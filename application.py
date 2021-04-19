@@ -160,6 +160,7 @@ def items():
     if request.method == 'GET':
         items = db.execute("SELECT * FROM items")
         return render_template('items.html', items=items, loterias=loterias, sizes=sizes, colors=colors)
+
     # Upon POSTing form submission
     else:
         item = request.form.get("item")
@@ -181,6 +182,10 @@ def items():
 @app.route('/projections')
 @login_required
 def projections():
+    if request.method == 'GET':
+        projections = db.execute("SELECT * FROM projections")
+        return render_template('projections.html', projections=projections, loterias=loterias, sizes=sizes, colors=colors)
+
     return render_template('projections.html')
 
 @app.route('/shipping')

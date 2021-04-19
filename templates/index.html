@@ -7,6 +7,13 @@ Dashboard
 <h1>Dashboard</h1>
 <h6>Logged in as: {{ user[0]['username'] }}</h6>
 <hr>
+<p>
+    Hello, Mark!
+</p>
+<p>
+    Below, you'll see everything that's captured so far. Next, we'll compute and filter that to display a production-friendly dashboard. Sketch out some ideas of your own, if you'd like.
+</p>
+<hr>
 <h2>Loteria Templates</h2>
 {% for loteria in loterias %}
     <li>{{ loteria }}: {{ loterias[loteria].0 }}, {{ loterias[loteria].1 }}, {{ loterias[loteria].2 }}</li>
