@@ -185,8 +185,29 @@ def items():
 @login_required
 def projections():
     if request.method == 'GET':
-        projections = db.execute("SELECT * FROM projections")
-        return render_template('projections.html', projections=projections, loterias=loterias, sizes=sizes, colors=colors)
+
+        # Check for "current" cycle
+        active = db.execute("SELECT id, name, created_on FROM cycles WHERE current='TRUE'")
+        current = active
+        print(f"current:{current}")
+
+        # Set newest cycle as "current" when there is none
+        if not active:
+            newest = db.execute("SELECT id FROM cycles ORDER BY id DESC LIMIT 1")
+            db.execute("UPDATE cycles SET current='true' WHERE id=:active", active=newest[0]['id'])
+
+        # Capture id of active "current" cycle
+        else:
+            active = active[0]['id']
+        print(f"active:{active}")
+
+        # List all available non-current cycles
+        cycles = db.execute("SELECT id, name, created_on FROM cycles WHERE current='FALSE'")
+        print(f"cycles:{cycles}")
+
+        # Select projections from current cycle only
+        projections = db.execute("SELECT * FROM projections WHERE cycle=:active", active=active)
+        return render_template('projections.html', projections=projections, current=current, cycles=cycles, loterias=loterias, sizes=sizes, colors=colors)
 
     # Upon POSTing form submission
     else:
@@ -222,15 +243,38 @@ def projections():
         return redirect('/projections')
 
 
+@app.route('/cycle', methods=['GET', 'POST'])
+@login_required
+def cycle():
+    if request.method == 'GET':
+        return render_template("cycle.html")
+    
+    # Upon POSTed submission
+    else:
+        print("/cycle: POST")
+        name = request.form.get("name")
 
-    return render_template('projections.html')
+        # Make all other cycles not current
+        db.execute("UPDATE cycles SET current='FALSE'")
 
+        # Change current cycle selection
+        if not name:
+            cycle_id = request.form.get("cycle")
+            print(f"cycle:{cycle_id}")
+            db.execute("UPDATE cycles SET current='TRUE' WHERE id=:id", id=cycle_id)
+
+        # Make a new name
+        else:
+            # Create new Cycle
+            time = datetime.datetime.utcnow().isoformat()
+            db.execute("INSERT INTO cycles (name, created_on, current) VALUES (:name, :time, 'TRUE')", name=name, time=time)
+
+        return redirect('/projections')
 
 @app.route('/shipping')
 @login_required
 def shipping():
     return render_template('shipping.html')
-
 
 
 ###### SETUP ######
@@ -277,6 +321,21 @@ def setup():
         qty INTEGER, \
         cycle INTEGER \
         )")
+    
+    # Create table: cycles
+    db.execute("CREATE TABLE IF NOT EXISTS cycles ( \
+        id serial PRIMARY KEY NOT NULL, \
+        name VARCHAR (255), \
+        created_on TIMESTAMP, \
+        current BOOL \
+        )")
+    
+    # If empty cycles table
+    data = db.execute("SELECT * FROM cycles")
+    if not data:
+        # Seed table with test cycle
+        time = datetime.datetime.utcnow().isoformat()
+        db.execute("INSERT INTO cycles (name, created_on, current) VALUES ('test cycle', :time, 'TRUE')", time=time)
 
 
     return "Setup Success!"

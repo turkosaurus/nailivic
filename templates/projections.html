@@ -13,13 +13,21 @@ Projections
     <hr>
     <div class="row">
         <div class="col">
-            <h6>Current Projections Cycle: #num DATE, CREATED</h6>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col">
-            <select>Change Cycle</select>
-            <button>Make New Cycle</button>
+            <form action="/cycle" method="post">
+                <!-- Cycle Choice -->
+                <div class="form-group">
+                    <label for="cycle">Cycle</label>
+                    <select name="cycle" id="cycle">
+                        <option value="{{ current[0].id }}">{{ current[0].name }} ({{ current[0].created_on }})</option>
+                        {% for cycle in cycles %}
+                            <option value="{{ cycle.id }}">{{ cycle.name }} ({{ cycle.created_on }})</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary">Change Cycle</button>
+                </div>
+                <a href="/cycle"><button class="btn btn-primary">Make New Cycle</button></a>
+            </form>
+            <br>
         </div>
     </div>
     <hr>
