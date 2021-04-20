@@ -12,7 +12,7 @@ Projections
     </div>    
     <hr>
     <div class="row">
-        <div class="col">
+        <div class="col-6">
             <form action="/cycle" method="post">
                 <!-- Cycle Choice -->
                 <div class="form-group">
@@ -23,11 +23,11 @@ Projections
                             <option value="{{ cycle.id }}">{{ cycle.name }} ({{ cycle.created_on }})</option>
                         {% endfor %}
                     </select>
-                    <button type="submit" class="btn btn-primary">Change Cycle</button>
                 </div>
+                <button type="submit" class="btn btn-primary">Change Cycle</button>
             </form>
-            <a href="/cycle"><button class="btn btn-primary">Make New Cycle</button></a>
             <br>
+            <a href="/cycle"><button class="btn btn-primary">Make New Cycle</button></a>
         </div>
     </div>
     <hr>
@@ -95,7 +95,7 @@ Projections
         <!-- View Current Projections -->
         <div class="col-lg-6 col-md-12">
             <div class="row">
-                <h2>Current Projection Targets</h2>
+                <h2>{{ current[0].name }} Projection Targets</h2>
                 {% for projection in projections %}
                     <p>{{ projection }}</p>
                 {% endfor %}

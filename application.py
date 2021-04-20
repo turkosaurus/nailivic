@@ -218,25 +218,32 @@ def projections():
         c = request.form.get("Color C")
         qty = int(request.form.get("qty"))
 
+        # Identify current cycle
+        active = db.execute("SELECT id, name, created_on FROM cycles WHERE current='TRUE'")
+        print(f"active cycle:{active}")
+        cycle = active[0]['id']
+
         # What quantity of this item is already in projections?
         projected = db.execute("SELECT qty FROM projections WHERE \
-                            name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color", \
-                            name=item, size=size, a_color=a, b_color=b, c_color=c)
+                            name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color \
+                            AND cycle=:cycle", \
+                            name=item, size=size, a_color=a, b_color=b, c_color=c, cycle=cycle)
         print(f"Fetching projected ...")
         print(projected)
 
         # None, create new entry
         if not projected:
-            db.execute("INSERT INTO projections (name, size, a_color, b_color, c_color, qty) VALUES \
-                        (:name, :size, :a_color, :b_color, :c_color, :qty)", \
-                        name=item, size=size, a_color=a, b_color=b, c_color=c, qty=qty)
+            db.execute("INSERT INTO projections (name, size, a_color, b_color, c_color, qty, cycle) VALUES \
+                        (:name, :size, :a_color, :b_color, :c_color, :qty, :cycle)", \
+                        name=item, size=size, a_color=a, b_color=b, c_color=c, qty=qty, cycle=cycle)
             print("New projection created.")                        
 
         # Update existing entry's quantity
         else:
             updated = projected[0]['qty'] + qty
             db.execute("UPDATE projections SET qty=:updated WHERE \
-                        name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color", \
+                        name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color \
+                        AND cycle=:cycle", \
                         updated=updated, name=item, size=size, a_color=a, b_color=b, c_color=c)
             print("Existing projection updated.")                        
 
