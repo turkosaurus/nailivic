@@ -4,14 +4,61 @@
 Dashboard
 {% endblock %}
 {% block main %}
-<h1>Dashboard</h1>
+<container>
+    <div class="row">
+        <div class="col">
+            <h2>Hello, {{ user[0]['username'] }}</h2>
+        </div>
+    </div>
+    <div class="row">
+        <img src="/static/bsl.png" class="img-fluid" alt="big scary laser">
+    </div>
+    <div class="row">
+        <div class="col">
+            <h2>Time for lasers</h2>
+        </div>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col">
+            <ul>
+                {% for part in production %}
+                    <li>{{ part }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</container>
+
+
+
+
+
+<!-- <table class="table table-bordered table-dark table-hover">
+    <thead>
+    <tr>
+        <th>TOTALS</th>
+        {% for color in colors %}
+            <th scope="col">{{ color }}</th>
+        {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th scope="row">size</th>
+                <td>data.small.</td>
+                <td>data</td>
+                <td>data</td>
+                <td>data</td>
+                <td>data</td>
+                <td>data</td>
+        </tr>
+    </tbody>
+</table> -->
+
+
 <hr>
-<p>
-    Hello, {{ user[0]['username'] }}!
-</p>
-<p>
-    Below, you'll see everything that's captured so far. Next, we'll compute and filter that to display a production-friendly dashboard. Sketch out some ideas of your own, if you'd like.
-</p>
+<hr>
 <hr>
 <h2>Loteria Templates</h2>
 {% for loteria in loterias %}
@@ -45,3 +92,4 @@ Dashboard
 <hr>
 <h2>boxes</h2>
 {% endblock %}
+

@@ -102,18 +102,77 @@ def login_required(f):
 @login_required
 def dashboard():
 
-    # print(loteria)
-    for key in loterias:
-        # i = 0
-        print(f"{key}:")
-        tmp = loterias[key]
-        print(tmp)
+    print("--- BOOTING "'/'" ---")
 
     user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
     items = db.execute("SELECT * FROM items")
     parts = db.execute("SELECT * FROM parts")
-    projections = db.execute("SELECT * FROM projections")
-    return render_template('index.html', loterias=loterias, sizes=sizes, colors=colors, user=user, items=items, parts=parts, projections=projections)
+
+    # POPULATE production TABLE FROM PROJECTIONS
+
+    # Identify current cycle
+    cycle = db.execute("SELECT id FROM cycles WHERE current='TRUE'")
+
+    # Query for current cycle's projections
+    projections = db.execute("SELECT * FROM projections WHERE cycle=:cycle", cycle=cycle[0]['id'])
+
+    # Clear production table
+    db.execute("DELETE FROM production")
+
+    # For each item in projections
+    for item in projections:
+        nombre = item['name']
+        size = item['size']
+        qty = item['qty']
+        partcolor = []
+        partcolor.append(item['a_color'])
+        partcolor.append(item['b_color'])
+        partcolor.append(item['c_color'])
+        print(f"One {nombre} produces...")
+
+        # Identify and capture from the item: each part's name and color
+        for i in range(len(loterias[nombre])):
+            name = loterias[nombre][i]
+            color = partcolor[i]
+            print(f"{color} {name}")
+
+            # Query for qty of this part type already in production
+            queued = db.execute("SELECT qty FROM production WHERE name=:name AND size=:size AND color=:color",
+                                name=name, size=size, color=color)
+            print(f"queued:{queued}")
+
+            # Identify number of that parts already on hand
+            onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", 
+                                name=name, size=size, color=color)           
+            print(f"onhand:{onhand}")
+
+            # If there is an onhand quantity, subtract that from the projection qty to yield production qty
+            if onhand:
+                qty = qty - onhand[0]['qty']
+
+            # Create new production entry for this type if none exists already
+            if not queued:
+                db.execute("INSERT INTO production (name, size, color, qty) VALUES (:name, :size, :color, :qty)", 
+                                name=name, size=size, color=color, qty=qty)
+
+            # Else update existing quantity
+            else:
+                db.execute("UPDATE production SET qty=:qty WHERE name=:name AND size=:size AND color=:color", 
+                                qty=qty, name=name, size=size, color=color)
+        print()
+
+    # Query for item projections
+
+    # Calculate required parts from item projections
+    
+    # Populate parts production
+
+    # Subtract parts inventory from parts production
+
+    # Query for parts production
+    production = db.execute("SELECT * FROM production")
+
+    return render_template('index.html', production=production, loterias=loterias, sizes=sizes, colors=colors, user=user, items=items, parts=parts, projections=projections)
 
 
 @app.route('/parts', methods=['GET', 'POST'])
@@ -329,6 +388,14 @@ def setup():
         cycle INTEGER \
         )")
     
+    # Create table: production
+    db.execute("CREATE TABLE IF NOT EXISTS production ( \
+        name VARCHAR ( 255 ) NOT NULL, \
+        size VARCHAR ( 255 ) NOT NULL, \
+        color VARCHAR ( 255 ), \
+        qty INTEGER \
+        )")
+
     # Create table: cycles
     db.execute("CREATE TABLE IF NOT EXISTS cycles ( \
         id serial PRIMARY KEY NOT NULL, \
