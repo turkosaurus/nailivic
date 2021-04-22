@@ -19,7 +19,8 @@ part: constituent piece that comprises an item, usually one of two or three
 loteria: woodcut loteria pieces
 """
 
-
+#TODO sort production queue by color sort by size
+#TODO backs and boxes
 
 ###### CONFIGURATION ######
 # Initialize Flask App Ojbect
@@ -131,6 +132,8 @@ def dashboard():
 
     # Clear production table
     db.execute("DELETE FROM production")
+
+    #
 
     # For each item in projections
     for item in projections:
@@ -244,6 +247,8 @@ def items():
             db.execute("INSERT INTO items (name, size, a_color, b_color, c_color) VALUES \
                      (:item, :size, :a_color, :b_color, :c_color)", item=item, size=size, a_color=a, b_color=b, c_color=c)
 
+        #TODO remove from parts when making item
+
         return redirect('/items')
 
 
@@ -319,6 +324,8 @@ def projections():
 @app.route('/cycle', methods=['GET', 'POST'])
 @login_required
 def cycle():
+
+    #TODO cycle management. feature: delete a cycle
     if request.method == 'GET':
         return render_template("cycle.html")
     
