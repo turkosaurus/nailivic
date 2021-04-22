@@ -105,16 +105,19 @@ def dashboard():
 
     user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
     items = db.execute("SELECT * FROM items")
-    parts = db.execute("SELECT * FROM parts")
+    parts = db.execute("SELECT * FROM parts ORDER BY qty DESC, size ASC")
 
     # Query for production part totals
     totals = []
     for i in range(len(sizes)):
         totals.append([])
         for j in range(len(colors)):
-            qty = (db.execute("SELECT COUNT (qty) FROM production WHERE size=:size AND color=:color", \
-                                size=sizes[i], color=colors[j]))
-            totals[i].append(qty[0]['count'])
+            qty = db.execute("SELECT SUM(qty) FROM production WHERE size=:size AND color=:color", \
+                                size=sizes[i], color=colors[j])
+            if qty == 'None':
+                qty = 0
+            print(f"QTY======{qty}")
+            totals[i].append(qty[0]['sum'])
 
         print(totals)
 
@@ -171,7 +174,7 @@ def dashboard():
                                 qty=qty, name=name, size=size, color=color)
         print()
 
-    production = db.execute("SELECT * FROM production")
+    production = db.execute("SELECT * FROM production ORDER BY qty DESC, size ASC")
     time = datetime.datetime.utcnow().isoformat()
     print(cycle)
     print(items)
