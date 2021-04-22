@@ -15,81 +15,82 @@ Dashboard
     </div>
     <div class="row">
         <div class="col">
-            <h2>Time for lasers</h2>
+            <h5>cycle #{{ cycle.0.id }} "{{ cycle.0.name }}"</h5>
+            <h6>rendered at {{ time }}</h6>
         </div>
     </div>
     <hr>
     <div class="row">
         <div class="col">
-            <ul>
+            <h2>Total # of Parts to Produce</h2>
+            <table class="table table-bordered table-hover table-dark">
+                <thead>
+                    <tr>
+                        <small>
+                            <th scope="col" style="width: 12%"><h6>totals</h6></th>
+                            {% for color in colors %}
+                                <th scope="col" style="width: 12%"><h6>{{ color }}</h6></th>
+                            {% endfor %}
+                        </small>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">{{ sizes.0 }}</th>
+                        <td>{{ totals.0.0 }}</td>
+                        <td>{{ totals.0.1 }}</td>
+                        <td>{{ totals.0.2 }}</td>
+                        <td>{{ totals.0.3 }}</td>
+                        <td>{{ totals.0.4 }}</td>
+                        <td>{{ totals.0.5 }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">{{ sizes.1 }}</th>
+                        <td>{{ totals.1.0 }}</td>
+                        <td>{{ totals.1.1 }}</td>
+                        <td>{{ totals.1.2 }}</td>
+                        <td>{{ totals.1.3 }}</td>
+                        <td>{{ totals.1.4 }}</td>
+                        <td>{{ totals.1.5 }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">{{ sizes.2 }}</th>
+                        <td>{{ totals.2.0 }}</td>
+                        <td>{{ totals.2.1 }}</td>
+                        <td>{{ totals.2.2 }}</td>
+                        <td>{{ totals.2.3 }}</td>
+                        <td>{{ totals.2.4 }}</td>
+                        <td>{{ totals.2.5 }}</td>
+                    </tr>
+                </tbody>
+              </table>
+        </div>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col-md-6 col-sm-12">
+            <h2>Parts Production Queue</h2>
+            <ul class="list-group">
                 {% for part in production %}
-                    <li>{{ part }}</li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ part.name }}, {{ part.size }}, {{ part.color }}
+                        <span class="badge badge-primary badge-pill">{{ part.qty }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-md-6 col-sm-12">
+            <h2>Parts on Hand</h2>
+            <ul class="list-group">
+                {% for part in parts %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ part.name }}, {{ part.size }}, {{ part.color }}
+                        <span class="badge badge-primary badge-pill">{{ part.qty }}</span>
+                    </li>
                 {% endfor %}
             </ul>
         </div>
     </div>
+    <h5>#TODO boxes?</h5>
 </container>
-
-
-
-
-
-<!-- <table class="table table-bordered table-dark table-hover">
-    <thead>
-    <tr>
-        <th>TOTALS</th>
-        {% for color in colors %}
-            <th scope="col">{{ color }}</th>
-        {% endfor %}
-    </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <th scope="row">size</th>
-                <td>data.small.</td>
-                <td>data</td>
-                <td>data</td>
-                <td>data</td>
-                <td>data</td>
-                <td>data</td>
-        </tr>
-    </tbody>
-</table> -->
-
-
-<hr>
-<hr>
-<hr>
-<h2>Loteria Templates</h2>
-{% for loteria in loterias %}
-    <li>{{ loteria }}: {{ loterias[loteria].0 }}, {{ loterias[loteria].1 }}, {{ loterias[loteria].2 }}</li>
-{% endfor %}
-<hr>
-<h2>Colors in Template</h2>
-{% for color in colors %}
-<li>{{ color }}</li>
-{% endfor %}
-<hr>
-<h2>Sizes in Template</h2>
-{% for size in sizes %}
-<li>{{ size }}</li>
-{% endfor %}
-<hr>
-<h2>Parts On-Hand</h2>
-{% for part in parts %}
-<li>{{ part }}</li>
-{% endfor %}
-<hr>
-<h2>Items On-Hand</h2>
-{% for item in items %}
-<li>{{ item }}</li>
-{% endfor %}
-<hr>
-<h2>Projection in Current Cycle</h2>
-{% for projection in projetions %}
-<li>{{ projection }}</li>
-{% endfor %}
-<hr>
-<h2>boxes</h2>
 {% endblock %}
-

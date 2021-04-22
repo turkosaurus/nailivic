@@ -97,21 +97,31 @@ def login_required(f):
     return decorated_function
 
 
-
 @app.route('/')
 @login_required
 def dashboard():
 
-    print("--- BOOTING "'/'" ---")
+    print("--- LOADING ---")
 
     user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
     items = db.execute("SELECT * FROM items")
     parts = db.execute("SELECT * FROM parts")
 
+    # Query for production part totals
+    totals = []
+    for i in range(len(sizes)):
+        totals.append([])
+        for j in range(len(colors)):
+            qty = (db.execute("SELECT COUNT (qty) FROM production WHERE size=:size AND color=:color", \
+                                size=sizes[i], color=colors[j]))
+            totals[i].append(qty[0]['count'])
+
+        print(totals)
+
     # POPULATE production TABLE FROM PROJECTIONS
 
     # Identify current cycle
-    cycle = db.execute("SELECT id FROM cycles WHERE current='TRUE'")
+    cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
 
     # Query for current cycle's projections
     projections = db.execute("SELECT * FROM projections WHERE cycle=:cycle", cycle=cycle[0]['id'])
@@ -161,18 +171,12 @@ def dashboard():
                                 qty=qty, name=name, size=size, color=color)
         print()
 
-    # Query for item projections
-
-    # Calculate required parts from item projections
-    
-    # Populate parts production
-
-    # Subtract parts inventory from parts production
-
-    # Query for parts production
     production = db.execute("SELECT * FROM production")
-
-    return render_template('index.html', production=production, loterias=loterias, sizes=sizes, colors=colors, user=user, items=items, parts=parts, projections=projections)
+    time = datetime.datetime.utcnow().isoformat()
+    print(cycle)
+    print(items)
+    return render_template('index.html', production=production, loterias=loterias, sizes=sizes, \
+        colors=colors, user=user, items=items, parts=parts, projections=projections, totals=totals, cycle=cycle, time=time)
 
 
 @app.route('/parts', methods=['GET', 'POST'])
@@ -410,6 +414,9 @@ def setup():
         # Seed table with test cycle
         time = datetime.datetime.utcnow().isoformat()
         db.execute("INSERT INTO cycles (name, created_on, current) VALUES ('test cycle', :time, 'TRUE')", time=time)
+
+    #Create table: summary
+    db.execute("CREATE TABLE IF NOT EXISTS summary ()")
 
 
     return "Setup Success!"
