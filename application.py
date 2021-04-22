@@ -104,8 +104,8 @@ def dashboard():
     print("--- LOADING ---")
 
     user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
-    items = db.execute("SELECT * FROM items")
-    parts = db.execute("SELECT * FROM parts ORDER BY qty DESC, size ASC")
+    items = db.execute("SELECT * FROM items ORDER BY size ASC, name DESC")
+    parts = db.execute("SELECT * FROM parts ORDER BY size ASC, name DESC, color ASC, qty DESC")
 
     # Query for production part totals
     totals = []
@@ -186,7 +186,7 @@ def dashboard():
 @login_required
 def parts():
     if request.method == 'GET':
-        parts = db.execute("SELECT * FROM parts WHERE qty>0")
+        parts = db.execute("SELECT * FROM parts WHERE qty>0 ORDER BY size ASC, name DESC, color DESC, qty DESC")
         return render_template('parts.html', parts=parts, loterias=loterias, sizes=sizes, colors=colors)
 
     # Upon POSTing form submission
@@ -226,7 +226,7 @@ def parts():
 @login_required
 def items():
     if request.method == 'GET':
-        items = db.execute("SELECT * FROM items")
+        items = db.execute("SELECT * FROM items ORDER BY size ASC, name DESC")
         return render_template('items.html', items=items, loterias=loterias, sizes=sizes, colors=colors)
 
     # Upon POSTing form submission
@@ -272,7 +272,7 @@ def projections():
         print(f"cycles:{cycles}")
 
         # Select projections from current cycle only
-        projections = db.execute("SELECT * FROM projections WHERE cycle=:active", active=active)
+        projections = db.execute("SELECT * FROM projections WHERE cycle=:active ORDER BY size ASC, name DESC, qty DESC", active=active)
         return render_template('projections.html', projections=projections, current=current, cycles=cycles, loterias=loterias, sizes=sizes, colors=colors)
 
     # Upon POSTing form submission
