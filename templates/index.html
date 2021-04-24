@@ -22,12 +22,12 @@ Dashboard
     <hr>
     <div class="row">
         <div class="col">
-            <h2>Total # of Parts to Produce</h2>
+            <h2>Laser Totals</h2>
             <table class="table-responsive-sm table-bordered table-hover table-dark">
                 <thead>
                     <tr>
                         <small>
-                            <th scope="col" style="width: 10vw"><h6>totals</h6></th>
+                            <th scope="col" style="width: 10vw"><h6>⚡</h6></th>
                             {% for color in colors %}
                                 <th scope="col" style="width: 10vw"><h6>{{ color }}</h6></th>
                             {% endfor %}
@@ -86,11 +86,65 @@ Dashboard
             </ul>
         </div>
         <hr>
-        <div class="col-md-6 col-sm-12">
-            <h6>#TODO FORM HERE</h6>
-            <h6>#TODO FORM HERE</h6>
-            <h6>#TODO FORM HERE</h6>
-            <h6>#TODO FORM HERE</h6>
+        <!-- Produce New Part -->
+        <div class="col-lg-6 col-md-12">
+            <h2>Produce Part</h2>
+            <form action="/" method="post">
+                <div class="row">
+                    <div class="col">
+                        <!-- Part -->
+                        <div class="form-group">
+                            <h4>Part Name</h4>
+                            <!-- <label for="part">part</label> -->
+                            <select name="part" id="part">
+                                {% for loteria in loterias %}
+                                    {% for part in loterias[loteria] %}
+                                        <option value="{{ part }}">{{ part }}</option>
+                                    {% endfor %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <!-- Size -->
+                        <div class="form-group">
+                            <h4>Size</h4>
+                            <!-- <label for="size">Size</label> -->
+                            {% for size in sizes %}
+                                <input type="radio" id="{{ size }}" name="size" value="{{ size }}">
+                                <label for="{{ size }}">{{ size }}</label>        
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <!-- Color -->
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <h4>Color</h4>
+                            {% for color in colors %}
+                                <input type="radio" id="{{ color }}" name="color" value="{{ color }}">
+                                <label for="{{ color }}">{{ color }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Quantity -->
+                    <div class="form-group">
+                        <div class="col">
+                            <h4>Quantity</h4>
+                            <input type="number" value="1" min="-999" max="999" step="1" name="qty" id="qty">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <button type="reset" class="btn btn-primary">Reset</button>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
             <hr>
             <h2>Parts on Hand</h2>
             <ul class="list-group">
