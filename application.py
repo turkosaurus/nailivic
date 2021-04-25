@@ -62,17 +62,17 @@ authusers.append(os.getenv('USERC'))
 colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
 sizes = ['s', 'm', 'l']
 loterias = {
-    'La Dama': ['Frida', 'Frida Flowers', ],
-    'La Sirena': ['Mermaid Body', 'Mermaid Hair', 'Mermaid Tail'],
-    'La Mano': ['Hand', 'Hand Swirls', ],
-    'La Bota': ['Boot', 'Boot Swirls', 'Boot Flames'],
-    'El Corazon': ['Heart', 'Heart Swirls', ],
-    'El Musico': ['Guitar', 'Guitar Hands', ],
-    'La Estrella': ['Star', 'Star Swirls', ],
-    'El Pulpo': ['Octopus', 'Octopus Swirls', 'Octopus Tentacles'],
-    'La Rosa': ['Rose', 'Rose Swirls', 'Rose Leaves'],
-    'La Calavera': ['Skull', 'Skull Flames', 'Skull Swirls'],
-    'El Poder': ['Fist', 'Fist Swirls', 'Fist Wrist']
+    'La Dama': ['Frida', 'Frida Flowers', 'Frida Backs'],
+    'La Sirena': ['Mermaid Body', 'Mermaid Hair', 'Mermaid Tail', 'Mermaid Backs'],
+    'La Mano': ['Hand', 'Hand Swirls', 'Hand Backs'],
+    'La Bota': ['Boot', 'Boot Swirls', 'Boot Flames', 'Boot Backs'],
+    'El Corazon': ['Heart', 'Heart Swirls', 'Heart Backs'],
+    'El Musico': ['Guitar', 'Guitar Hands', 'Guitar Backs'],
+    'La Estrella': ['Star', 'Star Swirls', 'Star Backs'],
+    'El Pulpo': ['Octopus', 'Octopus Swirls', 'Octopus Tentacles', 'Octopus Backs'],
+    'La Rosa': ['Rose', 'Rose Swirls', 'Rose Leaves', 'Rose Backs'],
+    'La Calavera': ['Skull', 'Skull Flames', 'Skull Swirls', 'Skull Backs'],
+    'El Poder': ['Fist', 'Fist Swirls', 'Fist Wrist', 'Fist Backs']
 }
 
 #TODO 86 this and the module it came from?
@@ -131,11 +131,12 @@ def dashboard():
             print(totals)
 
 
+        boxes = db.execute("SELECT * FROM boxes")
         production = db.execute("SELECT * FROM production ORDER BY qty DESC, size ASC")
         time = datetime.datetime.utcnow().isoformat()
         print(cycle)
         print(items)
-        return render_template('index.html', production=production, loterias=loterias, sizes=sizes, \
+        return render_template('index.html', production=production, boxes=boxes, loterias=loterias, sizes=sizes, \
             colors=colors, user=user, items=items, parts=parts, projections=projections, totals=totals, cycle=cycle, time=time)
 
     # Upon POSTing form submission
@@ -279,8 +280,9 @@ def production():
     # Query for current cycle's projections
     projections = db.execute("SELECT * FROM projections WHERE cycle=:cycle", cycle=cycle[0]['id'])
 
-    # Clear production table
+    # Clear all production data
     db.execute("DELETE FROM production")
+    db.execute("UPDATE boxes SET qty_prod=0")
 
     # Rebuild production table
     for item in projections:
@@ -293,6 +295,22 @@ def production():
         partcolor.append(item['c_color'])
         print(f"One {nombre} produces...")
 
+
+        # Adjust box production
+        # Add boxes to production if small
+        if size == sizes[0]:
+            boxname = loterias[nombre][0]
+            print(f'boxname={boxname}')
+            boxes = db.execute("SELECT * FROM boxes WHERE name=:name", name=boxname)
+
+            # Add new entry with production quantity
+            if not boxes:
+                db.execute("INSERT INTO boxes (name, qty_prod) VALUES (:name, :qty_prod)", name=boxname, qty_prod=qty)
+
+
+
+
+
         # Query for quantity of projected items that are already on hand 
         items_onhand = db.execute("SELECT COUNT(id) FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
                         name=nombre, size=size, a_color=partcolor[0], b_color=partcolor[1], c_color=partcolor[2])
@@ -301,8 +319,10 @@ def production():
         # Subtract on hand items from projected items
         qty = qty - items_onhand
 
+        # If production still necessary becuase demand exceeds onhand, process the requirements
         if qty > 0:
-            # Identify and capture from the item: each part's name and color
+
+            # Identify and capture from each item: each part's name and color
             for i in range(len(loterias[nombre])):
                 name = loterias[nombre][i]
                 color = partcolor[i]
@@ -343,6 +363,32 @@ def production():
 
 
 
+@app.route('/box', methods=['GET', 'POST'])
+@login_required
+def box():
+    if request.method == 'GET':
+        return "Coming Soon"
+    else:
+        # Make a box
+        name = request.form.get("box")
+        qty = request.form.get("boxqty")
+
+        # Fetch and update current quantity of boxes onhand and in production queue
+        boxes = db.execute("SELECT * FROM boxes WHERE name=:name", name=name)
+        print(boxes)
+        if boxes:
+            qty_onhand = boxes[0]['qty_onhand'] + qty
+
+            #TODO handle negatives
+            # Update production quantity
+            qty_prod = boxes[0]['qty_prod'] - qty
+            db.execute("UPDATE boxes SET qty_onhand=:qty_onhand, qty_prod=:qty_prod WHERE name=:name", qty_onhand=qty_onhand, qty_prod=qty_prod, name=name)
+            #TODO update productions
+
+        if not boxes:
+            db.execute("INSERT INTO boxes (name, qty_onhand) VALUES (:name, :qty_onhand)", name=name, qty_onhand=qty)
+
+        return redirect('/')
 
 
 
@@ -386,7 +432,7 @@ def shipping():
 
 ###### SETUP ######
 
-@app.route('/setup-tables')
+@app.route('/setup-tables/')
 @login_required
 def setup():
 
@@ -400,6 +446,7 @@ def setup():
         )")
 
     # Create table: parts
+    # db.execute("DROP TABLE parts")
     db.execute("CREATE TABLE IF NOT EXISTS parts ( \
         name VARCHAR ( 255 ) NOT NULL, \
         size VARCHAR ( 255 ) NOT NULL, \
@@ -408,6 +455,7 @@ def setup():
         )")
 
     # Create table: items
+    # db.execute("DROP TABLE items")
     db.execute("CREATE TABLE IF NOT EXISTS items ( \
         id serial PRIMARY KEY NOT NULL, \
         name VARCHAR ( 255 ) NOT NULL, \
@@ -418,7 +466,16 @@ def setup():
         status VARCHAR ( 255 ) \
         )")
 
+    # Create table: boxes
+    # db.execute("DROP TABLE boxes")
+    db.execute("CREATE TABLE IF NOT EXISTS boxes ( \
+        name VARCHAR ( 255 ), \
+        qty_onhand INTEGER, \
+        qty_prod INTEGER \
+        )")
+    
     # Create table: projections
+    # db.execute("DROP TABLE projections")
     db.execute("CREATE TABLE IF NOT EXISTS projections ( \
         name VARCHAR ( 255 ) NOT NULL, \
         size VARCHAR ( 255 ) NOT NULL, \
@@ -430,6 +487,7 @@ def setup():
         )")
     
     # Create table: production
+    # db.execute("DROP TABLE production")
     db.execute("CREATE TABLE IF NOT EXISTS production ( \
         name VARCHAR ( 255 ) NOT NULL, \
         size VARCHAR ( 255 ) NOT NULL, \
@@ -438,6 +496,7 @@ def setup():
         )")
 
     # Create table: cycles
+    # db.execute("DROP TABLE cycles")
     db.execute("CREATE TABLE IF NOT EXISTS cycles ( \
         id serial PRIMARY KEY NOT NULL, \
         name VARCHAR (255), \
@@ -453,6 +512,7 @@ def setup():
         db.execute("INSERT INTO cycles (name, created_on, current) VALUES ('test cycle', :time, 'TRUE')", time=time)
 
     #Create table: summary
+    db.execute("DROP TABLE summary")
     db.execute("CREATE TABLE IF NOT EXISTS summary ()")
 
 

@@ -22,7 +22,8 @@ Items
                     <label for="item">Item</label>
                     <select name="item" id="item">
                         {% for loteria in loterias %}
-                            <option value="{{ loteria }}">{{ loteria }} : {{ loterias[loteria].0 }} . {{ loterias[loteria].1 }} . {{ loterias[loteria].2 }}</option>
+                            <option value="{{ loteria }}">{{ loteria }}</option>
+                            <!-- ({{ loterias[loteria].0 }}, {{ loterias[loteria].1 }}, {{ loterias[loteria].2 }}) -->
                         {% endfor %}
                     </select>
                 </div>
