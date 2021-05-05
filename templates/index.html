@@ -4,6 +4,8 @@
 Dashboard
 {% endblock %}
 {% block main %}
+
+
 <container>
     <div class="row">
         <div class="col">
@@ -31,7 +33,6 @@ Dashboard
                             {% for color in colors %}
                                 <th scope="col" style="width: 10vw">{{ color }}</th>
                             {% endfor %}
-                            <th scope="col" style="width: 10vw">backs</th>
                             <th scope="col" style="width: 10vw">boxes</th>
                         </small>
                     </tr>
@@ -45,8 +46,8 @@ Dashboard
                         <td>{{ totals.0.3 }}</td>
                         <td>{{ totals.0.4 }}</td>
                         <td>{{ totals.0.5 }}</td>
-                        <td>#</td>
-                        <td>#</td>
+                        <td>{{ totals.0.6 }}</td>
+                        <td>{{ box_prod }}</td>
                     </tr>
                     <tr>
                         <th scope="row">{{ sizes.1 }}</th>
@@ -56,7 +57,7 @@ Dashboard
                         <td>{{ totals.1.3 }}</td>
                         <td>{{ totals.1.4 }}</td>
                         <td>{{ totals.1.5 }}</td>
-                        <td>#</td>
+                        <td>{{ totals.1.6 }}</td>
                     </tr>
                     <tr>
                         <th scope="row">{{ sizes.2 }}</th>
@@ -66,7 +67,7 @@ Dashboard
                         <td>{{ totals.2.3 }}</td>
                         <td>{{ totals.2.4 }}</td>
                         <td>{{ totals.2.5 }}</td>
-                        <td>#</td>
+                        <td>{{ totals.2.6 }}</td>
                     </tr>
                 </tbody>
               </table>
@@ -176,7 +177,6 @@ Dashboard
             </form>
         </div>
     </div>
-
     <hr>
 
     <!-- Queue -->
@@ -204,17 +204,17 @@ Dashboard
             <h3>Box Laser Queue</h3>
             <table class="table table-dark table-hover">
                 {% for box in boxes %}
-                {% if box.qty_prod is not none %}
-                <tr>
-                    <td>{{ box.name }}</td>
-                    <td></td>
-                    <td></td>
-                    <td>|</td>
-                    <td></td>
-                    <td></td>
-                    <td>{{ box.qty_prod }}</td>
-                </tr>
-                {% endif %}
+                    {% if box.qty_prod is not none %}
+                    <tr>
+                        <td>{{ box.name }}</td>
+                        <td></td>
+                        <td></td>
+                        <td>|</td>
+                        <td></td>
+                        <td></td>
+                        <td>{{ box.qty_prod }}</td>
+                    </tr>
+                    {% endif %}
                 {% endfor %}
             </table>
         </div>
@@ -225,38 +225,37 @@ Dashboard
     <div class="row">
         <!-- Parts on Hand -->
         <div class="col-md-6 col-sm-12">
-            <h2>Parts on Hand</h2>
+            <h2>Parts Inventory</h2>
             <table class="table table-dark table-hover">
                 {% for part in parts %}
-                <tr>
-                    <td>{{ part.name }}</td>
-                    <td>|</td>
-                    <td>{{ part.size }}</td>
-                    <td>|</td>
-                    <td>{{ part.color }}</td>
-                    <td>|</td>
-                    <td>{{ part.qty }}</td>
-                </tr>
+                    <tr>
+                        <td>{{ part.name }}</td>
+                        <td>|</td>
+                        <td>{{ part.size }}</td>
+                        <td>|</td>
+                        <td>{{ part.color }}</td>
+                        <td>|</td>
+                        <td>{{ part.qty }}</td>
+                    </tr>
                 {% endfor %}
             </table>
         </div>
-
         <!-- Boxes on Hand -->
         <div class="col-md-6 col-sm-12">
             <h3>Box Inventory</h3>
             <table class="table table-dark table-hover">
                 {% for box in boxes %}
-                {% if box.qty_onhand is not none %}
-                <tr>
-                    <td>{{ box.name }}</td>
-                    <td></td>
-                    <td></td>
-                    <td>|</td>
-                    <td></td>
-                    <td></td>
-                    <td>{{ box.qty_onhand }}</td>
-                </tr>
-                {% endif %}
+                    {% if box.qty_onhand is not none %}
+                        <tr>
+                            <td>{{ box.name }}</td>
+                            <td></td>
+                            <td></td>
+                            <td>|</td>
+                            <td></td>
+                            <td></td>
+                            <td>{{ box.qty_onhand }}</td>
+                        </tr>
+                    {% endif %}                            
                 {% endfor %}
             </table>
         </div>

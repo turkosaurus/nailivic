@@ -1,13 +1,13 @@
 {% extends "layout.html" %}
 
 {% block title %}
-Cycles
+Admin
 {% endblock %}
 {% block main %}
 <container class="text-monospace">
     <div class="row">
         <div class="col">
-            <h1>Make a New Cycle</h1>
+            <h1>Admin</h1>
         </div>
     </div>    
     <hr>
@@ -15,7 +15,7 @@ Cycles
         <!-- Produce New Item -->
         <div class="col-lg-6 col-md-12">
             <h2>Cycle Information</h2>
-            <form action="/cycle" method="post">
+            <form action="/admin/cycle" method="post">
 
                 <!-- Name -->
                 <div class="form-group">
@@ -30,9 +30,14 @@ Cycles
     <hr>
     <div class="row">
         <div class="col">
-            <a href="/setup-tables"><button class="btn btn-primary">☢ Setup Tables ☢</button></a>
+            <a href="/admin/setup-tables"><button class="btn btn-primary">☢ Setup Tables ☢</button></a>
         </div>
     </div>
-
+    <hr>
+    <div class="row">
+        <div class="col">
+            <a href="/admin/setup-loterias"><button class="btn btn-primary">Setup Loterias</button></a>
+        </div>
+    </div>
 </container>
 {% endblock %}

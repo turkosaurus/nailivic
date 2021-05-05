@@ -2,6 +2,7 @@ import os
 import requests
 import urllib.parse
 import datetime
+import csv
 
 from cs50 import SQL
 from flask import Flask, redirect, render_template, request, session, url_for
@@ -59,7 +60,7 @@ authusers.append(os.getenv('USERC'))
 # Loteria
 
 #TODO draw all this from a a database instead
-colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
+colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple', 'nekkid']
 sizes = ['s', 'm', 'l']
 loterias = {
     'La Dama': ['Frida', 'Frida Flowers', 'Frida Backs'],
@@ -74,6 +75,36 @@ loterias = {
     'La Calavera': ['Skull', 'Skull Flames', 'Skull Swirls', 'Skull Backs'],
     'El Poder': ['Fist', 'Fist Swirls', 'Fist Wrist', 'Fist Backs']
 }
+
+# loterias = {
+#     'La Dama': {
+#         'a_color': 'Frida'
+#         'b_color': 'Frida Flowers'
+#         'c_color': ''
+#         'backs' : 'Frida Backs'
+#         },
+#     'La Sirena': ['Mermaid Body', 'Mermaid Hair', 'Mermaid Tail', 'Mermaid Backs'],
+#     'La Mano': ['Hand', 'Hand Swirls', 'Hand Backs'],
+#     'La Bota': ['Boot', 'Boot Swirls', 'Boot Flames', 'Boot Backs'],
+#     'El Corazon': ['Heart', 'Heart Swirls', 'Heart Backs'],
+#     'El Musico': ['Guitar', 'Guitar Hands', 'Guitar Backs'],
+#     'La Estrella': ['Star', 'Star Swirls', 'Star Backs'],
+#     'El Pulpo': ['Octopus', 'Octopus Swirls', 'Octopus Tentacles', 'Octopus Backs'],
+#     'La Rosa': ['Rose', 'Rose Swirls', 'Rose Leaves', 'Rose Backs'],
+#     'La Calavera': ['Skull', 'Skull Flames', 'Skull Swirls', 'Skull Backs'],
+#     'El Poder': ['Fist', 'Fist Swirls', 'Fist Wrist', 'Fist Backs']
+# }
+
+
+# loterias_color
+    # loterias_color = {}
+    # for loteria in loterias:
+    #     for piecename in loteria:
+    #         if 'back' in piecename:
+    #             piecename = ''
+    #     loterias_color[loteria]
+
+            
 
 #TODO 86 this and the module it came from?
 @dataclass
@@ -118,25 +149,40 @@ def dashboard():
 
         # Query for production part totals
         totals = []
+
+        # For each size
         for i in range(len(sizes)):
+
+            # Make a list to hold the color totoals
             totals.append([])
+
+            # For each color
             for j in range(len(colors)):
                 qty = db.execute("SELECT SUM(qty) FROM production WHERE size=:size AND color=:color", \
                                     size=sizes[i], color=colors[j])
-                if qty == 'None':
-                    qty = 0
-                print(f"QTY======{qty}")
+                print(f'qty:{qty} for {sizes[i]}, {colors[j]}')
+                if qty[0]['sum'] == None:
+                    qty[0]['sum'] = ''
+                print(f"qty {qty}")
                 totals[i].append(qty[0]['sum'])
 
             print(totals)
 
+        #TODO backs
+        backs = '#TODO'
 
+        # Box Production Total
+        box_prod = db.execute("SELECT SUM(qty_prod) FROM boxes")
+        box_prod = box_prod[0]['sum']
+
+        # Box Inventory Itemized
         boxes = db.execute("SELECT * FROM boxes")
+
         production = db.execute("SELECT * FROM production ORDER BY qty DESC, size ASC")
         time = datetime.datetime.utcnow().isoformat()
         print(cycle)
         print(items)
-        return render_template('index.html', production=production, boxes=boxes, loterias=loterias, sizes=sizes, \
+        return render_template('index.html', production=production, boxes=boxes, box_prod=box_prod, backs=backs, loterias=loterias, sizes=sizes, \
             colors=colors, user=user, items=items, parts=parts, projections=projections, totals=totals, cycle=cycle, time=time)
 
     # Upon POSTing form submission
@@ -303,11 +349,19 @@ def production():
             print(f'boxname={boxname}')
             boxes = db.execute("SELECT * FROM boxes WHERE name=:name", name=boxname)
 
-            # Add new entry with production quantity
+            # Add new box producion entry with production quantity
             if not boxes:
                 db.execute("INSERT INTO boxes (name, qty_prod) VALUES (:name, :qty_prod)", name=boxname, qty_prod=qty)
 
+            # Update existing box entry with new production quantity
+            else:
+                # Handle bug when subtracting nonetype
+                if boxes[0]['qty_onhand'] is None:
+                    boxes[0]['qty_onhand'] = 0                
+                box_qty_prod = qty - boxes[0]['qty_onhand']
 
+                # Update box production quantities
+                db.execute("UPDATE boxes SET qty_prod=:box_qty_prod WHERE name=:name", box_qty_prod=box_qty_prod, name=boxname)
 
 
 
@@ -356,18 +410,11 @@ def production():
     return redirect("/projections")
 
 
-
-
-
-
-
-
-
 @app.route('/box', methods=['GET', 'POST'])
 @login_required
 def box():
     if request.method == 'GET':
-        return "Coming Soon"
+        return "#TODO"
     else:
         # Make a box
         name = request.form.get("box")
@@ -391,39 +438,6 @@ def box():
         return redirect('/')
 
 
-
-
-@app.route('/cycle', methods=['GET', 'POST'])
-@login_required
-def cycle():
-
-    #TODO cycle management. feature: delete a cycle
-    if request.method == 'GET':
-        return render_template("cycle.html")
-    
-    # Upon POSTed submission
-    else:
-        print("/cycle: POST")
-        name = request.form.get("name")
-
-        # Make all other cycles not current
-        db.execute("UPDATE cycles SET current='FALSE'")
-
-        # Change current cycle selection
-        if not name:
-            cycle_id = request.form.get("cycle")
-            print(f"cycle:{cycle_id}")
-            db.execute("UPDATE cycles SET current='TRUE' WHERE id=:id", id=cycle_id)
-
-        # Make a new name
-        else:
-            # Create new Cycle
-            time = datetime.datetime.utcnow().isoformat()
-            db.execute("INSERT INTO cycles (name, created_on, current) VALUES (:name, :time, 'TRUE')", name=name, time=time)
-
-        return redirect('/production')
-
-
 @app.route('/shipping')
 @login_required
 def shipping():
@@ -431,93 +445,127 @@ def shipping():
 
 
 ###### SETUP ######
-
-@app.route('/setup-tables/')
+@app.route('/admin', methods=['GET'])
 @login_required
-def setup():
+def admin():
+    return render_template('admin.html')
 
-    # Create table: users
-    db.execute("CREATE TABLE IF NOT EXISTS users ( \
-        id serial PRIMARY KEY NOT NULL, \
-        username VARCHAR ( 255 ) UNIQUE NOT NULL, \
-        password VARCHAR ( 255 ) NOT NULL, \
-        created_on TIMESTAMP, \
-        last_login TIMESTAMP \
-        )")
+@app.route('/admin/<path>', methods=['GET', 'POST'])
+@login_required
+def config(path):
 
-    # Create table: parts
-    # db.execute("DROP TABLE parts")
-    db.execute("CREATE TABLE IF NOT EXISTS parts ( \
-        name VARCHAR ( 255 ) NOT NULL, \
-        size VARCHAR ( 255 ) NOT NULL, \
-        color VARCHAR ( 255 ), \
-        qty INTEGER \
-        )")
+        # Change or make new cycle
+        if path == 'cycle':
+            print("Making a new cycle.")
+            name = request.form.get("name")
 
-    # Create table: items
-    # db.execute("DROP TABLE items")
-    db.execute("CREATE TABLE IF NOT EXISTS items ( \
-        id serial PRIMARY KEY NOT NULL, \
-        name VARCHAR ( 255 ) NOT NULL, \
-        size VARCHAR ( 255 ) NOT NULL, \
-        a_color VARCHAR ( 255 ), \
-        b_color VARCHAR ( 255 ), \
-        c_color VARCHAR ( 255 ), \
-        status VARCHAR ( 255 ) \
-        )")
+            # Make all other cycles not current
+            db.execute("UPDATE cycles SET current='FALSE'")
 
-    # Create table: boxes
-    # db.execute("DROP TABLE boxes")
-    db.execute("CREATE TABLE IF NOT EXISTS boxes ( \
-        name VARCHAR ( 255 ), \
-        qty_onhand INTEGER, \
-        qty_prod INTEGER \
-        )")
-    
-    # Create table: projections
-    # db.execute("DROP TABLE projections")
-    db.execute("CREATE TABLE IF NOT EXISTS projections ( \
-        name VARCHAR ( 255 ) NOT NULL, \
-        size VARCHAR ( 255 ) NOT NULL, \
-        a_color VARCHAR ( 255 ), \
-        b_color VARCHAR ( 255 ), \
-        c_color VARCHAR ( 255 ), \
-        qty INTEGER, \
-        cycle INTEGER \
-        )")
-    
-    # Create table: production
-    # db.execute("DROP TABLE production")
-    db.execute("CREATE TABLE IF NOT EXISTS production ( \
-        name VARCHAR ( 255 ) NOT NULL, \
-        size VARCHAR ( 255 ) NOT NULL, \
-        color VARCHAR ( 255 ), \
-        qty INTEGER \
-        )")
+            # Change current cycle selection
+            if not name:
+                cycle_id = request.form.get("cycle")
+                print(f"cycle:{cycle_id}")
+                db.execute("UPDATE cycles SET current='TRUE' WHERE id=:id", id=cycle_id)
 
-    # Create table: cycles
-    # db.execute("DROP TABLE cycles")
-    db.execute("CREATE TABLE IF NOT EXISTS cycles ( \
-        id serial PRIMARY KEY NOT NULL, \
-        name VARCHAR (255), \
-        created_on TIMESTAMP, \
-        current BOOL \
-        )")
-    
-    # If empty cycles table
-    data = db.execute("SELECT * FROM cycles")
-    if not data:
-        # Seed table with test cycle
-        time = datetime.datetime.utcnow().isoformat()
-        db.execute("INSERT INTO cycles (name, created_on, current) VALUES ('test cycle', :time, 'TRUE')", time=time)
+            # Make a new cycle
+            else:
+                # Create new Cycle
+                time = datetime.datetime.utcnow().isoformat()
+                db.execute("INSERT INTO cycles (name, created_on, current) VALUES (:name, :time, 'TRUE')", name=name, time=time)
 
-    #Create table: summary
-    db.execute("DROP TABLE summary")
-    db.execute("CREATE TABLE IF NOT EXISTS summary ()")
+            return redirect('/production')
+
+        # Setup tables
+        if path == 'setup-tables':
+            # Create table: users
+            db.execute("CREATE TABLE IF NOT EXISTS users ( \
+                id serial PRIMARY KEY NOT NULL, \
+                username VARCHAR ( 255 ) UNIQUE NOT NULL, \
+                password VARCHAR ( 255 ) NOT NULL, \
+                created_on TIMESTAMP, \
+                last_login TIMESTAMP \
+                )")
+
+            # Create table: parts
+            # db.execute("DROP TABLE parts")
+            db.execute("CREATE TABLE IF NOT EXISTS parts ( \
+                name VARCHAR ( 255 ) NOT NULL, \
+                size VARCHAR ( 255 ) NOT NULL, \
+                color VARCHAR ( 255 ), \
+                qty INTEGER \
+                )")
+
+            # Create table: items
+            # db.execute("DROP TABLE items")
+            db.execute("CREATE TABLE IF NOT EXISTS items ( \
+                id serial PRIMARY KEY NOT NULL, \
+                name VARCHAR ( 255 ) NOT NULL, \
+                size VARCHAR ( 255 ) NOT NULL, \
+                a_color VARCHAR ( 255 ), \
+                b_color VARCHAR ( 255 ), \
+                c_color VARCHAR ( 255 ), \
+                status VARCHAR ( 255 ) \
+                )")
+
+            # Create table: boxes
+            # db.execute("DROP TABLE boxes")
+            db.execute("CREATE TABLE IF NOT EXISTS boxes ( \
+                name VARCHAR ( 255 ), \
+                qty_onhand INTEGER, \
+                qty_prod INTEGER \
+                )")
+            
+            # Create table: projections
+            # db.execute("DROP TABLE projections")
+            db.execute("CREATE TABLE IF NOT EXISTS projections ( \
+                name VARCHAR ( 255 ) NOT NULL, \
+                size VARCHAR ( 255 ) NOT NULL, \
+                a_color VARCHAR ( 255 ), \
+                b_color VARCHAR ( 255 ), \
+                c_color VARCHAR ( 255 ), \
+                qty INTEGER, \
+                cycle INTEGER \
+                )")
+            
+            # Create table: production
+            # db.execute("DROP TABLE production")
+            db.execute("CREATE TABLE IF NOT EXISTS production ( \
+                name VARCHAR ( 255 ) NOT NULL, \
+                size VARCHAR ( 255 ) NOT NULL, \
+                color VARCHAR ( 255 ), \
+                qty INTEGER \
+                )")
+
+            # Create table: cycles
+            # db.execute("DROP TABLE cycles")
+            db.execute("CREATE TABLE IF NOT EXISTS cycles ( \
+                id serial PRIMARY KEY NOT NULL, \
+                name VARCHAR (255), \
+                created_on TIMESTAMP, \
+                current BOOL \
+                )")
+            
+            # If empty cycles table
+            data = db.execute("SELECT * FROM cycles")
+            if not data:
+                # Seed table with test cycle
+                time = datetime.datetime.utcnow().isoformat()
+                db.execute("INSERT INTO cycles (name, created_on, current) VALUES ('test cycle', :time, 'TRUE')", time=time)
+
+            #Create table: summary
+            db.execute("DROP TABLE summary")
+            db.execute("CREATE TABLE IF NOT EXISTS summary ()")
 
 
-    return "Setup Success!"
+            return "Setup Success!"
+                
+        # Setup loterias
+        if path == 'setup-loterias':
+            return '#TODO'
 
+        else:
+            return "uh oh"
 
 ###### ADMINSTRATIVE ######
 
