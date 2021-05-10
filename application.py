@@ -288,7 +288,6 @@ def projections():
         return redirect('/projections')
 
 
-
 @app.route('/production', methods=['GET'])
 @login_required
 def production():
@@ -422,7 +421,9 @@ def shipping():
 @app.route('/admin', methods=['GET'])
 @login_required
 def admin():
-    return render_template('admin.html')
+    cycles = db.execute("SELECT * FROM cycles")
+    return render_template('admin.html', cycles=cycles)
+
 
 @app.route('/admin/<path>', methods=['GET', 'POST'])
 @login_required
@@ -454,6 +455,17 @@ def config(path):
 
             return redirect('/projections')
 
+
+        # Delete a Cycle
+        if path == 'delete':
+            name = request.form.get("delname")
+            print(name)
+            if name != 'test cycle':
+                db.execute("DELETE from CYCLES where name=:name", name=name)
+                db.execute("UPDATE cycles SET current='TRUE' WHERE id=1")
+                return render_template("message.html", errmsg="Successfully deleted cycle.")
+            else:
+                return render_template("error.html", errcode="403", errmsg="Test cycle may not be deleted.")
 
         # Setup tables
         if path == 'setup-tables':
@@ -564,6 +576,8 @@ def config(path):
                                     nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
 
             return render_template('message.html', errmsg="Success, new cycle created")
+
+
 
 
         # Not a valid admin route

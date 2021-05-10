@@ -26,6 +26,25 @@ Admin
                 <button type="submit" class="btn btn-primary">Make New Cycle // (Re)compute Projections</button>
             </form>
         </div>
+
+        <!-- Delete a Cycle -->
+        <div class="col-lg-6 col-md-12">
+            <h2>Delete a Cycle</h2>
+            <form action="/admin/delete" method="post">
+
+                <!-- Name -->
+                <div class="form-group">
+                    <label for="delname">Cycle Name</label>
+                    <select name="delname" id="delname">
+                        {% for cycle in cycles %}
+                            <option>{{ cycle.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- <button type="reset" class="btn btn-primary">Reset</button> -->
+                <button type="submit" class="btn btn-danger">Delete Cycle</button>
+            </form>
+        </div>
     </div>
     <hr>
     <hr>
