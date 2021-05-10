@@ -30,65 +30,108 @@ Projections
         </div>
     </div>
     <hr>
+    <!-- Add Item to Projections -->
     <div class="row">
         <div class="col-lg-6 col-md-12">
-            <!-- Add Item to Projections -->
-            <h2>Add Projected Item</h2>
+            <div class="row">
+                <div class="col">
+                    <h2>Add Projected Item</h2>
+                </div>
+            </div>
             <form action="/projections" method="post">
+                <div class="row">
 
-                <!-- Item -->
-                <div class="form-group">
-                    <label for="item">Item</label>
-                    <select name="item" id="item">
-                        {% for loteria in loterias %}
-                            <option value="{{ loteria }}">{{ loteria }}</option>
+                    <!-- Item -->
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label for="item">Item</label>
+                            <select name="item" id="item">
+                                {% for loteria in loterias %}
+                                    <option value="{{ loteria }}">{{ loteria['nombre'] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>    
+                    </div>
+
+                    <!-- Size -->
+                    <div class="col-6">
+                        <div class="form-group">
+                        <label for="size">Size</label>
+                        {% for size in sizes %}
+                            <input type="radio" id="{{ size }}" name="size" value="{{ size }}">
+                            <label for="{{ size }}">{{ size }}</label>
                         {% endfor %}
-                    </select>
+                        </div>
+                    </div>
+
                 </div>
 
-                <!-- Size -->
-                <div class="form-group">
-                    <label for="size">Size</label>
-                    {% for size in sizes %}
-                        <input type="radio" id="{{ size }}" name="size" value="{{ size }}">
-                        <label for="{{ size }}">{{ size }}</label>
-                    {% endfor %}
+                <!-- Colors -->
+                <div class="row">
+
+                    <!-- Color A -->
+                    <div class="col-sm">
+                        <h6>Color A</h6>
+                        <div class="form-group">
+                            {% for color in colors %}
+                                <div class=" justify-content-center">
+                                    <input type="radio" id="{{ color }}a" name="Color A" value="{{ color }}">
+                                    <label for="{{ color }}a">{{ color }}</label>    
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Color B -->
+                    <div class="col-sm">
+                        <h6>Color B</h6>
+                        <div class="form-group">
+                            {% for color in colors %}
+                                <div class=" justify-content-center">
+                                    <input type="radio" id="{{ color }}b" name="Color B" value="{{ color }}">
+                                    <label for="{{ color }}b">{{ color }}</label>    
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Color C -->
+                    <div class="col-sm">
+                        <h6>Color C</h6>
+                        <div class="form-group">
+                            {% for color in colors %}
+                                <div class=" justify-content-center">
+                                    <input type="radio" id="{{ color }}c" name="Color C" value="{{ color }}">
+                                    <label for="{{ color }}c">{{ color }}</label>    
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Color A -->
-                <h6>Color A</h6>
-                <div class="form-group">
-                    {% for color in colors %}
-                        <input type="radio" id="{{ color }}" name="Color A" value="{{ color }}">
-                        <label for="{{ color }}">{{ color }}</label>
-                    {% endfor %}
-                </div>
+                <!-- Final Buttons -->
+                <div class="row">
 
-                <!-- Color B -->
-                <h6>Color B</h6>
-                <div class="form-group">
-                    {% for color in colors %}
-                        <input type="radio" id="{{ color }}" name="Color B" value="{{ color }}">
-                        <label for="{{ color }}">{{ color }}</label>
-                    {% endfor %}
-                </div>
+                    <!-- Quantity -->
+                    <div clas="col">
+                        <div class="form-group">
+                            <label for="qty">Quantity</label>
+                            <input type="number" value="1" min="-999" max="999" step="1" name="qty" id="qty">
+                        </div>
+                    </div>
 
-                <!-- Color C -->
-                <h6>Color C</h6>
-                <div class="form-group">
-                    {% for color in colors %}
-                        <input type="radio" id="{{ color }}" name="Color C" value="{{ color }}">
-                        <label for="{{ color }}">{{ color }}</label>
-                    {% endfor %}
-                </div>
-                <div class="form-group">
-                    <label for="qty">Quantity</label>
-                    <input type="number" min="-999" max="999" step="1" name="qty" id="qty">
-                </div>
+                    <!-- Reset -->
+                    <div class="col">
+                        <button type="reset" class="btn btn-primary">Reset</button>                        
+                    </div>
 
-                <!-- Buttons -->
-                <button type="reset" class="btn btn-primary">Reset</button>
-                <button type="submit" class="btn btn-primary">Submit</button>
+                    <!-- Submit -->
+                    <div class="col">
+                        <button type="submit" class="btn btn-primary">Submit</button>                            
+                    </div>
+
+                </div>                            
+
             </form>
         </div>
         <hr>

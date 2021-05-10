@@ -23,21 +23,27 @@ Admin
                     <input type="text" name="name" id="name">
                 </div>
                 <!-- <button type="reset" class="btn btn-primary">Reset</button> -->
-                <button type="submit" class="btn btn-primary">Make New Cycle and Compute Projections</button>
+                <button type="submit" class="btn btn-primary">Make New Cycle // (Re)compute Projections</button>
             </form>
         </div>
     </div>
     <hr>
-    <div class="row">
-        <div class="col">
-            <a href="/admin/setup-tables"><button class="btn btn-primary">☢ Setup Tables ☢</button></a>
-        </div>
-    </div>
+    <hr>
+    <hr>
     <hr>
     <div class="row">
         <div class="col">
-            <a href="/admin/setup-loterias"><button class="btn btn-primary">Setup Loterias</button></a>
+            <h2>
+                SQL Table Reconfigurations
+            </h2>
         </div>
     </div>
+    <div class="row">
+        <div class="col">
+            <a href="/admin/setup-tables"><button class="btn btn-primary">Setup Tables ☢</button></a>
+            <a href="/admin/setup-loterias"><button class="btn btn-primary">Setup Loterias ☢</button></a>
+        </div>
+    </div>
+    <br>
 </container>
 {% endblock %}

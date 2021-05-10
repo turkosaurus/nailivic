@@ -76,36 +76,7 @@ loterias = {
     'El Poder': ['Fist', 'Fist Swirls', 'Fist Wrist', 'Fist Backs']
 }
 
-# loterias = {
-#     'La Dama': {
-#         'a_color': 'Frida'
-#         'b_color': 'Frida Flowers'
-#         'c_color': ''
-#         'backs' : 'Frida Backs'
-#         },
-#     'La Sirena': ['Mermaid Body', 'Mermaid Hair', 'Mermaid Tail', 'Mermaid Backs'],
-#     'La Mano': ['Hand', 'Hand Swirls', 'Hand Backs'],
-#     'La Bota': ['Boot', 'Boot Swirls', 'Boot Flames', 'Boot Backs'],
-#     'El Corazon': ['Heart', 'Heart Swirls', 'Heart Backs'],
-#     'El Musico': ['Guitar', 'Guitar Hands', 'Guitar Backs'],
-#     'La Estrella': ['Star', 'Star Swirls', 'Star Backs'],
-#     'El Pulpo': ['Octopus', 'Octopus Swirls', 'Octopus Tentacles', 'Octopus Backs'],
-#     'La Rosa': ['Rose', 'Rose Swirls', 'Rose Leaves', 'Rose Backs'],
-#     'La Calavera': ['Skull', 'Skull Flames', 'Skull Swirls', 'Skull Backs'],
-#     'El Poder': ['Fist', 'Fist Swirls', 'Fist Wrist', 'Fist Backs']
-# }
-
-
-# loterias_color
-    # loterias_color = {}
-    # for loteria in loterias:
-    #     for piecename in loteria:
-    #         if 'back' in piecename:
-    #             piecename = ''
-    #     loterias_color[loteria]
-
             
-
 #TODO 86 this and the module it came from?
 @dataclass
 class loteria:
@@ -269,9 +240,12 @@ def projections():
         cycles = db.execute("SELECT id, name, created_on FROM cycles WHERE current='FALSE'")
         print(f"cycles:{cycles}")
 
+        newloterias = db.execute("SELECT nombre FROM loterias")
+        print(newloterias)
+
         # Select projections from current cycle only
         projections = db.execute("SELECT * FROM projections WHERE cycle=:active ORDER BY size ASC, name DESC, qty DESC", active=active)
-        return render_template('projections.html', projections=projections, current=current, cycles=cycles, loterias=loterias, sizes=sizes, colors=colors)
+        return render_template('projections.html', projections=projections, current=current, cycles=cycles, loterias=newloterias, sizes=sizes, colors=colors)
 
     # Upon POSTing form submission
     else:
@@ -456,25 +430,30 @@ def config(path):
 
         # Change or make new cycle
         if path == 'cycle':
+
             print("Making a new cycle.")
             name = request.form.get("name")
 
             # Make all other cycles not current
-            db.execute("UPDATE cycles SET current='FALSE'")
 
             # Change current cycle selection
             if not name:
                 cycle_id = request.form.get("cycle")
                 print(f"cycle:{cycle_id}")
+
+                # Change active cycle
+                db.execute("UPDATE cycles SET current='FALSE'")
                 db.execute("UPDATE cycles SET current='TRUE' WHERE id=:id", id=cycle_id)
 
             # Make a new cycle
             else:
                 # Create new Cycle
+                db.execute("UPDATE cycles SET current='FALSE'")
                 time = datetime.datetime.utcnow().isoformat()
                 db.execute("INSERT INTO cycles (name, created_on, current) VALUES (:name, :time, 'TRUE')", name=name, time=time)
 
-            return redirect('/production')
+            return redirect('/projections')
+
 
         # Setup tables
         if path == 'setup-tables':
@@ -558,14 +537,40 @@ def config(path):
             db.execute("CREATE TABLE IF NOT EXISTS summary ()")
 
 
-            return "Setup Success!"
-                
+            return render_template('message.html', errmsg="Success, tables now setup.")
+
+
         # Setup loterias
         if path == 'setup-loterias':
-            return '#TODO'
 
+            # Read loterias.csv into a SQL table
+            with open('loterias.csv', 'r') as csvfile:
+
+                print('Reading loterias.csv...')
+                csv_reader = csv.reader(csvfile)
+
+                db.execute("CREATE TABLE IF NOT EXISTS loterias ( \
+                    nombre VARCHAR (255) NOT NULL, \
+                    a VARCHAR (255), \
+                    b VARCHAR (255), \
+                    c VARCHAR (255), \
+                    backs VARCHAR (255) \
+                    )")
+
+                db.execute("DELETE from loterias")
+
+                for row in csv_reader:
+                    db.execute("INSERT INTO loterias (nombre, a, b, c, backs) VALUES (:nombre, :a, :b, :c, :backs)", \
+                                    nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
+
+            return render_template('message.html', errmsg="Success, new cycle created")
+
+
+        # Not a valid admin route
         else:
-            return "uh oh"
+            return redirect('/')
+
+
 
 ###### ADMINSTRATIVE ######
 
