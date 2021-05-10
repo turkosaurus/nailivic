@@ -194,7 +194,9 @@ def dashboard():
 def items():
     if request.method == 'GET':
         items = db.execute("SELECT * FROM items ORDER BY size ASC, name DESC")
-        return render_template('items.html', items=items, loterias=loterias, sizes=sizes, colors=colors)
+        newloterias = db.execute("SELECT nombre FROM loterias")
+        print(newloterias)
+        return render_template('items.html', items=items, loterias=newloterias, sizes=sizes, colors=colors)
 
     # Upon POSTing form submission
     else:
@@ -463,7 +465,7 @@ def config(path):
             if name != 'test cycle':
                 db.execute("DELETE from CYCLES where name=:name", name=name)
                 db.execute("UPDATE cycles SET current='TRUE' WHERE id=1")
-                return render_template("message.html", errmsg="Successfully deleted cycle.")
+                return render_template("message.html", message="Successfully deleted cycle.")
             else:
                 return render_template("error.html", errcode="403", errmsg="Test cycle may not be deleted.")
 
@@ -549,7 +551,7 @@ def config(path):
             db.execute("CREATE TABLE IF NOT EXISTS summary ()")
 
 
-            return render_template('message.html', errmsg="Success, tables now setup.")
+            return render_template('message.html', message="Success, tables now setup.")
 
 
         # Setup loterias
@@ -575,7 +577,7 @@ def config(path):
                     db.execute("INSERT INTO loterias (nombre, a, b, c, backs) VALUES (:nombre, :a, :b, :c, :backs)", \
                                     nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
 
-            return render_template('message.html', errmsg="Success, new cycle created")
+            return render_template('message.html', message="Success, new cycle created")
 
 
 
