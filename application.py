@@ -60,7 +60,7 @@ authusers.append(os.getenv('USERC'))
 # Loteria
 
 #TODO draw all this from a a database instead
-colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple', 'nekkid']
+colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
 sizes = ['s', 'm', 'l']
 loterias = {
     'La Dama': ['Frida', 'Frida Flowers', 'Frida Backs'],
@@ -110,31 +110,32 @@ def dashboard():
     if request.method == 'GET':
         print("--- LOADING ---")
 
-        # Identify current cycle
+        # Query for relevant data
         cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
-
-        # Query for data
         user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
         items = db.execute("SELECT * FROM items ORDER BY size ASC, name DESC")
         parts = db.execute("SELECT * FROM parts ORDER BY size ASC, name DESC, color ASC, qty DESC")
+        newloterias = db.execute("SELECT * FROM loterias")
 
-        # Query for production part totals
+        # Sum totals for each color & size
         totals = []
-
-        # For each size
+        ## For each size
         for i in range(len(sizes)):
 
             # Make a list to hold the color totoals
             totals.append([])
 
-            # For each color
+            # For each color within the size, sum the number of parts
             for j in range(len(colors)):
                 qty = db.execute("SELECT SUM(qty) FROM production WHERE size=:size AND color=:color", \
                                     size=sizes[i], color=colors[j])
                 print(f'qty:{qty} for {sizes[i]}, {colors[j]}')
+                # Sanitize "None" into ''
                 if qty[0]['sum'] == None:
                     qty[0]['sum'] = ''
                 print(f"qty {qty}")
+
+                # Append current color's totals to the current size's list
                 totals[i].append(qty[0]['sum'])
 
             print(totals)
@@ -143,17 +144,19 @@ def dashboard():
         backs = '#TODO'
 
         # Box Production Total
-        box_prod = db.execute("SELECT SUM(qty_prod) FROM boxes")
-        box_prod = box_prod[0]['sum']
+        box_prod_total = db.execute("SELECT SUM(qty) FROM boxprod")
+        box_prod_total = box_prod_total[0]['sum']
 
-        # Box Inventory Itemized
-        boxes = db.execute("SELECT * FROM boxes")
+        # Box Inventory & Production
+        boxes = db.execute("SELECT * FROM boxes WHERE qty>0")
+        boxprod = db.execute("SELECT * FROM boxprod WHERE qty>0")
 
         production = db.execute("SELECT * FROM production ORDER BY qty DESC, size ASC")
         time = datetime.datetime.utcnow().isoformat()
         print(cycle)
         print(items)
-        return render_template('index.html', production=production, boxes=boxes, box_prod=box_prod, backs=backs, loterias=loterias, sizes=sizes, \
+        print(newloterias)
+        return render_template('index.html', production=production, boxes=boxes, boxprod=boxprod, box_prod_total=box_prod_total, backs=backs, loterias=newloterias, sizes=sizes, \
             colors=colors, user=user, items=items, parts=parts, projections=projections, totals=totals, cycle=cycle, time=time)
 
     # Upon POSTing form submission
@@ -303,7 +306,7 @@ def production():
 
     # Clear all production data
     db.execute("DELETE FROM production")
-    db.execute("UPDATE boxes SET qty_prod=0")
+    db.execute("UPDATE boxprod SET qty=0")
 
     # Rebuild production table
     for item in projections:
@@ -326,17 +329,19 @@ def production():
 
             # Add new box producion entry with production quantity
             if not boxes:
-                db.execute("INSERT INTO boxes (name, qty_prod) VALUES (:name, :qty_prod)", name=boxname, qty_prod=qty)
+                db.execute("INSERT INTO boxprod (name, qty) VALUES (:name, :qty_prod)", name=boxname, qty_prod=qty)
 
             # Update existing box entry with new production quantity
             else:
                 # Handle bug when subtracting nonetype
-                if boxes[0]['qty_onhand'] is None:
-                    boxes[0]['qty_onhand'] = 0                
-                box_qty_prod = qty - boxes[0]['qty_onhand']
+                if boxes[0]['qty'] is None:
+                    boxes[0]['qty'] = 0                
+
+                # Calculate box production by subtracting boxes on hand from the quantity of items to be made
+                box_qty_prod = qty - boxes[0]['qty']
 
                 # Update box production quantities
-                db.execute("UPDATE boxes SET qty_prod=:box_qty_prod WHERE name=:name", box_qty_prod=box_qty_prod, name=boxname)
+                db.execute("UPDATE boxprod SET qty=:box_qty_prod WHERE name=:name", box_qty_prod=box_qty_prod, name=boxname)
 
 
 
@@ -390,25 +395,43 @@ def production():
 def box():
     if request.method == 'GET':
         return "#TODO"
+
+    # Make a box on POST
     else:
-        # Make a box
+
+        # Capture form inputs
         name = request.form.get("box")
-        qty = request.form.get("boxqty")
+        qty = int(request.form.get("boxqty"))
 
         # Fetch and update current quantity of boxes onhand and in production queue
         boxes = db.execute("SELECT * FROM boxes WHERE name=:name", name=name)
-        print(boxes)
+        boxprod = db.execute("SELECT * FROM boxprod WHERE name=:name", name=name)
+
+
+        # Adjust inventory
+        # TODO handle negatives?
+        ## Update existing box inventory entry
         if boxes:
-            qty_onhand = boxes[0]['qty_onhand'] + qty
+            qty_onhand = boxes[0]['qty'] + qty
+            db.execute("UPDATE boxes SET qty=:qty WHERE name=:name", qty=qty_onhand, name=name)
 
-            #TODO handle negatives
-            # Update production quantity
-            qty_prod = boxes[0]['qty_prod'] - qty
-            db.execute("UPDATE boxes SET qty_onhand=:qty_onhand, qty_prod=:qty_prod WHERE name=:name", qty_onhand=qty_onhand, qty_prod=qty_prod, name=name)
-            #TODO update productions
+        ## Make a new box invetory entry
+        else:
+            db.execute("INSERT INTO boxes (name, qty) VALUES (:name, :qty)", name=name, qty=qty)
 
-        if not boxes:
-            db.execute("INSERT INTO boxes (name, qty_onhand) VALUES (:name, :qty_onhand)", name=name, qty_onhand=qty)
+        # Adjust production
+        if boxprod:
+
+            # Calculate new production quantity
+            qty_prod = boxprod[0]['qty'] - qty
+
+            # Update existing entry if >0
+            if qty_prod > 0:
+                db.execute("UPDATE boxprod SET qty=:qty WHERE name=:name", qty=qty_prod, name=name)
+
+            # Delete existing entry if <=0
+            else:
+                db.execute("DELETE FROM boxprod WHERE name=:name")
 
         return redirect('/')
 
@@ -502,6 +525,20 @@ def config(path):
                 )")
 
             # Create table: boxes
+            db.execute("DROP TABLE boxes")
+            db.execute("CREATE TABLE IF NOT EXISTS boxes ( \
+                name VARCHAR ( 255 ), \
+                qty INTEGER \
+                )")
+
+            # Create table: boxprod
+            # db.execute("DROP TABLE boxprod")
+            db.execute("CREATE TABLE IF NOT EXISTS boxprod ( \
+                name VARCHAR ( 255 ), \
+                qty INTEGER \
+                )")
+
+            # Create table: boxes
             # db.execute("DROP TABLE boxes")
             db.execute("CREATE TABLE IF NOT EXISTS boxes ( \
                 name VARCHAR ( 255 ), \
@@ -578,8 +615,6 @@ def config(path):
                                     nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
 
             return render_template('message.html', message="Success, new cycle created")
-
-
 
 
         # Not a valid admin route

@@ -30,7 +30,7 @@ Items
                             <label for="item">Item</label>
                             <select name="item" id="item">
                                 {% for loteria in loterias %}
-                                    <option value="{{ loteria }}">{{ loteria['nombre'] }}</option>
+                                    <option value="{{ loteria.nombre }}">{{ loteria.nombre }}</option>
                                 {% endfor %}
                             </select>
                         </div>    

@@ -25,7 +25,11 @@ To capture, calculate, and display all data pertaining to producing laser cut wo
 
 > Each part has 2-3 colors, and backs. The backs are together considered on of the part "colors"
 
-# Development Schedule
+# Development Tasks
+## v0.4
+- built csv import to database
+- refined formatting on entry forms
+- wrote box and backs inventory and production logic
 
 ## Unscheduled
 #### style
