@@ -121,15 +121,41 @@ Items
 
         <hr>
 
-        <!-- View Inventory -->
-        <div class="col-lg-6 col-md-12">
-            <div class="row">
-                <h2>On Hand</h2>
-                {% for item in items %}
-                    <p>{{ item }}</p>
-                {% endfor %}
-            </div>
+        <!-- Items on Hand -->
+        <div class="col-md-6 col-sm-12">
+            <h2>Items Inventory</h2>
+            <table class="table table-dark table-hover">
+                <thead>
+                    <tr>
+                        <!-- <td>id</td>
+                        <td>|</td> -->
+                        <td>name</td>
+                        <td>|</td>
+                        <td>a</td>
+                        <td>|</td>
+                        <td>b</td>
+                        <td>|</td>
+                        <td>c</td>
+                    </tr>    
+                </thead>
+                    <tbody>
+                        {% for item in items %}
+                            <tr>
+                                <!-- <td>{{ item.id }}</td>
+                                <td>|</td> -->
+                                <td>{{ item.name }}</td>
+                                <td>|</td>
+                                <td>{{ item.a_color }}</td>
+                                <td>|</td>
+                                <td>{{ item.b_color }}</td>
+                                <td>|</td>
+                                <td>{{ item.c_color }}</td>
+                            </tr>    
+                        {% endfor %}
+                    </tbody>
+            </table>
         </div>
+
         <hr>
     </div>
 </container>

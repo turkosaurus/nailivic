@@ -47,7 +47,7 @@ Projections
                             <label for="item">Item</label>
                             <select name="item" id="item">
                                 {% for loteria in loterias %}
-                                    <option value="{{ loteria }}">{{ loteria['nombre'] }}</option>
+                                    <option value="{{ loteria['nombre'] }}">{{ loteria['nombre'] }}</option>
                                 {% endfor %}
                             </select>
                         </div>    
@@ -137,13 +137,32 @@ Projections
         <hr>
 
         <!-- View Current Projections -->
-        <div class="col-lg-6 col-md-12">
-            <div class="row">
-                <h2>{{ current[0].name }} Projection Targets</h2>
-                {% for projection in projections %}
-                    <p>{{ projection }}</p>
-                {% endfor %}
-            </div>
+        <div class="col-md-6 col-sm-12">
+            <h2>{{ current[0].name }} Projection Targets</h2>
+            <table class="table table-dark table-hover">
+                <thead>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>    
+                </thead>
+                    <tbody>
+                        {% for projection in projections %}
+                            <tr>
+                                <td>{{ projection.name }}</td>
+                                <td>{{ projection.size }}</td>
+                                <td>{{ projection.a_color }}</td>
+                                <td>{{ projection.b_color }}</td>
+                                <td>{{ projection.c_color }}</td>
+                                <td>{{ projection.qty }}</td>
+                            </tr>    
+                        {% endfor %}
+                    </tbody>
+            </table>
         </div>
         <hr>
     </div>
