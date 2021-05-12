@@ -110,15 +110,11 @@ Dashboard
                         <div class="form-group">
                             <h4>Color</h4>
                             {% for color in colors %}
-                            <div class="custom-control custom-radio">
-                                <input type="radio" id="{{ color }}" name="color" value="{{ color }}">
-                                <label for="{{ color }}">{{ color }}</label>
-                            </div>
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="{{ color }}" name="color" value="{{ color }}">
+                                    <label for="{{ color }}">{{ color }}</label>
+                                </div>
                             {% endfor %}
-                            <div class="custom-control custom-radio">
-                                <input type="radio" id="backs" name="color" value="backs">
-                                <label for="backs">backs</label>
-                            </div>
                         </div>
                     </div>
                     <div class="col">

@@ -30,6 +30,7 @@ To capture, calculate, and display all data pertaining to producing laser cut wo
 - built csv import to database
 - refined formatting on entry forms
 - wrote box and backs inventory and production logic
+- complete data restructuring (86 loterias SUB newloterias)
 
 ## Unscheduled
 #### style

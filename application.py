@@ -103,6 +103,132 @@ def login_required(f):
     return decorated_function
 
 
+
+# Queue part(s) of specified color for production
+def queuepart(name, size, color, qty):
+
+    # Identify how many parts of that type are already on hand
+    parts_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", 
+                        name=name, size=size, color=color)           
+    print(f"{parts_onhand} {size} {color} {name} in inventory.")
+
+    # Calculate number of parts not met by current inventory and update production queue
+    # Update existing production queue entry
+    if parts_onhand:
+        new_qty = qty - parts_onhand[0]['qty']
+        db.execute("UPDATE production SET qty=:qty WHERE name=:name AND size=:size AND color=:color", 
+                    name=name, size=size, color=color, qty=new_qty)
+        print(f"{new_qty} {size} {color} {name} in production queue")
+
+    # Add new production queue entry
+    if not parts_onhand:
+        new_qty = qty
+        db.execute("INSERT INTO production (name, size, color, qty) VALUES (:name, :size, :color, :qty)", 
+                    name=name, size=size, color=color, qty=new_qty)
+        print(f"{new_qty} {size} {color} {name} in production queue")
+
+# Queue backs for production            
+def queuebacks(name, size, qty):
+    # Identify how many parts of that type are already on hand
+    parts_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size", 
+                        name=name, size=size)           
+    print(f"{parts_onhand} {size} {name} in inventory.")
+
+    # Calculate number of parts not met by current inventory and update production queue
+    # Update existing production queue entry
+    if parts_onhand:
+        new_qty = qty - parts_onhand[0]['qty']
+        db.execute("UPDATE production SET qty=:qty WHERE name=:name AND size=:size", 
+                    name=name, size=size,qty=new_qty)
+        print(f"{new_qty} {size} {name} backs in production queue")
+
+    # Add new production queue entry
+    if not parts_onhand:
+        new_qty = qty
+        db.execute("INSERT INTO production (name, size, qty) VALUES (:name, :size, :qty)", 
+                    name=name, size=size, qty=new_qty)
+        print(f"{new_qty} {size} {name} backs in production queue")
+
+# Queue boxes for production
+def queueboxes(name, qty):
+    # Identify how many boxes of that type are already on hand
+    boxes_onhand = db.execute("SELECT * FROM boxes WHERE name=:name", name=name)
+    print(f"{boxes_onhand} {name} boxes in inventory")
+
+    # Calculate number of boxes not met by current inventory and update production queue
+    # Update existing box queue entry
+    if boxes_onhand:
+        new_qty = qty - boxes_onhand[0]['qty']
+        db.execute("UPDATE boxprod SET qty=:qty WHERE name=:name", qty=new_qty, name=name)
+        print(f"{new_qty} {name} boxes in production queue")
+        
+    # Add new box queue entry
+    if not boxes_onhand:
+        new_qty = qty
+        db.execute("INSERT INTO boxprod (name, qty) VALUES (:name, :qty)", name=name, qty=new_qty)
+        print(f"{new_qty} {name} boxes in production queue")
+
+# (RE)BUILD PRODUCTION TABLE
+def makequeue():
+
+    # Identify current cycle
+    cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
+
+    # Query for current cycle's projections
+    projections = db.execute("SELECT * FROM projections WHERE cycle=:cycle", cycle=cycle[0]['id'])
+
+    # Clear all production data
+    db.execute("DELETE FROM production")
+    db.execute("UPDATE boxprod SET qty=0")
+
+    newloterias = db.execute("SELECT * FROM loterias")
+
+    # Ensure that every item in projections is added to the production queue (less inventory on hand)
+    for item in projections:
+        nombre = item['name']
+        size = item['size']
+        qty = item['qty']
+        a = item['a_color']
+        b = item['b_color']
+        c = item['c_color']
+        print(f"One {nombre} produces...")
+
+        # Queue box for production of small items
+        if size == sizes[0]:
+            queueboxes(name, qty)
+        
+        # TODO does a complete item include boxes?
+        # Identify how many items exist in inventory
+        items_onhand = db.execute("SELECT COUNT(id) FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
+                        name=nombre, size=size, a_color=a, b_color=b, c_color=c)
+        items_onhand = items_onhand[0]['count']
+        
+        # Subtract inventory items from projections['qty']
+        qty = qty - items_onhand
+
+       # Check for need to add parts to production queue
+        if qty > 0:
+
+            # Translate nombre to name
+            name = db.execute("SELECT a FROM loterias WHERE nombre=:nombre", nombre=nombre)
+            name = name[0]['a']
+
+            # Update parts production queue
+            # a_color
+            queuepart(name, size, a, qty)
+            # b_color
+            queuepart(name, size, b, qty)
+            # c_color
+            if c is not None:
+                queuepart(name, size, c, qty)
+            # backs
+            queuebacks(name, size, qty)
+
+    # (RE)BUILD PRODUCTION SUMMARY TOTALS
+        # TODO calculate and return
+
+
+###### MAIN ROUTES ######
 @app.route('/', methods=['GET', 'POST'])
 @login_required
 def dashboard():
@@ -213,8 +339,8 @@ def items():
 
         for i in range(qty):
 
-            db.execute("INSERT INTO items (name, size, a_color, b_color, c_color) VALUES \
-                     (:item, :size, :a_color, :b_color, :c_color)", item=item, size=size, a_color=a, b_color=b, c_color=c)
+            db.execute("INSERT INTO items (name, size,, b_color, c_color) VALUES \
+                     (:item, :size, , :b_color, :c_color)", item=item, size=size, a_color=a, b_color=b, c_color=c)
 
         #TODO remove from parts when making item
 
@@ -268,7 +394,7 @@ def projections():
 
         # What quantity of this item is already in projections?
         projected = db.execute("SELECT qty FROM projections WHERE \
-                            name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color \
+                            name=:name AND size=:size AND= AND b_color=:b_color AND c_color=:c_color \
                             AND cycle=:cycle", \
                             name=item, size=size, a_color=a, b_color=b, c_color=c, cycle=cycle)
         print(f"Fetching projected ...")
@@ -276,8 +402,8 @@ def projections():
 
         # None, create new entry
         if not projected:
-            db.execute("INSERT INTO projections (name, size, a_color, b_color, c_color, qty, cycle) VALUES \
-                        (:name, :size, :a_color, :b_color, :c_color, :qty, :cycle)", \
+            db.execute("INSERT INTO projections (name, size,, b_color, c_color, qty, cycle) VALUES \
+                        (:name, :size, , :b_color, :c_color, :qty, :cycle)", \
                         name=item, size=size, a_color=a, b_color=b, c_color=c, qty=qty, cycle=cycle)
             print("New projection created.")                        
 
@@ -308,84 +434,52 @@ def production():
     db.execute("DELETE FROM production")
     db.execute("UPDATE boxprod SET qty=0")
 
-    # Rebuild production table
+    newloterias = db.execute("SELECT * FROM loterias")
+    
+
+    # Ensure that every item in projections is added to the production queue (less inventory on hand)
     for item in projections:
         nombre = item['name']
         size = item['size']
         qty = item['qty']
-        partcolor = []
-        partcolor.append(item['a_color'])
-        partcolor.append(item['b_color'])
-        partcolor.append(item['c_color'])
+        a = item['a_color']
+        b = item['b_color']
+        c = item['c_color']
         print(f"One {nombre} produces...")
 
-
-        # Adjust box production
-        # Add boxes to production if small
+        # Queue box for production of small items
         if size == sizes[0]:
-            boxname = loterias[nombre][0]
-            print(f'boxname={boxname}')
-            boxes = db.execute("SELECT * FROM boxes WHERE name=:name", name=boxname)
-
-            # Add new box producion entry with production quantity
-            if not boxes:
-                db.execute("INSERT INTO boxprod (name, qty) VALUES (:name, :qty_prod)", name=boxname, qty_prod=qty)
-
-            # Update existing box entry with new production quantity
-            else:
-                # Handle bug when subtracting nonetype
-                if boxes[0]['qty'] is None:
-                    boxes[0]['qty'] = 0                
-
-                # Calculate box production by subtracting boxes on hand from the quantity of items to be made
-                box_qty_prod = qty - boxes[0]['qty']
-
-                # Update box production quantities
-                db.execute("UPDATE boxprod SET qty=:box_qty_prod WHERE name=:name", box_qty_prod=box_qty_prod, name=boxname)
-
-
-
-        # Query for quantity of projected items that are already on hand 
+            queueboxes(name, qty)
+        
+        # TODO does a complete item include boxes?
+        # Identify how many items exist in inventory
         items_onhand = db.execute("SELECT COUNT(id) FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
-                        name=nombre, size=size, a_color=partcolor[0], b_color=partcolor[1], c_color=partcolor[2])
+                        name=nombre, size=size, a_color=a, b_color=b, c_color=c)
         items_onhand = items_onhand[0]['count']
         
-        # Subtract on hand items from projected items
+        # Subtract inventory items from projections['qty']
         qty = qty - items_onhand
 
-        # If production still necessary becuase demand exceeds onhand, process the requirements
+       # Check for need to add parts to production queue
         if qty > 0:
 
-            # Identify and capture from each item: each part's name and color
-            for i in range(len(loterias[nombre])):
-                name = loterias[nombre][i]
-                color = partcolor[i]
-                print(f"{color} {name}")
+            # Translate nombre to name
+            name = db.execute("SELECT a FROM loterias WHERE nombre=:nombre", nombre=nombre)
+            name = name[0]['a']
 
-                # Query for qty of this part type already in production
-                queued = db.execute("SELECT qty FROM production WHERE name=:name AND size=:size AND color=:color",
-                                    name=name, size=size, color=color)
-                print(f"queued:{queued}")
+            # Update parts production queue
+            # a_color
+            queuepart(name, size, a, qty)
+            # b_color
+            queuepart(name, size, b, qty)
+            # c_color
+            if c is not None:
+                queuepart(name, size, c, qty)
+            # backs
+            queuebacks(name, size, qty)
 
-                # Identify number of that parts already on hand
-                parts_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", 
-                                    name=name, size=size, color=color)           
-                print(f"parts_onhand:{parts_onhand}")
-
-                # If there are parts on hand, subtract tham from the projection qty to yield production qty
-                if parts_onhand:
-                    qty = qty - parts_onhand[0]['qty']
-
-                # Create new production entry for this type if none exists already
-                if not queued:
-                    db.execute("INSERT INTO production (name, size, color, qty) VALUES (:name, :size, :color, :qty)", 
-                                    name=name, size=size, color=color, qty=qty)
-
-                # Else update existing quantity
-                else:
-                    db.execute("UPDATE production SET qty=:qty WHERE name=:name AND size=:size AND color=:color", 
-                                    qty=qty, name=name, size=size, color=color)
-        print()
+    # (RE)BUILD PRODUCTION SUMMARY TOTALS
+        # TODO
 
     return redirect("/projections")
 
@@ -478,6 +572,8 @@ def config(path):
                 time = datetime.datetime.utcnow().isoformat()
                 db.execute("INSERT INTO cycles (name, created_on, current) VALUES (:name, :time, 'TRUE')", name=name, time=time)
 
+            # Calculate production values
+            makequeue()
             return redirect('/projections')
 
 
