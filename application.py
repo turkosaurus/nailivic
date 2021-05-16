@@ -972,16 +972,19 @@ def config(path):
         # Wipe items
         if path == 'wipe-items':
             db.execute("DELETE FROM items")
+            return render_template('message.html', message="Success, items wiped.")
 
 
         # Wipe items
         if path == 'wipe-parts':
             db.execute("DELETE FROM parts")
+            return render_template('message.html', message="Success, parts wiped.")
 
 
         # Wipe items
         if path == 'wipe-boxes':
             db.execute("DELETE FROM boxes")
+            return render_template('message.html', message="Success, boxes wiped.")
 
 
         # Not a valid admin route
