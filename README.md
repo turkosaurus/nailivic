@@ -26,11 +26,12 @@ To capture, calculate, and display all data pertaining to producing laser cut wo
 > Each part has 2-3 colors, and backs. The backs are together considered on of the part "colors"
 
 # Development Tasks
-## v0.4
-- built csv import to database
-- refined formatting on entry forms
-- wrote box and backs inventory and production logic
-- complete data restructuring (86 loterias SUB newloterias)
+
+
+## v0.5
+- deplete parts when items are produced
+- build totals table
+
 
 ## Unscheduled
 #### style
@@ -79,3 +80,10 @@ To capture, calculate, and display all data pertaining to producing laser cut wo
     - take projections
     - subtract on hand
     - queue what's needed for production
+
+## v0.4
+- built csv import to database
+- refined formatting on entry forms
+- wrote box and backs inventory and production logic
+- rewrote production building function
+- complete data restructuring (86 loterias SUB newloterias)

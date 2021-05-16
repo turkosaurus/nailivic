@@ -12,7 +12,6 @@ Items
     </div>    
     <hr>
 
-<!-- NEW -->
     <!-- Add Item to Projections -->
     <div class="row">
         <div class="col-lg-6 col-md-12">
@@ -118,7 +117,6 @@ Items
             </form>
         </div>
 
-
         <hr>
 
         <!-- Items on Hand -->
@@ -127,14 +125,10 @@ Items
             <table class="table table-dark table-hover">
                 <thead>
                     <tr>
-                        <!-- <td>id</td>
-                        <td>|</td> -->
                         <td>name</td>
-                        <td>|</td>
+                        <td>size</td>
                         <td>a</td>
-                        <td>|</td>
                         <td>b</td>
-                        <td>|</td>
                         <td>c</td>
                     </tr>    
                 </thead>
@@ -144,18 +138,19 @@ Items
                                 <!-- <td>{{ item.id }}</td>
                                 <td>|</td> -->
                                 <td>{{ item.name }}</td>
-                                <td>|</td>
+                                <td>{{ item.size }}</td>
                                 <td>{{ item.a_color }}</td>
-                                <td>|</td>
                                 <td>{{ item.b_color }}</td>
-                                <td>|</td>
-                                <td>{{ item.c_color }}</td>
+                                {% if item.c_color is not none %}
+                                    <td>{{ item.c_color }}</td>
+                                {% else %}
+                                    <td></td>
+                                {% endif %}
                             </tr>    
                         {% endfor %}
                     </tbody>
             </table>
         </div>
-
         <hr>
     </div>
 </container>

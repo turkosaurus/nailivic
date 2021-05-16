@@ -9,7 +9,6 @@ from flask import Flask, redirect, render_template, request, session, url_for
 from flask_session import Session
 from tempfile import mkdtemp
 from functools import wraps
-from dataclasses import dataclass
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -21,8 +20,7 @@ loteria: woodcut loteria pieces
 """
 
 #TODO sort production queue by color sort by size
-#TODO backs and boxes
-#TODO treat backs like a part
+
 
 ###### CONFIGURATION ######
 # Initialize Flask App Ojbect
@@ -56,35 +54,25 @@ authusers.append(os.getenv('USERC'))
 
 
 ###### TEMPLATES ######
-# Set type variables
-# Loteria
 
-#TODO draw all this from a a database instead
-colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
+# colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
+colors = ['🖤 black', '❤️ red', '💙 turq.', '💛 yellow', '💚 green', '💜 purple']
 sizes = ['s', 'm', 'l']
-loterias = {
-    'La Dama': ['Frida', 'Frida Flowers', 'Frida Backs'],
-    'La Sirena': ['Mermaid Body', 'Mermaid Hair', 'Mermaid Tail', 'Mermaid Backs'],
-    'La Mano': ['Hand', 'Hand Swirls', 'Hand Backs'],
-    'La Bota': ['Boot', 'Boot Swirls', 'Boot Flames', 'Boot Backs'],
-    'El Corazon': ['Heart', 'Heart Swirls', 'Heart Backs'],
-    'El Musico': ['Guitar', 'Guitar Hands', 'Guitar Backs'],
-    'La Estrella': ['Star', 'Star Swirls', 'Star Backs'],
-    'El Pulpo': ['Octopus', 'Octopus Swirls', 'Octopus Tentacles', 'Octopus Backs'],
-    'La Rosa': ['Rose', 'Rose Swirls', 'Rose Leaves', 'Rose Backs'],
-    'La Calavera': ['Skull', 'Skull Flames', 'Skull Swirls', 'Skull Backs'],
-    'El Poder': ['Fist', 'Fist Swirls', 'Fist Wrist', 'Fist Backs']
-}
+# loterias = {
+#     'La Dama': ['Frida', 'Frida Flowers', 'Frida Backs'],
+#     'La Sirena': ['Mermaid Body', 'Mermaid Hair', 'Mermaid Tail', 'Mermaid Backs'],
+#     'La Mano': ['Hand', 'Hand Swirls', 'Hand Backs'],
+#     'La Bota': ['Boot', 'Boot Swirls', 'Boot Flames', 'Boot Backs'],
+#     'El Corazon': ['Heart', 'Heart Swirls', 'Heart Backs'],
+#     'El Musico': ['Guitar', 'Guitar Hands', 'Guitar Backs'],
+#     'La Estrella': ['Star', 'Star Swirls', 'Star Backs'],
+#     'El Pulpo': ['Octopus', 'Octopus Swirls', 'Octopus Tentacles', 'Octopus Backs'],
+#     'La Rosa': ['Rose', 'Rose Swirls', 'Rose Leaves', 'Rose Backs'],
+#     'La Calavera': ['Skull', 'Skull Flames', 'Skull Swirls', 'Skull Backs'],
+#     'El Poder': ['Fist', 'Fist Swirls', 'Fist Wrist', 'Fist Backs']
+# }
 
             
-#TODO 86 this and the module it came from?
-@dataclass
-class loteria:
-    size: str
-    a: str
-    b: str
-    c: str
-
 
 
 ###### Helper Functions ######
@@ -104,69 +92,102 @@ def login_required(f):
 
 
 
+###### QUEUE ######
+# These functions produce production table, calculating projecitons less inventory
+
 # Queue part(s) of specified color for production
 def queuepart(name, size, color, qty):
+    print("queuepart()")
 
     # Identify how many parts of that type are already on hand
     parts_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", 
-                        name=name, size=size, color=color)           
+                        name=name, size=size, color=color)
     print(f"{parts_onhand} {size} {color} {name} in inventory.")
 
+    # Identify how many parts of that type are already in production
+    parts_inprod = db.execute("SELECT qty FROM production where name=:name AND size=:size AND color=:color", 
+                        name=name, size=size, color=color)
+    print(f"{parts_inprod} {size} {color} {name} already in production.")
+
     # Calculate number of parts not met by current inventory and update production queue
-    # Update existing production queue entry
-    if parts_onhand:
-        new_qty = qty - parts_onhand[0]['qty']
-        db.execute("UPDATE production SET qty=:qty WHERE name=:name AND size=:size AND color=:color", 
-                    name=name, size=size, color=color, qty=new_qty)
-        print(f"{new_qty} {size} {color} {name} in production queue")
 
     # Add new production queue entry
-    if not parts_onhand:
-        new_qty = qty
+    if not parts_inprod:
+        if parts_onhand:
+            new_qty = qty - parts_onhand[0]['qty']
+        else:
+            new_qty = qty
         db.execute("INSERT INTO production (name, size, color, qty) VALUES (:name, :size, :color, :qty)", 
                     name=name, size=size, color=color, qty=new_qty)
-        print(f"{new_qty} {size} {color} {name} in production queue")
+        print(f"{qty} {size} {color} {name} inserted into production queue")
+        
+    # Update existing production queue entry
+    else:
+        new_qty = qty - parts_onhand[0]['qty'] + parts_inprod[0]
+        db.execute("UPDATE production SET qty=:qty WHERE name=:name AND size=:size AND color=:color", 
+                    name=name, size=size, color=color, qty=new_qty)
+        print(f"{new_qty} {size} {color} {name} updated into production queue")
+
 
 # Queue backs for production            
 def queuebacks(name, size, qty):
+    print("queuebacks()")
+    
     # Identify how many parts of that type are already on hand
     parts_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size", 
-                        name=name, size=size)           
+                        name=name, size=size)
     print(f"{parts_onhand} {size} {name} in inventory.")
 
+    # Identify how many parts of that type are already in production
+    parts_inprod = db.execute("SELECT qty FROM production where name=:name AND size=:size", 
+                        name=name, size=size)
+    print(f"{parts_inprod} {size} {name} already in production.")
+
     # Calculate number of parts not met by current inventory and update production queue
-    # Update existing production queue entry
-    if parts_onhand:
-        new_qty = qty - parts_onhand[0]['qty']
-        db.execute("UPDATE production SET qty=:qty WHERE name=:name AND size=:size", 
-                    name=name, size=size,qty=new_qty)
-        print(f"{new_qty} {size} {name} backs in production queue")
 
     # Add new production queue entry
-    if not parts_onhand:
-        new_qty = qty
+    if not parts_inprod:
+        new_qty = qty - parts_onhand[0]['qty']
         db.execute("INSERT INTO production (name, size, qty) VALUES (:name, :size, :qty)", 
                     name=name, size=size, qty=new_qty)
-        print(f"{new_qty} {size} {name} backs in production queue")
+        print(f"{qty} {size} {name} inserted into production queue")
+        
+    # Update existing production queue entry
+    else:
+        new_qty = qty - parts_onhand[0]['qty'] + parts_inprod[0]['qty']
+        db.execute("UPDATE production SET qty=:qty WHERE name=:name AND size=:size", 
+                    name=name, size=size, qty=new_qty)
+        print(f"{new_qty} {size} {name} updated into production queue")
+
 
 # Queue boxes for production
 def queueboxes(name, qty):
+    print("queueboxes()")
+
     # Identify how many boxes of that type are already on hand
     boxes_onhand = db.execute("SELECT * FROM boxes WHERE name=:name", name=name)
     print(f"{boxes_onhand} {name} boxes in inventory")
 
+    # Identify how many boxes of that type are already queued for production
+    boxes_inprod = db.execute("SELECT * FROM boxprod WHERE name=:name", name=name)
+    print(f"{boxes_inprod} {name} boxes already in production")
+
+
     # Calculate number of boxes not met by current inventory and update production queue
-    # Update existing box queue entry
-    if boxes_onhand:
+
+    #TODO export the math in this next if/else to above functions    
+    # Add new box queue entry
+    if not boxes_inprod:
         new_qty = qty - boxes_onhand[0]['qty']
+        db.execute("INSERT INTO boxprod (name, qty) VALUES (:name, :qty)", name=name, qty=new_qty)
+        print(f"{qty} {name} boxes in production queue")
+
+    # Update existing box queue entry
+    else:
+        new_qty = qty - boxes_onhand[0]['qty'] + boxes_inprod[0]['qty']
         db.execute("UPDATE boxprod SET qty=:qty WHERE name=:name", qty=new_qty, name=name)
         print(f"{new_qty} {name} boxes in production queue")
-        
-    # Add new box queue entry
-    if not boxes_onhand:
-        new_qty = qty
-        db.execute("INSERT INTO boxprod (name, qty) VALUES (:name, :qty)", name=name, qty=new_qty)
-        print(f"{new_qty} {name} boxes in production queue")
+
 
 # (RE)BUILD PRODUCTION TABLE
 def makequeue():
@@ -191,41 +212,50 @@ def makequeue():
         a = item['a_color']
         b = item['b_color']
         c = item['c_color']
-        print(f"One {nombre} produces...")
+        print(f"{qty} {size} {nombre} {a} {b} {c} produces...")
 
         # Queue box for production of small items
         if size == sizes[0]:
-            queueboxes(name, qty)
+            queueboxes(nombre, qty)
         
         # TODO does a complete item include boxes?
-        # Identify how many items exist in inventory
+        # Identify how many items of that type, size, colors exist in inventory
         items_onhand = db.execute("SELECT COUNT(id) FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
                         name=nombre, size=size, a_color=a, b_color=b, c_color=c)
         items_onhand = items_onhand[0]['count']
         
-        # Subtract inventory items from projections['qty']
+        # Calculate items needed for production; subtract inventory items from projections['qty']
         qty = qty - items_onhand
 
        # Check for need to add parts to production queue
         if qty > 0:
 
             # Translate nombre to name
-            name = db.execute("SELECT a FROM loterias WHERE nombre=:nombre", nombre=nombre)
-            name = name[0]['a']
+            names = db.execute("SELECT * FROM loterias WHERE nombre=:nombre", nombre=nombre)
 
             # Update parts production queue
+
             # a_color
+            name = names[0]['a']
             queuepart(name, size, a, qty)
+
             # b_color
+            name = names[0]['b']
             queuepart(name, size, b, qty)
+
             # c_color
             if c is not None:
+                name = names[0]['c']
                 queuepart(name, size, c, qty)
+
             # backs
+            name = names[0]['backs']
             queuebacks(name, size, qty)
 
     # (RE)BUILD PRODUCTION SUMMARY TOTALS
         # TODO calculate and return
+
+
 
 
 ###### MAIN ROUTES ######
@@ -264,10 +294,17 @@ def dashboard():
                 # Append current color's totals to the current size's list
                 totals[i].append(qty[0]['sum'])
 
+            # Tally backs in production
+            backs = db.execute("SELECT SUM(qty) FROM production WHERE size=:size AND name IN (SELECT backs FROM loterias)", size=sizes[i])
+            # Sanitize "None" into ''
+            if backs[0]['sum'] == None:
+                backs[0]['sum'] = ''
+            totals[i].append(backs[0]['sum'])
+
             print(totals)
 
         #TODO backs
-        backs = '#TODO'
+        print(f"backs:{backs}")
 
         # Box Production Total
         box_prod_total = db.execute("SELECT SUM(qty) FROM boxprod")
@@ -335,14 +372,72 @@ def items():
         b = request.form.get("Color B")
         c = request.form.get("Color C")
         qty = int(request.form.get("qty"))
+        print("POST form with values:")
         print(qty, item, size, a, b, c)
 
+        ## Validation
+        # Return error if missing basic entries
+        if (size is None) or (a is None) or (b is None):
+            return render_template('error.html', errcode='403', errmsg='Invalid entry. All Items must have a size and at least 2 colors.')
+
+        # Test for presence of c_color        
+        ctest = db.execute("SELECT c FROM loterias WHERE nombre=:name", name=item)
+
+        # No c is given
+        if not c:
+            # But there should be a c
+            if ctest[0]['c'] != '':
+                return render_template('error.html', errcode='403', errmsg='Invalid entry. Required color missing.')
+
+        # Superfulous c value is given
+        else:
+            if ctest[0]['c'] == '':
+                return render_template('error.html', errcode='403', errmsg='Invalid entry. Too many colors selected.')
+
+        # Validation complete. Now remove from parts and add to items.
+
+        # Deplete parts inventory
+        # Find parts names using item name
+        names = db.execute("SELECT * FROM loterias WHERE nombre=:item", item=item)
+
+        # Deplete backs
+        # Update quantity
+        backs_onhand = db.execute("SELECT qty FROM parts WHERE name=:backs AND size=:size", backs=names[0]['backs'], size=size)
+        if backs_onhand:
+            print(f'backs_onhand:{backs_onhand}')
+            new_qty = backs_onhand[0]['qty'] - qty
+
+            # Remove entry if update would be cause qty to be less than 1
+            if new_qty < 1:
+                db.execute("DELETE FROM parts WHERE name=:backs AND size=:size AND color=:color", backs=names[0]['backs'], size=size, color=color)
+
+            # Update existing entry
+            else:
+                db.execute("UPDATE parts SET qty=:backs_onhand WHERE name=:backs AND size=:size AND color=:color", backs_onhand=names[0]['backs'], size=size, color=color)
+
+        #Deplete a
+        # Update quantity
+        a_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['a'], size=size, color=a)
+        if a_onhand:
+            new_qty = a_onhand[0]['qty'] - qty
+
+            # Remove entry if update would be cause qty to be less than 1
+            if new_qty < 1:
+                db.execute("DELETE FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['a'], size=size, color=a)
+
+            # Update existing entry
+            else:
+                db.execute("UPDATE parts SET qty=:a_onhand WHERE name=:name AND size=:size AND color=:color", a_onhand=names[0]['a'], size=size, color=a)
+
+        #TODO Deplete b
+        #TODO Deplete c (if applicable)
+
+
+        # Make new item(s)
         for i in range(qty):
 
-            db.execute("INSERT INTO items (name, size,, b_color, c_color) VALUES \
-                     (:item, :size, , :b_color, :c_color)", item=item, size=size, a_color=a, b_color=b, c_color=c)
-
-        #TODO remove from parts when making item
+            # Insert an item for every item made
+            db.execute("INSERT INTO items (name, size, a_color, b_color, c_color) VALUES (:item, :size, :a_color, :b_color, :c_color)", item=item, size=size, a_color=a, b_color=b, c_color=c)
 
         return redirect('/items')
 
@@ -387,6 +482,25 @@ def projections():
         c = request.form.get("Color C")
         qty = int(request.form.get("qty"))
 
+        ## Validation
+        # Return error if missing basic entries
+        if (size is None) or (a is None) or (b is None):
+            return render_template('error.html', errcode='403', errmsg='Invalid entry. All Items must have a size and at least 2 colors.')
+
+        # Test for presence of c_color        
+        ctest = db.execute("SELECT c FROM loterias WHERE nombre=:name", name=item)
+
+        # No c is given
+        if not c:
+            # But there should be a c
+            if ctest[0]['c'] != '':
+                return render_template('error.html', errcode='403', errmsg='Invalid entry. Required color missing.')
+
+        # Superfulous c value is given
+        else:
+            if ctest[0]['c'] == '':
+                return render_template('error.html', errcode='403', errmsg='Invalid entry. Too many colors selected.')
+
         # Identify current cycle
         active = db.execute("SELECT id, name, created_on FROM cycles WHERE current='TRUE'")
         print(f"active cycle:{active}")
@@ -394,7 +508,7 @@ def projections():
 
         # What quantity of this item is already in projections?
         projected = db.execute("SELECT qty FROM projections WHERE \
-                            name=:name AND size=:size AND= AND b_color=:b_color AND c_color=:c_color \
+                            name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color \
                             AND cycle=:cycle", \
                             name=item, size=size, a_color=a, b_color=b, c_color=c, cycle=cycle)
         print(f"Fetching projected ...")
@@ -402,8 +516,8 @@ def projections():
 
         # None, create new entry
         if not projected:
-            db.execute("INSERT INTO projections (name, size,, b_color, c_color, qty, cycle) VALUES \
-                        (:name, :size, , :b_color, :c_color, :qty, :cycle)", \
+            db.execute("INSERT INTO projections (name, size, a_color, b_color, c_color, qty, cycle) VALUES \
+                        (:name, :size, :a_color, :b_color, :c_color, :qty, :cycle)", \
                         name=item, size=size, a_color=a, b_color=b, c_color=c, qty=qty, cycle=cycle)
             print("New projection created.")                        
 
@@ -451,7 +565,6 @@ def production():
         if size == sizes[0]:
             queueboxes(name, qty)
         
-        # TODO does a complete item include boxes?
         # Identify how many items exist in inventory
         items_onhand = db.execute("SELECT COUNT(id) FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
                         name=nombre, size=size, a_color=a, b_color=b, c_color=c)
@@ -525,7 +638,7 @@ def box():
 
             # Delete existing entry if <=0
             else:
-                db.execute("DELETE FROM boxprod WHERE name=:name")
+                db.execute("DELETE FROM boxprod WHERE name=:name", name=name)
 
         return redirect('/')
 
@@ -536,7 +649,7 @@ def shipping():
     return render_template('shipping.html')
 
 
-###### SETUP ######
+###### ADMINISTRATION ######
 @app.route('/admin', methods=['GET'])
 @login_required
 def admin():
@@ -587,6 +700,7 @@ def config(path):
                 return render_template("message.html", message="Successfully deleted cycle.")
             else:
                 return render_template("error.html", errcode="403", errmsg="Test cycle may not be deleted.")
+
 
         # Setup tables
         if path == 'setup-tables':
@@ -719,8 +833,7 @@ def config(path):
 
 
 
-###### ADMINSTRATIVE ######
-
+###### USER ACCOUNTS ######
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""

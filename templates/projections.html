@@ -142,12 +142,12 @@ Projections
             <table class="table table-dark table-hover">
                 <thead>
                     <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td>nombre</td>
+                        <td>size</td>
+                        <td>a</td>
+                        <td>b</td>
+                        <td>c</td>
+                        <td>qty</td>
                     </tr>    
                 </thead>
                     <tbody>
@@ -157,7 +157,11 @@ Projections
                                 <td>{{ projection.size }}</td>
                                 <td>{{ projection.a_color }}</td>
                                 <td>{{ projection.b_color }}</td>
-                                <td>{{ projection.c_color }}</td>
+                                {% if projection.c_color is not none %}
+                                    <td>{{ projection.c_color }}</td>
+                                {% else %}
+                                    <td></td>
+                                {% endif %}
                                 <td>{{ projection.qty }}</td>
                             </tr>    
                         {% endfor %}
