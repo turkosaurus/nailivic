@@ -53,8 +53,8 @@ authusers.append(os.getenv('USERC'))
 
 ###### TEMPLATES ######
 
-# colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
 colors = ['🖤 black', '❤️ red', '💙 turq.', '💛 yellow', '💚 green', '💜 purple']
+# colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
 sizes = ['s', 'm', 'l']
 
 
@@ -756,6 +756,7 @@ def shipping():
     return render_template('shipping.html')
 
 
+
 ###### ADMINISTRATION ######
 @app.route('/admin', methods=['GET'])
 @login_required
@@ -913,7 +914,7 @@ def config(path):
         if path == 'setup-loterias':
 
             # Read loterias.csv into a SQL table
-            with open('loterias.csv', 'r') as csvfile:
+            with open('static/loterias.csv', 'r') as csvfile:
 
                 print('Reading loterias.csv...')
                 csv_reader = csv.reader(csvfile)
@@ -932,7 +933,7 @@ def config(path):
                     db.execute("INSERT INTO loterias (nombre, a, b, c, backs) VALUES (:nombre, :a, :b, :c, :backs)", \
                                     nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
 
-            return render_template('message.html', message="Success, new cycle created")
+            return render_template('message.html', message="Success, loterias updated.")
 
 
         # Not a valid admin route

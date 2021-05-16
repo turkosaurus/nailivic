@@ -27,16 +27,9 @@ To capture, calculate, and display all data pertaining to producing laser cut wo
 
 # Development Tasks
 
-
-## v0.5
-- deplete parts when items are produced
-- build totals table
-
-
 ## Unscheduled
 #### style
 - custom dark mode
-- monospace font
 #### accessibility
 - complete checklist
 #### test and verify
@@ -53,21 +46,19 @@ To capture, calculate, and display all data pertaining to producing laser cut wo
 - csv or google forms inventory caputure
 
 # Released Versions
-## v0.1
-- buildout online hello nailivic in flask
-- get squareup credentials
-- get shopify credentials
-- confirm main routes
-- setup register and login
-- design db structure
 
-## v0.2
-- setup form capture items into database
-- setup form to caputre parts into database
-- setup form to capture production target
-    - change cycle feature
-    - create new cycle page
-    - associate each projection with a cycle
+## v0.5
+- deplete parts when items are produced
+- build totals table to include backs and boxes
+- adjust production table when part is made
+- adjust production table when item is made
+
+## v0.4
+- built csv import to database
+- refined formatting on entry forms
+- wrote box and backs inventory and production logic
+- rewrote production building function
+- complete data restructuring (86 loterias SUB newloterias)
 
 ## v0.3
 - setup sort columns and categories for
@@ -81,9 +72,18 @@ To capture, calculate, and display all data pertaining to producing laser cut wo
     - subtract on hand
     - queue what's needed for production
 
-## v0.4
-- built csv import to database
-- refined formatting on entry forms
-- wrote box and backs inventory and production logic
-- rewrote production building function
-- complete data restructuring (86 loterias SUB newloterias)
+## v0.2
+- setup form capture items into database
+- setup form to caputre parts into database
+- setup form to capture production target
+    - change cycle feature
+    - create new cycle page
+    - associate each projection with a cycle
+
+## v0.1
+- buildout online hello nailivic in flask
+- get squareup credentials
+- get shopify credentials
+- confirm main routes
+- setup register and login
+- design db structure
