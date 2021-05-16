@@ -53,7 +53,7 @@ authusers.append(os.getenv('USERC'))
 
 ###### TEMPLATES ######
 
-colors = ['🖤 black', '❤️ red', '💙 turq.', '💛 yellow', '💚 green', '💜 purple']
+colors = ['🖤 black', '❤️ red', '💙 TQ', '💛 yellow', '💚 green', '💜 purple']
 # colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
 sizes = ['S', 'M', 'L']
 
@@ -705,49 +705,88 @@ def production():
     return redirect("/projections")
 
 
-@app.route('/box', methods=['GET', 'POST'])
+@app.route('/box/make', methods=['POST'])
 @login_required
-def box():
-    if request.method == 'GET':
-        return "#TODO"
+def boxmake():
 
-    # Make a box on POST
+    # Make a box
+
+    # Capture form inputs
+    name = request.form.get("box")
+    qty = int(request.form.get("boxqty"))
+
+
+    # Fetch and update current quantity of boxes onhand and in production queue
+    boxes = db.execute("SELECT * FROM boxes WHERE name=:name", name=name)
+    boxprod = db.execute("SELECT * FROM boxprod WHERE name=:name", name=name)
+
+
+    # Adjust inventory
+    ## Update existing box inventory entry
+    if boxes:
+        qty_onhand = boxes[0]['qty'] + qty
+        db.execute("UPDATE boxes SET qty=:qty WHERE name=:name", qty=qty_onhand, name=name)
+
+    ## Make a new box invetory entry
     else:
+        db.execute("INSERT INTO boxes (name, qty) VALUES (:name, :qty)", name=name, qty=qty)
 
-        # Capture form inputs
-        name = request.form.get("box")
-        qty = int(request.form.get("boxqty"))
+    # Adjust production
+    if boxprod:
 
-        # Fetch and update current quantity of boxes onhand and in production queue
-        boxes = db.execute("SELECT * FROM boxes WHERE name=:name", name=name)
-        boxprod = db.execute("SELECT * FROM boxprod WHERE name=:name", name=name)
+        # Calculate new production quantity
+        qty_prod = boxprod[0]['qty'] - qty
 
+        # Update existing entry if >0
+        if qty_prod > 0:
+            db.execute("UPDATE boxprod SET qty=:qty WHERE name=:name", qty=qty_prod, name=name)
 
-        # Adjust inventory
-        ## Update existing box inventory entry
-        if boxes:
-            qty_onhand = boxes[0]['qty'] + qty
-            db.execute("UPDATE boxes SET qty=:qty WHERE name=:name", qty=qty_onhand, name=name)
-
-        ## Make a new box invetory entry
+        # Delete existing entry if <=0
         else:
-            db.execute("INSERT INTO boxes (name, qty) VALUES (:name, :qty)", name=name, qty=qty)
+            db.execute("DELETE FROM boxprod WHERE name=:name", name=name)
 
-        # Adjust production
-        if boxprod:
+    return redirect('/')
 
-            # Calculate new production quantity
-            qty_prod = boxprod[0]['qty'] - qty
 
-            # Update existing entry if >0
-            if qty_prod > 0:
-                db.execute("UPDATE boxprod SET qty=:qty WHERE name=:name", qty=qty_prod, name=name)
+@app.route('/box/use', methods=['POST'])
+@login_required
+def boxuse():
 
-            # Delete existing entry if <=0
-            else:
-                db.execute("DELETE FROM boxprod WHERE name=:name", name=name)
+    # Capture form inputs
+    name = request.form.get("box")
+    qty = int(request.form.get("boxqty"))
 
-        return redirect('/')
+
+    # Fetch and update current quantity of boxes onhand and in production queue
+    boxes = db.execute("SELECT * FROM boxes WHERE name=:name", name=name)
+    boxprod = db.execute("SELECT * FROM boxprod WHERE name=:name", name=name)
+
+
+    # Adjust inventory
+    ## Update existing box inventory entry
+    if boxes:
+        qty_onhand = boxes[0]['qty'] + qty
+        db.execute("UPDATE boxes SET qty=:qty WHERE name=:name", qty=qty_onhand, name=name)
+
+    ## Make a new box invetory entry
+    else:
+        db.execute("INSERT INTO boxes (name, qty) VALUES (:name, :qty)", name=name, qty=qty)
+
+    # Adjust production
+    if boxprod:
+
+        # Calculate new production quantity
+        qty_prod = boxprod[0]['qty'] - qty
+
+        # Update existing entry if >0
+        if qty_prod > 0:
+            db.execute("UPDATE boxprod SET qty=:qty WHERE name=:name", qty=qty_prod, name=name)
+
+        # Delete existing entry if <=0
+        else:
+            db.execute("DELETE FROM boxprod WHERE name=:name", name=name)
+
+    return redirect('/')
 
 
 @app.route('/shipping')
