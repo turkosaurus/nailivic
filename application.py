@@ -19,8 +19,6 @@ part: constituent piece that comprises an item, usually one of two or three
 loteria: woodcut loteria pieces
 """
 
-#TODO sort production queue by color sort by size
-
 
 ###### CONFIGURATION ######
 # Initialize Flask App Ojbect
@@ -58,7 +56,6 @@ authusers.append(os.getenv('USERC'))
 # colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
 colors = ['🖤 black', '❤️ red', '💙 turq.', '💛 yellow', '💚 green', '💜 purple']
 sizes = ['s', 'm', 'l']
-          
 
 
 ###### Helper Functions ######
@@ -77,9 +74,9 @@ def login_required(f):
     return decorated_function
 
 
-
 ###### QUEUE ######
 # These functions produce production table, calculating projecitons less inventory
+# Negative values can dequeue items
 
 # Queue part(s) of specified color for production
 def queuepart(name, size, color, qty):
@@ -211,8 +208,19 @@ def makequeue():
             queueboxes(nombre, qty)
         
         # Identify how many items of that type, size, colors exist in inventory
-        items_onhand = db.execute("SELECT COUNT(id) FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
-                        name=nombre, size=size, a_color=a, b_color=b, c_color=c)
+
+        # 3 color item
+        if c is not None:
+            items_onhand = db.execute("SELECT COUNT(id) FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
+                                        name=nombre, size=size, a_color=a, b_color=b, c_color=c)
+ 
+        # 2 color item
+        else:
+            items_onhand = db.execute("SELECT COUNT(id) FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color",
+                                        name=nombre, size=size, a_color=a, b_color=b)
+
+        print(items_onhand)
+        print(f"Counting {items_onhand[0]['count']} {size} {nombre} {a} {b} {c} in inventory.")
         items_onhand = items_onhand[0]['count']
         
         # Calculate items needed for production; subtract inventory items from projections['qty']
@@ -248,7 +256,6 @@ def makequeue():
 
 
 
-
 ###### MAIN ROUTES ######
 @app.route('/', methods=['GET', 'POST'])
 @login_required
@@ -259,6 +266,9 @@ def dashboard():
 
         # Query for relevant data
         cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
+        if not cycle:
+            db.execute("UPDATE cycles SET current='TRUE' WHERE name='test cycle'")
+            cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
         user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
         items = db.execute("SELECT * FROM items ORDER BY size ASC, name DESC")
         parts = db.execute("SELECT * FROM parts ORDER BY size ASC, name DESC, color ASC, qty DESC")
@@ -445,7 +455,7 @@ def items():
         if (size is None) or (a is None) or (b is None):
             return render_template('error.html', errcode='403', errmsg='Invalid entry. All Items must have a size and at least 2 colors.')
 
-        # Test for presence of c_color        
+        # Test for appropriateness of c_color presence
         ctest = db.execute("SELECT c FROM loterias WHERE nombre=:name", name=item)
 
         # No c is given
@@ -466,7 +476,7 @@ def items():
         names = db.execute("SELECT * FROM loterias WHERE nombre=:item", item=item)
 
         # Deplete backs
-        # Update quantity
+        # Update inventory
         backs_onhand = db.execute("SELECT qty FROM parts WHERE name=:backs AND size=:size", backs=names[0]['backs'], size=size)
         if backs_onhand:
             print(f'backs_onhand:{backs_onhand}')
@@ -474,14 +484,16 @@ def items():
 
             # Remove entry if update would be cause qty to be less than 1
             if new_qty < 1:
-                db.execute("DELETE FROM parts WHERE name=:backs AND size=:size AND color=:color", backs=names[0]['backs'], size=size, color=color)
+                db.execute("DELETE FROM parts WHERE name=:backs AND size=:size", backs=names[0]['backs'], size=size)
 
             # Update existing entry
             else:
-                db.execute("UPDATE parts SET qty=:backs_onhand WHERE name=:backs AND size=:size AND color=:color", backs_onhand=names[0]['backs'], size=size, color=color)
+                db.execute("UPDATE parts SET qty=:qty WHERE name=:backs AND size=:size", qty=new_qty, backs=names[0]['backs'], size=size)
+
+            queuebacks(names[0]['backs'], size, qty * -1)
 
         #Deplete a
-        # Update quantity
+        # Update inventory
         a_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['a'], size=size, color=a)
         if a_onhand:
             new_qty = a_onhand[0]['qty'] - qty
@@ -492,10 +504,45 @@ def items():
 
             # Update existing entry
             else:
-                db.execute("UPDATE parts SET qty=:a_onhand WHERE name=:name AND size=:size AND color=:color", a_onhand=names[0]['a'], size=size, color=a)
+                db.execute("UPDATE parts SET qty=:qty WHERE name=:name AND size=:size AND color=:color", qty=new_qty, name=names[0]['a'], size=size, color=a)
 
-        #TODO Deplete b
-        #TODO Deplete c (if applicable)
+            # Update production
+            queuepart(names[0]['a'], size, a, qty * -1)
+
+        #Deplete b
+        # Update inventory
+        b_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['b'], size=size, color=b)
+        if b_onhand:
+            new_qty = b_onhand[0]['qty'] - qty
+
+            # Remove entry if update would be cause qty to be less than 1
+            if new_qty < 1:
+                db.execute("DELETE FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['b'], size=size, color=b)
+
+            # Update existing entry
+            else:
+                db.execute("UPDATE parts SET qty=:qty WHERE name=:name AND size=:size AND color=:color", qty=new_qty, name=names[0]['b'], size=size, color=b)
+
+            # Update production
+            queuepart(names[0]['b'], size, b, qty * -1)
+
+        #Deplete c
+        if c is not None:
+            # Update inventory
+            c_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['c'], size=size, color=c)
+            if c_onhand:
+                new_qty = c_onhand[0]['qty'] - qty
+
+                # Remove entry if update would be cause qty to be less than 1
+                if new_qty < 1:
+                    db.execute("DELETE FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['c'], size=size, color=c)
+
+                # Update existing entry
+                else:
+                    db.execute("UPDATE parts SET qty=:qty WHERE name=:name AND size=:size AND color=:color", qty=new_qty, name=names[0]['c'], size=size, color=c)
+
+                # Update production
+                queuepart(names[0]['c'], size, c, qty * -1)
 
 
         # Make new item(s)
@@ -614,7 +661,6 @@ def production():
     db.execute("UPDATE boxprod SET qty=0")
 
     newloterias = db.execute("SELECT * FROM loterias")
-    
 
     # Ensure that every item in projections is added to the production queue (less inventory on hand)
     for item in projections:
@@ -656,9 +702,6 @@ def production():
             # backs
             queuebacks(name, size, qty)
 
-    # (RE)BUILD PRODUCTION SUMMARY TOTALS
-        # TODO
-
     return redirect("/projections")
 
 
@@ -681,7 +724,6 @@ def box():
 
 
         # Adjust inventory
-        # TODO handle negatives?
         ## Update existing box inventory entry
         if boxes:
             qty_onhand = boxes[0]['qty'] + qty
@@ -729,7 +771,7 @@ def config(path):
         # Change or make new cycle
         if path == 'cycle':
 
-            print("Making a new cycle.")
+            print("Computing cycle productions.")
             name = request.form.get("name")
 
             # Make all other cycles not current
@@ -752,6 +794,7 @@ def config(path):
 
             # Calculate production values
             makequeue()
+
             return redirect('/projections')
 
 
