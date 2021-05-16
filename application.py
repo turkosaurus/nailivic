@@ -321,15 +321,12 @@ def dashboard():
         if not size:
             return render_template('error.html', errcode='403', errmsg='Size must be specified for part')
 
-
         # Determine if part with color, or backs
         backs_onhand = db.execute("SELECT backs FROM loterias WHERE backs=:part", part=part)
 
-        # BACKS - PARTS WITHOUT COLORS
+        # BACKS
         if backs_onhand:
-            print("IT'S A BACK!")
-            print(backs_onhand)
-
+            print(f"Backs on hand: {backs_onhand}")
 
             # What quantity of this part already exists?
             onhand = db.execute("SELECT qty FROM parts WHERE \
@@ -348,10 +345,10 @@ def dashboard():
 
             # Update existing entry's quantity
             else:
-                qty = onhand[0]['qty'] + qty
+                new_qty = onhand[0]['qty'] + qty
                 db.execute("UPDATE parts SET qty=:qty WHERE \
-                            name=:name AND size=:size", qty=qty, name=part, size=size)
-                print(f"Existing {size} {part} inventory quantity updated from {onhand[0]['qty']} to {qty}.")                        
+                            name=:name AND size=:size", qty=new_qty, name=part, size=size)
+                print(f"Existing {size} {part} inventory quantity updated from {onhand[0]['qty']} to {new_qty}.")                        
 
             # Update production queue
         
@@ -394,10 +391,10 @@ def dashboard():
 
             # Update existing entry's quantity
             else:
-                qty = onhand[0]['qty'] + qty
+                new_qty = onhand[0]['qty'] + qty
                 db.execute("UPDATE parts SET qty=:qty WHERE \
-                            name=:name AND size=:size AND color=:color", qty=qty, name=part, size=size, color=color)
-                print(f"Existing {size} {color} {part} inventory quantity updated from {onhand[0]['qty']} to {qty}.")                        
+                            name=:name AND size=:size AND color=:color", qty=new_qty, name=part, size=size, color=color)
+                print(f"Existing {size} {color} {part} inventory quantity updated from {onhand[0]['qty']} to {new_qty}.")                        
 
             # Update production queue
         
