@@ -883,7 +883,7 @@ def config(path):
                 )")
 
             # Create table: boxes
-            db.execute("DROP TABLE boxes")
+            # db.execute("DROP TABLE boxes")
             db.execute("CREATE TABLE IF NOT EXISTS boxes ( \
                 name VARCHAR ( 255 ), \
                 qty INTEGER \
@@ -894,14 +894,6 @@ def config(path):
             db.execute("CREATE TABLE IF NOT EXISTS boxprod ( \
                 name VARCHAR ( 255 ), \
                 qty INTEGER \
-                )")
-
-            # Create table: boxes
-            # db.execute("DROP TABLE boxes")
-            db.execute("CREATE TABLE IF NOT EXISTS boxes ( \
-                name VARCHAR ( 255 ), \
-                qty_onhand INTEGER, \
-                qty_prod INTEGER \
                 )")
             
             # Create table: projections
@@ -941,6 +933,8 @@ def config(path):
                 time = datetime.datetime.utcnow().isoformat()
                 db.execute("INSERT INTO cycles (name, created_on, current) VALUES ('test cycle', :time, 'TRUE')", time=time)
 
+
+            # EXPERIMENTAL
             #Create table: summary
             db.execute("DROP TABLE summary")
             db.execute("CREATE TABLE IF NOT EXISTS summary ()")
