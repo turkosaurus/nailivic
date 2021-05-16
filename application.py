@@ -55,7 +55,7 @@ authusers.append(os.getenv('USERC'))
 
 colors = ['🖤 black', '❤️ red', '💙 turq.', '💛 yellow', '💚 green', '💜 purple']
 # colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
-sizes = ['s', 'm', 'l']
+sizes = ['S', 'M', 'L']
 
 
 ###### Helper Functions ######
