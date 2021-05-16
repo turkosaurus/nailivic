@@ -58,21 +58,7 @@ authusers.append(os.getenv('USERC'))
 # colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
 colors = ['🖤 black', '❤️ red', '💙 turq.', '💛 yellow', '💚 green', '💜 purple']
 sizes = ['s', 'm', 'l']
-# loterias = {
-#     'La Dama': ['Frida', 'Frida Flowers', 'Frida Backs'],
-#     'La Sirena': ['Mermaid Body', 'Mermaid Hair', 'Mermaid Tail', 'Mermaid Backs'],
-#     'La Mano': ['Hand', 'Hand Swirls', 'Hand Backs'],
-#     'La Bota': ['Boot', 'Boot Swirls', 'Boot Flames', 'Boot Backs'],
-#     'El Corazon': ['Heart', 'Heart Swirls', 'Heart Backs'],
-#     'El Musico': ['Guitar', 'Guitar Hands', 'Guitar Backs'],
-#     'La Estrella': ['Star', 'Star Swirls', 'Star Backs'],
-#     'El Pulpo': ['Octopus', 'Octopus Swirls', 'Octopus Tentacles', 'Octopus Backs'],
-#     'La Rosa': ['Rose', 'Rose Swirls', 'Rose Leaves', 'Rose Backs'],
-#     'La Calavera': ['Skull', 'Skull Flames', 'Skull Swirls', 'Skull Backs'],
-#     'El Poder': ['Fist', 'Fist Swirls', 'Fist Wrist', 'Fist Backs']
-# }
-
-            
+          
 
 
 ###### Helper Functions ######
@@ -104,29 +90,31 @@ def queuepart(name, size, color, qty):
                         name=name, size=size, color=color)
     print(f"{parts_onhand} {size} {color} {name} in inventory.")
 
+    # Subtract parts on hand from demand qty
+    if parts_onhand:
+        qty = qty - parts_onhand[0]['qty']
+
     # Identify how many parts of that type are already in production
     parts_inprod = db.execute("SELECT qty FROM production where name=:name AND size=:size AND color=:color", 
                         name=name, size=size, color=color)
     print(f"{parts_inprod} {size} {color} {name} already in production.")
+    
+    # Entry already exists in production queue
+    if parts_inprod:
 
-    # Calculate number of parts not met by current inventory and update production queue
+        # Add parts qty already in prod to parts demand to reach updated prod qty
+        qty = qty + parts_inprod[0]['qty']
+
+        # Update existing production queue entry
+        db.execute("UPDATE production SET qty=:qty WHERE name=:name AND size=:size AND color=:color", 
+                    name=name, size=size, color=color, qty=qty)
+        print(f"{size} {color} {name} production qty of {parts_inprod[0]['qty']} increased to {qty}")
 
     # Add new production queue entry
-    if not parts_inprod:
-        if parts_onhand:
-            new_qty = qty - parts_onhand[0]['qty']
-        else:
-            new_qty = qty
-        db.execute("INSERT INTO production (name, size, color, qty) VALUES (:name, :size, :color, :qty)", 
-                    name=name, size=size, color=color, qty=new_qty)
-        print(f"{qty} {size} {color} {name} inserted into production queue")
-        
-    # Update existing production queue entry
     else:
-        new_qty = qty - parts_onhand[0]['qty'] + parts_inprod[0]
-        db.execute("UPDATE production SET qty=:qty WHERE name=:name AND size=:size AND color=:color", 
-                    name=name, size=size, color=color, qty=new_qty)
-        print(f"{new_qty} {size} {color} {name} updated into production queue")
+        db.execute("INSERT INTO production (name, size, color, qty) VALUES (:name, :size, :color, :qty)", 
+                    name=name, size=size, color=color, qty=qty)
+        print(f"{qty} {size} {color} {name} inserted into production queue")
 
 
 # Queue backs for production            
@@ -138,27 +126,33 @@ def queuebacks(name, size, qty):
                         name=name, size=size)
     print(f"{parts_onhand} {size} {name} in inventory.")
 
+    # Subtract parts on hand from demand qty
+    if parts_onhand:
+        qty = qty - parts_onhand[0]['qty']
+
     # Identify how many parts of that type are already in production
     parts_inprod = db.execute("SELECT qty FROM production where name=:name AND size=:size", 
                         name=name, size=size)
     print(f"{parts_inprod} {size} {name} already in production.")
 
-    # Calculate number of parts not met by current inventory and update production queue
+
+    # Entry already exists in production queue
+    if parts_inprod:
+
+        # Add parts qty already in prod to parts demand to reach updated prod qty
+        qty = qty + parts_inprod[0]['qty']
+
+        # Update existing production queue entry
+        db.execute("UPDATE production SET qty=:qty WHERE name=:name AND size=:size", 
+                    name=name, size=size, qty=qty)
+        print(f"{size} {name} production qty of {parts_inprod[0]['qty']} increased to {qty}")
 
     # Add new production queue entry
-    if not parts_inprod:
-        new_qty = qty - parts_onhand[0]['qty']
-        db.execute("INSERT INTO production (name, size, qty) VALUES (:name, :size, :qty)", 
-                    name=name, size=size, qty=new_qty)
-        print(f"{qty} {size} {name} inserted into production queue")
-        
-    # Update existing production queue entry
     else:
-        new_qty = qty - parts_onhand[0]['qty'] + parts_inprod[0]['qty']
-        db.execute("UPDATE production SET qty=:qty WHERE name=:name AND size=:size", 
-                    name=name, size=size, qty=new_qty)
-        print(f"{new_qty} {size} {name} updated into production queue")
-
+        db.execute("INSERT INTO production (name, size, qty) VALUES (:name, :size, :qty)", 
+                    name=name, size=size, qty=qty)
+        print(f"{qty} {size} {name} inserted into production queue")
+      
 
 # Queue boxes for production
 def queueboxes(name, qty):
@@ -168,25 +162,23 @@ def queueboxes(name, qty):
     boxes_onhand = db.execute("SELECT * FROM boxes WHERE name=:name", name=name)
     print(f"{boxes_onhand} {name} boxes in inventory")
 
+    if boxes_onhand:
+        qty = qty - boxes_onhand[0]['qty']
+
     # Identify how many boxes of that type are already queued for production
     boxes_inprod = db.execute("SELECT * FROM boxprod WHERE name=:name", name=name)
     print(f"{boxes_inprod} {name} boxes already in production")
 
+    # Entry already exists in boxprod
+    if boxes_inprod:
+        qty = qty + boxes_inprod[0]['qty']
+        db.execute("UPDATE boxprod SET qty=:qty WHERE name=:name", qty=qty, name=name)
+        print(f"{name} boxes production queue of {boxes_inprod[0]['qty']} increased to {qty}")
 
-    # Calculate number of boxes not met by current inventory and update production queue
-
-    #TODO export the math in this next if/else to above functions    
-    # Add new box queue entry
-    if not boxes_inprod:
-        new_qty = qty - boxes_onhand[0]['qty']
-        db.execute("INSERT INTO boxprod (name, qty) VALUES (:name, :qty)", name=name, qty=new_qty)
-        print(f"{qty} {name} boxes in production queue")
-
-    # Update existing box queue entry
+    # Make new entry in boxprod
     else:
-        new_qty = qty - boxes_onhand[0]['qty'] + boxes_inprod[0]['qty']
-        db.execute("UPDATE boxprod SET qty=:qty WHERE name=:name", qty=new_qty, name=name)
-        print(f"{new_qty} {name} boxes in production queue")
+        db.execute("INSERT INTO boxprod (name, qty) VALUES (:name, :qty)", name=name, qty=qty)
+        print(f"{qty} {name} boxes in production queue")
 
 
 # (RE)BUILD PRODUCTION TABLE
@@ -218,7 +210,6 @@ def makequeue():
         if size == sizes[0]:
             queueboxes(nombre, qty)
         
-        # TODO does a complete item include boxes?
         # Identify how many items of that type, size, colors exist in inventory
         items_onhand = db.execute("SELECT COUNT(id) FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
                         name=nombre, size=size, a_color=a, b_color=b, c_color=c)
@@ -303,9 +294,6 @@ def dashboard():
 
             print(totals)
 
-        #TODO backs
-        print(f"backs:{backs}")
-
         # Box Production Total
         box_prod_total = db.execute("SELECT SUM(qty) FROM boxprod")
         box_prod_total = box_prod_total[0]['sum']
@@ -330,27 +318,107 @@ def dashboard():
         qty = int(request.form.get("qty"))
         print(part, size, color, qty)
 
-        # What quantity of this part already exists?
-        onhand = db.execute("SELECT qty FROM parts WHERE \
-                            name=:name AND size=:size AND color=:color", \
-                            name=part, size=size, color=color)
-        print(f"Fetching onhand ...")
-        print(onhand)
+        if not size:
+            return render_template('error.html', errcode='403', errmsg='Size must be specified for part')
 
-        # None, create new entry
-        if not onhand:
-            db.execute("INSERT INTO parts (name, size, color, qty) VALUES \
-                        (:name, :size, :color, :qty)", \
-                        name=part, size=size, color=color, qty=qty)
-            print("New parts entry created.")                        
 
-        # Update existing entry's quantity
+        # Determine if part with color, or backs
+        backs_onhand = db.execute("SELECT backs FROM loterias WHERE backs=:part", part=part)
+
+        # BACKS - PARTS WITHOUT COLORS
+        if backs_onhand:
+            print("IT'S A BACK!")
+            print(backs_onhand)
+
+
+            # What quantity of this part already exists?
+            onhand = db.execute("SELECT qty FROM parts WHERE \
+                                name=:name AND size=:size", \
+                                name=part, size=size)
+
+            print(f"Fetching onhand backs...")
+            print(onhand)
+
+            # None, create new entry
+            if not onhand:
+                db.execute("INSERT INTO parts (name, size, qty) VALUES \
+                            (:name, :size, :qty)", \
+                            name=part, size=size, qty=qty)
+                print(f"New {size} {part} entry created with qty {qty}.")                        
+
+            # Update existing entry's quantity
+            else:
+                qty = onhand[0]['qty'] + qty
+                db.execute("UPDATE parts SET qty=:qty WHERE \
+                            name=:name AND size=:size", qty=qty, name=part, size=size)
+                print(f"Existing {size} {part} inventory quantity updated from {onhand[0]['qty']} to {qty}.")                        
+
+            # Update production queue
+        
+            # Identify matching part that is already in production
+            parts_inprod = db.execute("SELECT qty FROM production WHERE \
+                            name=:name AND size=:size", name=part, size=size)
+
+            if parts_inprod:
+
+                # Subtract parts being made from production queue
+                new_partsprod = parts_inprod[0]['qty'] - qty
+
+                # Remove entry because <0
+                if new_partsprod < 1:
+                    db.execute("DELETE FROM production WHERE \
+                            name=:name AND size=:size", name=part, size=size)
+
+                # Update entry to new depleted quantity after accouting for newly produced parts
+                else:
+                    db.execute("UPDATE production SET qty=:new_partsprod WHERE \
+                            name=:name AND size=:size", name=part, size=size, new_partsprod=new_partsprod)
+
+        # PARTS WITH COLORS
         else:
-            updated = onhand[0]['qty'] + qty
-            db.execute("UPDATE parts SET qty=:updated WHERE \
-                        name=:name AND size=:size AND color=:color", \
-                        updated=updated, name=part, size=size, color=color)
-            print("Existing parts inventory quantity updated.")                        
+            # What quantity of this part already exists?
+            onhand = db.execute("SELECT qty FROM parts WHERE \
+                                name=:name AND size=:size AND color=:color", \
+                                name=part, size=size, color=color)
+
+            print(f"Fetching onhand parts...")
+            print(onhand)
+
+            #BUG this is creating duplicates for backs
+            # None, create new entry
+            if not onhand:
+                db.execute("INSERT INTO parts (name, size, color, qty) VALUES \
+                            (:name, :size, :color, :qty)", \
+                            name=part, size=size, color=color, qty=qty)
+                print(f"New {size} {color} {part} entry created with qty {qty}.")                        
+
+            # Update existing entry's quantity
+            else:
+                qty = onhand[0]['qty'] + qty
+                db.execute("UPDATE parts SET qty=:qty WHERE \
+                            name=:name AND size=:size AND color=:color", qty=qty, name=part, size=size, color=color)
+                print(f"Existing {size} {color} {part} inventory quantity updated from {onhand[0]['qty']} to {qty}.")                        
+
+            # Update production queue
+        
+            # Identify matching part that is already in production
+            parts_inprod = db.execute("SELECT qty FROM production WHERE \
+                            name=:name AND size=:size AND color=:color", name=part, size=size, color=color)
+
+            if parts_inprod:
+
+                # Subtract parts being made from production queue
+                new_partsprod = parts_inprod[0]['qty'] - qty
+
+                # Remove entry because <0
+                if new_partsprod < 1:
+                    db.execute("DELETE FROM production WHERE \
+                            name=:name AND size=:size AND color=:color", name=part, size=size, color=color)
+
+                # Update entry to new depleted quantity after accouting for newly produced parts
+                else:
+                    db.execute("UPDATE production SET qty=:new_partsprod WHERE \
+                            name=:name AND size=:size AND color=:color", name=part, size=size, color=color, new_partsprod=new_partsprod)
 
         return redirect('/')
 
