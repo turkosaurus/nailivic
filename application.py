@@ -936,6 +936,21 @@ def config(path):
             return render_template('message.html', message="Success, loterias updated.")
 
 
+        # Wipe items
+        if path == 'wipe-items':
+            db.execute("DELETE FROM items")
+
+
+        # Wipe items
+        if path == 'wipe-parts':
+            db.execute("DELETE FROM parts")
+
+
+        # Wipe items
+        if path == 'wipe-boxes':
+            db.execute("DELETE FROM boxes")
+
+
         # Not a valid admin route
         else:
             return redirect('/')
