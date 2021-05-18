@@ -896,6 +896,13 @@ def config(path):
                 qty INTEGER \
                 )")
             
+            # Create table: boxused
+            # db.execute("DROP TABLE boxused")
+            db.execute("CREATE TABLE IF NOT EXISTS boxused ( \
+                name VARCHAR ( 255 ), \
+                qty INTEGER \
+                )")
+
             # Create table: projections
             # db.execute("DROP TABLE projections")
             db.execute("CREATE TABLE IF NOT EXISTS projections ( \
@@ -935,8 +942,8 @@ def config(path):
 
 
             # EXPERIMENTAL
-            #Create table: summary
-            db.execute("DROP TABLE summary")
+            # Create table: summary
+            # db.execute("DROP TABLE summary")
             db.execute("CREATE TABLE IF NOT EXISTS summary ()")
 
 
@@ -975,13 +982,13 @@ def config(path):
             return render_template('message.html', message="Success, items wiped.")
 
 
-        # Wipe items
+        # Wipe parts
         if path == 'wipe-parts':
             db.execute("DELETE FROM parts")
             return render_template('message.html', message="Success, parts wiped.")
 
 
-        # Wipe items
+        # Wipe boxes
         if path == 'wipe-boxes':
             db.execute("DELETE FROM boxes")
             return render_template('message.html', message="Success, boxes wiped.")

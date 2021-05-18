@@ -11,3 +11,7 @@ main, body, .card, .list-group-item {
     background-color: hsl(0, 0%, 95%);
 }
 /* .linkbutton */
+
+html {
+    font-size: 0.95rem;
+  }
