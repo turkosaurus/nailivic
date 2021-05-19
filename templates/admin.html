@@ -19,7 +19,7 @@ Admin
 
                 <!-- Name -->
                 <div class="form-group">
-                    <label for="name">Cycle Name</label>
+                    <label for="name">New Cycle Name</label>
                     <input type="text" name="name" id="name">
                 </div>
                 <!-- <button type="reset" class="btn btn-primary">Reset</button> -->
@@ -34,7 +34,7 @@ Admin
 
                 <!-- Name -->
                 <div class="form-group">
-                    <label for="delname">Cycle Name</label>
+                    <label for="delname">Cycle to Delete</label>
                     <select name="delname" id="delname">
                         {% for cycle in cycles %}
                             <option>{{ cycle.name }}</option>

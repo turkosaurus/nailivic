@@ -578,7 +578,7 @@ def projections():
         cycles = db.execute("SELECT id, name, created_on FROM cycles WHERE current='FALSE'")
         print(f"cycles:{cycles}")
 
-        newloterias = db.execute("SELECT nombre FROM loterias")
+        newloterias = db.execute("SELECT * FROM loterias")
         print(newloterias)
 
         # Select projections from current cycle only
@@ -703,6 +703,56 @@ def production():
             queuebacks(name, size, qty)
 
     return redirect("/projections")
+
+
+
+
+
+@app.route('/box', methods=['POST'])
+@login_required
+def box():
+
+    # Make a box
+
+    # Capture form inputs
+    name = request.form.get("box")
+    qty = int(request.form.get("boxqty"))
+    action = request.form.get("action")
+    print(action)
+    return "stopped"
+
+    # Fetch and update current quantity of boxes onhand and in production queue
+    boxes = db.execute("SELECT * FROM boxes WHERE name=:name", name=name)
+    boxprod = db.execute("SELECT * FROM boxprod WHERE name=:name", name=name)
+
+
+    # Adjust inventory
+    ## Update existing box inventory entry
+    if boxes:
+        qty_onhand = boxes[0]['qty'] + qty
+        db.execute("UPDATE boxes SET qty=:qty WHERE name=:name", qty=qty_onhand, name=name)
+
+    ## Make a new box invetory entry
+    else:
+        db.execute("INSERT INTO boxes (name, qty) VALUES (:name, :qty)", name=name, qty=qty)
+
+    # Adjust production
+    if boxprod:
+
+        # Calculate new production quantity
+        qty_prod = boxprod[0]['qty'] - qty
+
+        # Update existing entry if >0
+        if qty_prod > 0:
+            db.execute("UPDATE boxprod SET qty=:qty WHERE name=:name", qty=qty_prod, name=name)
+
+        # Delete existing entry if <=0
+        else:
+            db.execute("DELETE FROM boxprod WHERE name=:name", name=name)
+
+    return redirect('/')
+
+
 
 
 @app.route('/box/make', methods=['POST'])

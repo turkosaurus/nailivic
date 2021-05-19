@@ -13,14 +13,14 @@ Projections
     <hr>
     <div class="row">
         <div class="col-6">
-                <!-- Cycle Choice -->
-                <form action="/admin/cycle" method="post">
+            <!-- Cycle Choice -->
+            <form action="/admin/cycle" method="post">
                 <div class="form-group">
                     <label for="cycle">Cycle</label>
                     <select name="cycle" id="cycle">
-                        <option value="{{ current[0].id }}">{{ current[0].name }} ({{ current[0].created_on }})</option>
+                        <option value="{{ current[0].id }}" title=" Created on: {{ current[0].created_on }}">{{ current[0].name }}</option>
                         {% for cycle in cycles %}
-                            <option value="{{ cycle.id }}">{{ cycle.name }} ({{ cycle.created_on }})</option>
+                            <option value="{{ cycle.id }}" title="Created on: {{ cycle.created_on }}" Created on: {{ current[0].created_on }}">{{ cycle.name }}</option>
                         {% endfor %}
                     </select>
                     <button type="submit" class="btn btn-primary">Change Cycle // (Re)compute Production</button>
@@ -46,8 +46,8 @@ Projections
                         <div class="form-group">
                             <label for="item">Item</label>
                             <select name="item" id="item">
-                                {% for loteria in loterias %}
-                                    <option value="{{ loteria['nombre'] }}">{{ loteria['nombre'] }}</option>
+                                {% for loteria in loterias %}                                    
+                                    <option value="{{ loteria['nombre'] }}" title="{{ loteria['a'] }}, {{ loteria['b'] }}{% if not loteria['c'] %}{% else %}, {{ loteria['c']}}{% endif %}">{{ loteria['nombre'] }}</option>
                                 {% endfor %}
                             </select>
                         </div>    
@@ -70,7 +70,7 @@ Projections
                 <div class="row">
 
                     <!-- Color A -->
-                    <div class="col-sm">
+                    <div class="col-lg-4 col-md-6">
                         <h6>Color A</h6>
                         <div class="form-group">
                             {% for color in colors %}
@@ -83,7 +83,7 @@ Projections
                     </div>
 
                     <!-- Color B -->
-                    <div class="col-sm">
+                    <div class="col-lg-4 col-md-6">
                         <h6>Color B</h6>
                         <div class="form-group">
                             {% for color in colors %}
@@ -96,7 +96,7 @@ Projections
                     </div>
 
                     <!-- Color C -->
-                    <div class="col-sm">
+                    <div class="col-lg-4 col-md-6">
                         <h6>Color C</h6>
                         <div class="form-group">
                             {% for color in colors %}
