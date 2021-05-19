@@ -20,8 +20,8 @@ Dashboard
         </div>
     </div>
     <hr>
-    <div class="row">
-        <div class="col">
+    <div class="row justify-content-center">
+        <div class="col-lg-11 col-md-12">
             <div class="row justify-content-center">
                 <h2>Laser Queue Totals</h2>
             </div>
@@ -182,7 +182,7 @@ Dashboard
             </form>
             <hr>
             <!-- Use Box -->
-            <form action="/box/use" method="post">
+            <form action="/box" method="post">
                 <div class="row">
                     <div class="col">
                         <div class="form-group">
@@ -203,8 +203,9 @@ Dashboard
                             <h4>Quantity</h4>
                             <input type="number" value="1" min="-999" max="999" step="1" name="boxqty" id="boxqty">
                             <!-- Submit -->
+                            <input type="hidden" value="use" name="action" id="action">
                             <button type="reset" class="btn btn-primary">Reset</button>
-                            <button type="submit" class="btn btn-primary" disabled='true'>Use</button>
+                            <button type="submit" class="btn btn-primary">Use</button>
                         </div>
                     </div>
                 </div>
@@ -275,7 +276,7 @@ Dashboard
         </div>
         <!-- Boxes on Hand -->
         <div class="col-md-6 col-sm-12">
-            <h3>Box Inventory</h3>
+            <h3>Made Box Inventory</h3>
             <table class="table table-dark table-hover">
                 {% for box in boxes %}
                     {% if box.qty is not none %}
@@ -288,5 +289,29 @@ Dashboard
             </table>
         </div>
     </div>
+
+    <hr>
+
+    <div class="row">
+        <!--  -->
+        <div class="col-md-6 col-sm-12">
+        </div>
+
+        <!-- Used Boxes on Hand -->
+        <div class="col-md-6 col-sm-12">
+            <h3>Used Box Inventory</h3>
+            <table class="table table-dark table-hover">
+                {% for box in boxused %}
+                    {% if box.qty is not none %}
+                        <tr>
+                            <td>{{ box.name }}</td>
+                            <td>{{ box.qty }}</td>
+                        </tr>
+                    {% endif %}                            
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
 </container>
 {% endblock %}

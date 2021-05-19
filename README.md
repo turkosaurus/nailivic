@@ -46,6 +46,9 @@ To capture, calculate, and display all data pertaining to producing laser cut wo
 - csv or google forms inventory caputure
 
 # Released Versions
+## v0.6
+- used box inventory routes added
+- title tips for option menus
 
 ## v0.5
 - deplete parts when items are produced

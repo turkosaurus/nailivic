@@ -37,7 +37,7 @@ Admin
                     <label for="delname">Cycle to Delete</label>
                     <select name="delname" id="delname">
                         {% for cycle in cycles %}
-                            <option>{{ cycle.name }}</option>
+                            <option title="Created on: {{ cycle.created_on }}">{{ cycle.name }}</option>
                         {% endfor %}
                     </select>
                 </div>

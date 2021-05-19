@@ -155,12 +155,17 @@ def queuebacks(name, size, qty):
 def queueboxes(name, qty):
     print("queueboxes()")
 
-    # Identify how many boxes of that type are already on hand
+    # How many boxes already in inventory?
     boxes_onhand = db.execute("SELECT * FROM boxes WHERE name=:name", name=name)
-    print(f"{boxes_onhand} {name} boxes in inventory")
-
     if boxes_onhand:
         qty = qty - boxes_onhand[0]['qty']
+    print(f"{boxes_onhand} {name} boxes in inventory.")
+
+    # How many boxes in used inventory?
+    boxused = db.execute("SELECT * FROM boxused where name=:name", name=name)
+    if boxused:
+        qty = qty - boxused[0]['qty']
+    print(f"{boxused} {name} boxes in used inventory.")
 
     # Identify how many boxes of that type are already queued for production
     boxes_inprod = db.execute("SELECT * FROM boxprod WHERE name=:name", name=name)
@@ -309,15 +314,16 @@ def dashboard():
         box_prod_total = box_prod_total[0]['sum']
 
         # Box Inventory & Production
-        boxes = db.execute("SELECT * FROM boxes WHERE qty>0")
-        boxprod = db.execute("SELECT * FROM boxprod WHERE qty>0")
+        boxes = db.execute("SELECT * FROM boxes")
+        boxprod = db.execute("SELECT * FROM boxprod")
+        boxused = db.execute("SELECT * FROM boxused")
 
         production = db.execute("SELECT * FROM production ORDER BY qty DESC, size ASC")
         time = datetime.datetime.utcnow().isoformat()
         print(cycle)
         print(items)
         print(newloterias)
-        return render_template('index.html', production=production, boxes=boxes, boxprod=boxprod, box_prod_total=box_prod_total, backs=backs, loterias=newloterias, sizes=sizes, \
+        return render_template('index.html', production=production, boxes=boxes, boxprod=boxprod, box_prod_total=box_prod_total, boxused=boxused, backs=backs, loterias=newloterias, sizes=sizes, \
             colors=colors, user=user, items=items, parts=parts, projections=projections, totals=totals, cycle=cycle, time=time)
 
     # Upon POSTing form submission
@@ -705,137 +711,76 @@ def production():
     return redirect("/projections")
 
 
-
-
-
 @app.route('/box', methods=['POST'])
 @login_required
 def box():
-
-    # Make a box
 
     # Capture form inputs
     name = request.form.get("box")
     qty = int(request.form.get("boxqty"))
     action = request.form.get("action")
-    print(action)
-    return "stopped"
 
-    # Fetch and update current quantity of boxes onhand and in production queue
+    # Fetch current quantity of boxes onhand
     boxes = db.execute("SELECT * FROM boxes WHERE name=:name", name=name)
-    boxprod = db.execute("SELECT * FROM boxprod WHERE name=:name", name=name)
-
-
-    # Adjust inventory
-    ## Update existing box inventory entry
-    if boxes:
-        qty_onhand = boxes[0]['qty'] + qty
-        db.execute("UPDATE boxes SET qty=:qty WHERE name=:name", qty=qty_onhand, name=name)
-
-    ## Make a new box invetory entry
-    else:
-        db.execute("INSERT INTO boxes (name, qty) VALUES (:name, :qty)", name=name, qty=qty)
-
-    # Adjust production
-    if boxprod:
-
-        # Calculate new production quantity
-        qty_prod = boxprod[0]['qty'] - qty
-
-        # Update existing entry if >0
-        if qty_prod > 0:
-            db.execute("UPDATE boxprod SET qty=:qty WHERE name=:name", qty=qty_prod, name=name)
-
-        # Delete existing entry if <=0
-        else:
-            db.execute("DELETE FROM boxprod WHERE name=:name", name=name)
-
-    return redirect('/')
-
-
-
-
-@app.route('/box/make', methods=['POST'])
-@login_required
-def boxmake():
 
     # Make a box
+    if action == 'make':
 
-    # Capture form inputs
-    name = request.form.get("box")
-    qty = int(request.form.get("boxqty"))
+        # Fetch current quantity of boxes in production queue
+        boxprod = db.execute("SELECT * FROM boxprod WHERE name=:name", name=name)
 
+        # Adjust inventory
+        ## Update existing box inventory entry
+        if boxes:
+            qty_onhand = boxes[0]['qty'] + qty
+            db.execute("UPDATE boxes SET qty=:qty WHERE name=:name", qty=qty_onhand, name=name)
 
-    # Fetch and update current quantity of boxes onhand and in production queue
-    boxes = db.execute("SELECT * FROM boxes WHERE name=:name", name=name)
-    boxprod = db.execute("SELECT * FROM boxprod WHERE name=:name", name=name)
-
-
-    # Adjust inventory
-    ## Update existing box inventory entry
-    if boxes:
-        qty_onhand = boxes[0]['qty'] + qty
-        db.execute("UPDATE boxes SET qty=:qty WHERE name=:name", qty=qty_onhand, name=name)
-
-    ## Make a new box invetory entry
-    else:
-        db.execute("INSERT INTO boxes (name, qty) VALUES (:name, :qty)", name=name, qty=qty)
-
-    # Adjust production
-    if boxprod:
-
-        # Calculate new production quantity
-        qty_prod = boxprod[0]['qty'] - qty
-
-        # Update existing entry if >0
-        if qty_prod > 0:
-            db.execute("UPDATE boxprod SET qty=:qty WHERE name=:name", qty=qty_prod, name=name)
-
-        # Delete existing entry if <=0
+        ## Make a new box invetory entry
         else:
-            db.execute("DELETE FROM boxprod WHERE name=:name", name=name)
+            db.execute("INSERT INTO boxes (name, qty) VALUES (:name, :qty)", name=name, qty=qty)
 
-    return redirect('/')
+        # Adjust production
+        if boxprod:
 
+            # Calculate new production quantity
+            qty_prod = boxprod[0]['qty'] - qty
 
-@app.route('/box/use', methods=['POST'])
-@login_required
-def boxuse():
+            # Update existing entry if >0
+            if qty_prod > 0:
+                db.execute("UPDATE boxprod SET qty=:qty WHERE name=:name", qty=qty_prod, name=name)
 
-    # Capture form inputs
-    name = request.form.get("box")
-    qty = int(request.form.get("boxqty"))
+            # Delete existing entry if <=0
+            else:
+                db.execute("DELETE FROM boxprod WHERE name=:name", name=name)
 
+    # Use a box
+    if action == 'use':
 
-    # Fetch and update current quantity of boxes onhand and in production queue
-    boxes = db.execute("SELECT * FROM boxes WHERE name=:name", name=name)
-    boxprod = db.execute("SELECT * FROM boxprod WHERE name=:name", name=name)
+        # Fetch current quantity of used boxes in inventory
+        boxused = db.execute("SELECT * FROM boxused WHERE name=:name", name=name)
 
+        # Adjust inventory
+        ## Update existing box inventory entry
+        if boxes:
 
-    # Adjust inventory
-    ## Update existing box inventory entry
-    if boxes:
-        qty_onhand = boxes[0]['qty'] + qty
-        db.execute("UPDATE boxes SET qty=:qty WHERE name=:name", qty=qty_onhand, name=name)
+            # Deplete box inventory
+            new_qty = boxes[0]['qty'] - qty
+            if new_qty > 0:
+                db.execute("UPDATE boxes SET qty=:qty WHERE name=:name", qty=new_qty, name=name)
+            else:
+                db.execute("DELETE FROM boxes WHERE name=:name", name=name)
 
-    ## Make a new box invetory entry
-    else:
-        db.execute("INSERT INTO boxes (name, qty) VALUES (:name, :qty)", name=name, qty=qty)
+        # Add to boxused inventory
+        if boxused:
 
-    # Adjust production
-    if boxprod:
+            # Calculate new quantity and update boxused inventory
+            new_qty = boxused[0]['qty'] + qty
+            db.execute("UPDATE boxused SET qty=:qty WHERE name=:name", qty=new_qty, name=name)
 
-        # Calculate new production quantity
-        qty_prod = boxprod[0]['qty'] - qty
-
-        # Update existing entry if >0
-        if qty_prod > 0:
-            db.execute("UPDATE boxprod SET qty=:qty WHERE name=:name", qty=qty_prod, name=name)
-
-        # Delete existing entry if <=0
+        # Make new boxused inventory
         else:
-            db.execute("DELETE FROM boxprod WHERE name=:name", name=name)
-
+            db.execute("INSERT INTO boxused (name, qty) VALUES (:name, :qty)", name=name, qty=qty)
+       
     return redirect('/')
 
 
