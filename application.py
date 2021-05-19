@@ -441,7 +441,7 @@ def dashboard():
 def items():
     if request.method == 'GET':
         items = db.execute("SELECT * FROM items ORDER BY size ASC, name DESC")
-        newloterias = db.execute("SELECT nombre FROM loterias")
+        newloterias = db.execute("SELECT * FROM loterias")
         print(newloterias)
         return render_template('items.html', items=items, loterias=newloterias, sizes=sizes, colors=colors)
 

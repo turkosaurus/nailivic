@@ -28,8 +28,8 @@ Items
                         <div class="form-group">
                             <label for="item">Item</label>
                             <select name="item" id="item">
-                                {% for loteria in loterias %}
-                                    <option value="{{ loteria.nombre }}">{{ loteria.nombre }}</option>
+                                {% for loteria in loterias %}                                    
+                                    <option value="{{ loteria['nombre'] }}" title="{{ loteria['a'] }}, {{ loteria['b'] }}{% if not loteria['c'] %}{% else %}, {{ loteria['c']}}{% endif %}">{{ loteria['nombre'] }}</option>
                                 {% endfor %}
                             </select>
                         </div>    
