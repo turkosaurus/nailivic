@@ -7,34 +7,36 @@ Dashboard
 
 
 <container>
-    <div class="row">
-        <div class="col">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-sm-12">
             <div class="row justify-content-center">
                 <img src="/static/bsl.png" class="img-fluid" alt="big scary laser">
             </div>
+            <div class="row justify-content-center">
+                <h2>Hi, {{ user[0]['username'] }}</h2>
+            </div>
         </div>
-        <div class="col">
-            <h2>Hello, {{ user[0]['username'] }}</h2>
-            <h5>cycle #{{ cycle.0.id }} "{{ cycle.0.name }}"</h5>
-            <h6>rendered at {{ time }}</h6>
+        <div class="col-md-1">
+            <br>
         </div>
-    </div>
-    <hr>
-    <div class="row justify-content-center">
-        <div class="col-lg-11 col-md-12">
+        <div class="col-md-6 col-sm-12">
+            <div class="row justify-content-center">
+                <h4>{{ cycle.0.name }}</h4>
+            </div>
             <div class="row justify-content-center">
                 <h2>Laser Queue Totals</h2>
             </div>
             <table class="table-responsive-sm table-bordered table-hover table-dark text-right">
+                <caption>cycle #{{ cycle.0.id }} rendered at {{ time }}</caption>
                 <thead>
                     <tr>
                         <small>
                             <th scope="col" style="width: 10vw"></th>
                             {% for color in colors %}
-                                <th scope="col" style="width: 10vw">{{ color }}</th>
+                                <th scope="col" style="width: 10vw">{{ color[0] }}{{ color[1] }}</th>
                             {% endfor %}
-                            <th scope="col" style="width: 10vw">backs</th>
-                            <th scope="col" style="width: 10vw">boxes</th>
+                            <th scope="col" style="width: 10vw">🍑</th>
+                            <th scope="col" style="width: 10vw">📦</th>
                         </small>
                     </tr>
                 </thead>
@@ -87,14 +89,14 @@ Dashboard
 
     <!-- Forms -->
     <div class="row">
-        <div class="col-md-6 col-sm-12">
+        <div class="col-md-5 col-sm-12">
             <!-- Make Part -->
             <form action="/" method="post">
                 <div class="row">
                     <div class="col">
                         <div class="form-group">
                             <h3>Make Part</h3>
-                            <!-- <label for="part">part</label> -->
+                            <label for="part">Part</label>
                             <select name="part" id="part">
                                 {% for loteria in loterias %}
                                     <option value="{{ loteria.a }}">{{ loteria.a }}</option>
@@ -110,9 +112,10 @@ Dashboard
                 </div>
                 <!-- Color -->
                 <div class="row">
-                    <div class="col">
+                    <div class="col-7">
                         <div class="form-group">
-                            <h4>Color</h4>
+                            <!-- <h4>Color</h4> -->
+                            <label for="color">Color</label>
                             {% for color in colors %}
                                 <div class="custom-control custom-radio">
                                     <input type="radio" id="{{ color }}" name="color" value="{{ color }}">
@@ -121,96 +124,137 @@ Dashboard
                             {% endfor %}
                         </div>
                     </div>
-                    <div class="col">
-                        <!-- Size -->
-                        <div class="form-group">
-                            <h4>Size</h4>
-                            <!-- <label for="size">Size</label> -->
-                            {% for size in sizes %}
-                            <div class="custom-control custom-radio">
-                                <input type="radio" id="{{ size }}" name="size" value="{{ size }}">
-                                <label for="{{ size }}">{{ size }}</label>        
+                    <div class="col-5">
+                        <div class="row justify-content-start">
+                            <!-- Size -->
+                            <div class="form-group">
+                                <!-- <h4>Size</h4> -->
+                                <label for="size">Size</label>
+                                {% for size in sizes %}
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="{{ size }}" name="size" value="{{ size }}">
+                                    <label for="{{ size }}">{{ size }}</label>        
+                                </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
+                        </div>
+
+                        <div class="row justify-content-end">
+                            <!-- Quantity -->
+                            <div class="form-group">
+                                <!-- <h4>Quantity</h4> -->
+                                <label for="qty">#</label>
+                                <input type="number" value="1" min="-999" max="999" step="1" name="qty" id="qty">
+                                <!-- Submit -->
+                                <button type="reset" class="btn btn-primary">Reset</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-
                 <div class="row">
-                    <!-- Quantity -->
                     <div class="col">
-                        <div class="form-group">
-                            <h4>Quantity</h4>
-                            <input type="number" value="1" min="-999" max="999" step="1" name="qty" id="qty">
-                            <!-- Submit -->
-                            <button type="reset" class="btn btn-primary">Reset</button>
-                            <button type="submit" class="btn btn-primary">Submit</button>
+                        <div class="row">
+                            <button type="submit" class="btn btn-primary btn-block">Make Part</button>
+                            <small id="" class="form-text text-muted">
+                                Moves Part from Laser Queue to Parts Inventory
+                            </small>    
                         </div>
                     </div>
+                </div>
+                <div class="row">
+                    <br>
                 </div>
             </form>
         </div>
+    
+        <div class="col-md-1 col-sm-0">
+
+        </div>
+        <br>
 
         <!-- Make Box -->
         <div class="col-md-6 col-sm-12">
             <form action="/box" method="post">
-                <div class="row">
+                <div class="row align-items-end">
                     <div class="col">
-                        <div class="form-group">
-                            <h3>Make Box</h3>
-                            <!-- <label for="box">part</label> -->
-                            <select name="box" id="box">
-                                {% for loteria in loterias %}
-                                    <option value="{{ loteria.nombre }}">{{ loteria.nombre }}</option>
-                                {% endfor %}
-                            </select>
+                        <div class="row">
+                            <div class="form-group">
+                                <h3>Make Box</h3>
+                                <label for="box">Box</label>
+                                <select name="box" id="box">
+                                    {% for loteria in loterias %}
+                                        <option value="{{ loteria.nombre }}">{{ loteria.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Quantity -->
+                    <div class="col">
+                        <div class="row justify-content-end">
+                            <div class="form-group">
+                                <!-- <h4>Quantity</h4> -->
+                                <label for="boxqty">#</label>
+                                <input type="number" value="1" min="-999" max="999" step="1" name="boxqty" id="boxqty">
+                                <!-- Submit -->
+                                <input type="hidden" value="make" name="action" id="action">
+                                <button type="reset" class="btn btn-primary">Reset</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Quantity -->
                 <div class="row">
                     <div class="col">
-                        <div class="form-group">
-                            <h4>Quantity</h4>
-                            <input type="number" value="1" min="-999" max="999" step="1" name="boxqty" id="boxqty">
-                            <!-- Submit -->
-                            <input type="hidden" value="make" name="action" id="action">
-                            <button type="reset" class="btn btn-primary">Reset</button>
-                            <button type="submit" class="btn btn-primary">Make</button>
-                        </div>
+                        <row class="row">
+                            <button type="submit" class="btn btn-primary btn-block">Make Box</button>
+                            <small id="" class="form-text text-muted">
+                                Moves box(es) from laser queue to Made Box Inventory
+                            </small>
+                        </row>
                     </div>
                 </div>
             </form>
 
-            <hr>
+            <br>
+            <br>
 
             <!-- Use Box -->
             <form action="/box" method="post">
-                <div class="row">
+                <div class="row align-items-end">
                     <div class="col">
-                        <div class="form-group">
-                            <h3>Use Box</h3>
-                            <!-- <label for="box">part</label> -->
-                            <select name="box" id="box">
-                                {% for loteria in loterias %}
-                                    <option value="{{ loteria.nombre }}">{{ loteria.nombre }}</option>
-                                {% endfor %}
-                            </select>
+                        <div class="row">
+                            <div class="form-group">
+                                <h3>Use Box</h3>
+                                <label for="box">Box</label>
+                                <select name="box" id="box">
+                                    {% for loteria in loterias %}
+                                        <option value="{{ loteria.nombre }}">{{ loteria.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- Quantity -->
+                    <div class="col">
+                        <div class="row justify-content-end">
+                            <div class="form-group">
+                                <label for="boxqty">#</label>
+                                <input type="number" value="1" min="-999" max="999" step="1" name="boxqty" id="boxqty">
+                                <!-- Submit -->
+                                <input type="hidden" value="use" name="action" id="action">
+                                <button type="reset" class="btn btn-primary">Reset</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Quantity -->
                 <div class="row">
                     <div class="col">
-                        <div class="form-group">
-                            <h4>Quantity</h4>
-                            <input type="number" value="1" min="-999" max="999" step="1" name="boxqty" id="boxqty">
-                            <!-- Submit -->
-                            <input type="hidden" value="use" name="action" id="action">
-                            <button type="reset" class="btn btn-primary">Reset</button>
-                            <button type="submit" class="btn btn-primary">Use</button>
+                        <div class="row">
+                            <button type="submit" class="btn btn-primary btn-block">Use Box</button>
+                            <small id="" class="form-text text-muted">
+                                Moves box(es) from Made Box inventory to Used Box Inventory
+                            </small>
                         </div>
                     </div>
                 </div>
