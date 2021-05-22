@@ -52,7 +52,7 @@ Items
                 <div class="row">
 
                     <!-- Color A -->
-                    <div class="col-sm">
+                    <div class="col-md-4 col-sm-6">
                         <h6>Color A</h6>
                         <div class="form-group">
                             {% for color in colors %}
@@ -65,7 +65,7 @@ Items
                     </div>
 
                     <!-- Color B -->
-                    <div class="col-sm">
+                    <div class="col-md-4 col-sm-6">
                         <h6>Color B</h6>
                         <div class="form-group">
                             {% for color in colors %}
@@ -78,7 +78,7 @@ Items
                     </div>
 
                     <!-- Color C -->
-                    <div class="col-sm">
+                    <div class="col-md-4 col-sm-6">
                         <h6>Color C</h6>
                         <div class="form-group">
                             {% for color in colors %}
@@ -108,8 +108,11 @@ Items
                     </div>
 
                     <!-- Submit -->
-                    <div class="col">
-                        <button type="submit" class="btn btn-primary">Submit</button>                            
+                    <div class="col-6">
+                        <button type="submit" class="btn btn-primary btn-block">Add Item</button>                            
+                        <small id="" class="form-text text-muted">
+                            Adds Assembled Item to Inventory
+                        </small>    
                     </div>
 
                 </div>                            

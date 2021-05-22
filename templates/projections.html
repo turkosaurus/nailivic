@@ -16,17 +16,33 @@ Projections
             <!-- Cycle Choice -->
             <form action="/admin/cycle" method="post">
                 <div class="form-group">
-                    <label for="cycle">Cycle</label>
+                    <h2>Change Event</h2>
+                    <br>
+                    <label for="cycle">Event</label>
                     <select name="cycle" id="cycle">
                         <option value="{{ current[0].id }}" title=" Created on: {{ current[0].created_on }}">{{ current[0].name }}</option>
                         {% for cycle in cycles %}
                             <option value="{{ cycle.id }}" title="Created on: {{ cycle.created_on }}" Created on: {{ current[0].created_on }}">{{ cycle.name }}</option>
                         {% endfor %}
                     </select>
-                    <button type="submit" class="btn btn-primary">Change Cycle // (Re)compute Production</button>
+                    <button type="submit" class="btn btn-primary btn-large">Update Event</button>
+                    <small id="" class="form-text text-muted">
+                        Changes cycle and rebuilds laser queue
+                    </small>    
                 </div>
             </form>
             <br>
+        </div>
+        <div class="col-6">
+            <p>After items are added to the event's target production, the laser queue is built with the following steps:</p>
+            <ol>
+                <li>Total a given event's target production</li>
+                <li>Subtract items in inventory</li>
+                <li>Determine parts needed for remaining total</li>
+                <li>Subtract parts in inventory</li>
+                <li>Storing remaining totals into laser queue</li>
+                <li>Also add corresponding backs and boxes</li>
+            </ol>
         </div>
     </div>
     <hr>
@@ -35,7 +51,7 @@ Projections
         <div class="col-lg-6 col-md-12">
             <div class="row">
                 <div class="col">
-                    <h2>Add Projected Item</h2>
+                    <h4>Add Item to {{ current[0].name }}</h4>
                 </div>
             </div>
             <form action="/projections" method="post">
@@ -70,7 +86,7 @@ Projections
                 <div class="row">
 
                     <!-- Color A -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-md-4 col-sm-6">
                         <h6>Color A</h6>
                         <div class="form-group">
                             {% for color in colors %}
@@ -83,7 +99,7 @@ Projections
                     </div>
 
                     <!-- Color B -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-md-4 col-sm-6">
                         <h6>Color B</h6>
                         <div class="form-group">
                             {% for color in colors %}
@@ -96,7 +112,7 @@ Projections
                     </div>
 
                     <!-- Color C -->
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-md-4 col-sm-6">
                         <h6>Color C</h6>
                         <div class="form-group">
                             {% for color in colors %}
@@ -138,8 +154,7 @@ Projections
 
         <!-- View Current Projections -->
         <div class="col-md-6 col-sm-12">
-            <h2>{{ current[0].name }}</h2>
-            <h2>Target Production</h2>
+            <h4>{{ current[0].name }} Target Production</h4>
             <table class="table table-dark table-hover">
                 <thead>
                     <tr>
