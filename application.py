@@ -5,7 +5,7 @@ import datetime
 import csv
 
 from cs50 import SQL
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, redirect, render_template, request, session, url_for, flash
 from flask_session import Session
 from tempfile import mkdtemp
 from functools import wraps
@@ -23,6 +23,7 @@ loteria: woodcut loteria pieces
 ###### CONFIGURATION ######
 # Initialize Flask App Ojbect
 app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY')
 
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -216,17 +217,17 @@ def makequeue():
 
         # 3 color item
         if c is not None:
-            items_onhand = db.execute("SELECT COUNT(id) FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
+            items_onhand = db.execute("SELECT qty FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
                                         name=nombre, size=size, a_color=a, b_color=b, c_color=c)
- 
+
         # 2 color item
         else:
-            items_onhand = db.execute("SELECT COUNT(id) FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color",
+            items_onhand = db.execute("SELECT qty FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color",
                                         name=nombre, size=size, a_color=a, b_color=b)
 
         print(items_onhand)
-        print(f"Counting {items_onhand[0]['count']} {size} {nombre} {a} {b} {c} in inventory.")
-        items_onhand = items_onhand[0]['count']
+        print(f"Counting {items_onhand[0]['qty']} {size} {nombre} {a} {b} {c} in inventory.")
+        items_onhand = items_onhand[0]['qty']
         
         # Calculate items needed for production; subtract inventory items from projections['qty']
         qty = qty - items_onhand
@@ -256,9 +257,6 @@ def makequeue():
             name = names[0]['backs']
             queuebacks(name, size, qty)
 
-    # (RE)BUILD PRODUCTION SUMMARY TOTALS
-        # TODO calculate and return
-
 
 
 ###### MAIN ROUTES ######
@@ -275,13 +273,13 @@ def dashboard():
             db.execute("UPDATE cycles SET current='TRUE' WHERE name='test cycle'")
             cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
         user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
-        items = db.execute("SELECT * FROM items ORDER BY size ASC, name DESC")
+        items = db.execute("SELECT * FROM items ORDER BY qty DESC, size ASC, name DESC")
         parts = db.execute("SELECT * FROM parts ORDER BY size ASC, name DESC, color ASC, qty DESC")
         newloterias = db.execute("SELECT * FROM loterias")
 
-        # Sum totals for each color & size
+        # Sum totals for each back, color & size
         totals = []
-        ## For each size
+        # # For each size
         for i in range(len(sizes)):
 
             # Make a list to hold the color totoals
@@ -397,6 +395,7 @@ def dashboard():
             print(f"Fetching onhand parts...")
             print(onhand)
 
+            #TODO replicate this bug
             #BUG this is creating duplicates for backs
             # None, create new entry
             if not onhand:
@@ -440,7 +439,7 @@ def dashboard():
 @login_required
 def items():
     if request.method == 'GET':
-        items = db.execute("SELECT * FROM items ORDER BY size ASC, name DESC")
+        items = db.execute("SELECT * FROM items ORDER BY qty DESC, size ASC, name DESC")
         newloterias = db.execute("SELECT * FROM loterias")
         print(newloterias)
         return render_template('items.html', items=items, loterias=newloterias, sizes=sizes, colors=colors)
@@ -532,7 +531,7 @@ def items():
             # Update production
             queuepart(names[0]['b'], size, b, qty * -1)
 
-        #Deplete c
+        #Deplete c and identify number of items already onhand
         if c is not None:
             # Update inventory
             c_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['c'], size=size, color=c)
@@ -550,12 +549,30 @@ def items():
                 # Update production
                 queuepart(names[0]['c'], size, c, qty * -1)
 
+            # When c part exists, identify how many items exist in inventory
+            items_onhand = db.execute("SELECT qty FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
+                        name=item, size=size, a_color=a, b_color=b, c_color=c)
+
+        # When no c part exists, identify number of items already onhand
+        else:
+            items_onhand = db.execute("SELECT qty FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color",
+                            name=item, size=size, a_color=a, b_color=b)
+        print(items_onhand)
 
         # Make new item(s)
-        for i in range(qty):
+        if not items_onhand:
+            db.execute("INSERT INTO items (name, size, a_color, b_color, c_color, qty) \
+                        VALUES (:item, :size, :a_color, :b_color, :c_color, :qty)", \
+                                item=item, size=size, a_color=a, b_color=b, c_color=c, qty=qty)
 
-            # Insert an item for every item made
-            db.execute("INSERT INTO items (name, size, a_color, b_color, c_color) VALUES (:item, :size, :a_color, :b_color, :c_color)", item=item, size=size, a_color=a, b_color=b, c_color=c)
+        # Update existing item quantity
+        else:
+            items_onhand = items_onhand[0]['qty']
+            qty = items_onhand + qty
+            db.execute("UPDATE items SET qty=:qty WHERE name=:item, size=:size, a_color=:a, b_color=:b, c_color=:c", \
+                        item=item, size=size, a_color=a, b_color=b, c_color=c, qty=qty)
+
+        flash(f"Added to items inventory: {qty} {size} {item} ({a}, {b}, {c})")
 
         return redirect('/items')
 
@@ -648,6 +665,7 @@ def projections():
                         updated=updated, name=item, size=size, a_color=a, b_color=b, c_color=c)
             print("Existing projection updated.")                        
 
+        flash(f"Added to projections: {qty} {size} {item} ({a}, {b}, {c})")
         return redirect('/projections')
 
 
@@ -683,9 +701,9 @@ def production():
             queueboxes(name, qty)
         
         # Identify how many items exist in inventory
-        items_onhand = db.execute("SELECT COUNT(id) FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
+        items_onhand = db.execute("SELECT qty FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
                         name=nombre, size=size, a_color=a, b_color=b, c_color=c)
-        items_onhand = items_onhand[0]['count']
+        items_onhand = items_onhand[0]['qty']
         
         # Subtract inventory items from projections['qty']
         qty = qty - items_onhand
@@ -708,6 +726,7 @@ def production():
             # backs
             queuebacks(name, size, qty)
 
+    flask("Projections (re)calculated.")
     return redirect("/projections")
 
 
@@ -753,6 +772,8 @@ def box():
             else:
                 db.execute("DELETE FROM boxprod WHERE name=:name", name=name)
 
+    flash("Box made.")
+
     # Use a box
     if action == 'use':
 
@@ -780,7 +801,8 @@ def box():
         # Make new boxused inventory
         else:
             db.execute("INSERT INTO boxused (name, qty) VALUES (:name, :qty)", name=name, qty=qty)
-       
+    
+    flash("Box used.")
     return redirect('/')
 
 
@@ -866,15 +888,14 @@ def config(path):
                 )")
 
             # Create table: items
-            # db.execute("DROP TABLE items")
+            db.execute("DROP TABLE items")
             db.execute("CREATE TABLE IF NOT EXISTS items ( \
-                id serial PRIMARY KEY NOT NULL, \
                 name VARCHAR ( 255 ) NOT NULL, \
                 size VARCHAR ( 255 ) NOT NULL, \
                 a_color VARCHAR ( 255 ), \
                 b_color VARCHAR ( 255 ), \
                 c_color VARCHAR ( 255 ), \
-                status VARCHAR ( 255 ) \
+                qty INTEGER \
                 )")
 
             # Create table: boxes

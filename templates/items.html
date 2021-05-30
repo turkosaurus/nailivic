@@ -133,13 +133,12 @@ Items
                         <td>a</td>
                         <td>b</td>
                         <td>c</td>
+                        <td>qty</td>
                     </tr>    
                 </thead>
                     <tbody>
                         {% for item in items %}
                             <tr>
-                                <!-- <td>{{ item.id }}</td>
-                                <td>|</td> -->
                                 <td>{{ item.name }}</td>
                                 <td>{{ item.size }}</td>
                                 <td>{{ item.a_color }}</td>
@@ -149,6 +148,7 @@ Items
                                 {% else %}
                                     <td></td>
                                 {% endif %}
+                                <td>{{ item.qty }}</td>
                             </tr>    
                         {% endfor %}
                     </tbody>
