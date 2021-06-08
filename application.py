@@ -156,6 +156,8 @@ def queuebacks(name, size, qty):
 def queueboxes(name, qty):
     print("queueboxes()")
 
+    db.execute("DELETE FROM boxprod where qty=0")
+
     # How many boxes already in inventory?
     boxes_onhand = db.execute("SELECT * FROM boxes WHERE name=:name", name=name)
     if boxes_onhand:
@@ -642,17 +644,24 @@ def projections():
         else:
             if ctest[0]['c'] == '':
                 return render_template('error.html', errcode='403', errmsg='Invalid entry. Too many colors selected.')
-
+            
         # Identify current cycle
         active = db.execute("SELECT id, name, created_on FROM cycles WHERE current='TRUE'")
         print(f"active cycle:{active}")
         cycle = active[0]['id']
 
         # What quantity of this item is already in projections?
-        projected = db.execute("SELECT qty FROM projections WHERE \
-                            name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color \
-                            AND cycle=:cycle", \
-                            name=item, size=size, a_color=a, b_color=b, c_color=c, cycle=cycle)
+        if not c:
+            projected = db.execute("SELECT qty FROM projections WHERE \
+                        name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND cycle=:cycle", \
+                        name=item, size=size, a_color=a, b_color=b, cycle=cycle)
+
+        else:
+            projected = db.execute("SELECT qty FROM projections WHERE \
+                        name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color \
+                        AND cycle=:cycle", \
+                        name=item, size=size, a_color=a, b_color=b, c_color=c, cycle=cycle)
+
         print(f"Fetching projected ...")
         print(projected)
 
@@ -666,13 +675,22 @@ def projections():
         # Update existing entry's quantity
         else:
             updated = projected[0]['qty'] + qty
-            db.execute("UPDATE projections SET qty=:updated WHERE \
+
+            if not c:
+                db.execute("UPDATE projections SET qty=:updated WHERE \
+                        name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND cycle=:cycle", \
+                        updated=updated, name=item, size=size, a_color=a, b_color=b, cycle=cycle)
+                flash(f"Added to projections: {qty} {size} {item} ({a}, {b})")
+
+            else:
+                db.execute("UPDATE projections SET qty=:updated WHERE \
                         name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color \
                         AND cycle=:cycle", \
-                        updated=updated, name=item, size=size, a_color=a, b_color=b, c_color=c)
+                        updated=updated, name=item, size=size, a_color=a, b_color=b, c_color=c, cycle=cycle)
+                flash(f"Added to projections: {qty} {size} {item} ({a}, {b}, {c})")
+
             print("Existing projection updated.")                        
 
-        flash(f"Added to projections: {qty} {size} {item} ({a}, {b}, {c})")
         return redirect('/projections')
 
 
@@ -837,6 +855,7 @@ def config(path):
 
             print("Computing cycle productions.")
             name = request.form.get("name")
+            print(f"name:{name}")
 
             # Make all other cycles not current
 
@@ -848,6 +867,10 @@ def config(path):
                 # Change active cycle
                 db.execute("UPDATE cycles SET current='FALSE'")
                 db.execute("UPDATE cycles SET current='TRUE' WHERE id=:id", id=cycle_id)
+
+                # Flash confirmation message
+                name = db.execute("SELECT name FROM cycles WHERE id=:id", id=cycle_id)
+                flash(f"{name[0]['name']} queue built.")
 
             # Make a new cycle
             else:
@@ -1016,10 +1039,22 @@ def config(path):
             db.execute("DELETE FROM boxes")
             return render_template('message.html', message="Success, boxes wiped.")
 
-        # Wipe boxes
+        # Wipe used boxes
         if path == 'wipe-usedboxes':
             db.execute("DELETE FROM boxused")
             return render_template('message.html', message="Success, used boxes wiped.")
+
+        # Wipe projections
+        if path == 'wipe-projections':
+
+            # Identify current cycle
+            active = db.execute("SELECT id, name, created_on FROM cycles WHERE current='TRUE'")
+            print(f"active cycle:{active}")
+            cycle = active[0]['id']
+
+            db.execute("DELETE FROM projections where cycle=:cycle", cycle=cycle)
+            return render_template('message.html', message="Success, current event's projections wiped.")
+
 
         # Not a valid admin route
         else:
