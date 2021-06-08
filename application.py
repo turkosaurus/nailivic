@@ -497,7 +497,7 @@ def items():
 
             queuebacks(names[0]['backs'], size, qty * -1)
 
-        #Deplete a
+        # Deplete a
         # Update inventory
         a_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['a'], size=size, color=a)
         if a_onhand:
@@ -514,7 +514,7 @@ def items():
             # Update production
             queuepart(names[0]['a'], size, a, qty * -1)
 
-        #Deplete b
+        # Deplete b
         # Update inventory
         b_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['b'], size=size, color=b)
         if b_onhand:
@@ -531,7 +531,7 @@ def items():
             # Update production
             queuepart(names[0]['b'], size, b, qty * -1)
 
-        #Deplete c and identify number of items already onhand
+        # Deplete c and identify number of items already onhand
         if c is not None:
             # Update inventory
             c_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['c'], size=size, color=c)
@@ -557,7 +557,7 @@ def items():
         else:
             items_onhand = db.execute("SELECT qty FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color",
                             name=item, size=size, a_color=a, b_color=b)
-        print(items_onhand)
+        print(f"items on hand: {items_onhand}")
 
         # Make new item(s)
         if not items_onhand:
@@ -568,9 +568,15 @@ def items():
         # Update existing item quantity
         else:
             items_onhand = items_onhand[0]['qty']
-            qty = items_onhand + qty
-            db.execute("UPDATE items SET qty=:qty WHERE name=:item, size=:size, a_color=:a, b_color=:b, c_color=:c", \
-                        item=item, size=size, a_color=a, b_color=b, c_color=c, qty=qty)
+            new_qty = items_onhand + qty
+
+            if not c:
+                db.execute("UPDATE items SET qty=:qty WHERE name=:item AND size=:size AND a_color=:a AND b_color=:b", \
+                        item=item, size=size, a=a, b=b, qty=new_qty)
+
+            else:
+                db.execute("UPDATE items SET qty=:qty WHERE name=:item AND size=:size AND a_color=:a AND b_color=:b AND c_color=:c", \
+                        item=item, size=size, a=a, b=b, c=c, qty=new_qty)
 
         flash(f"Added to items inventory: {qty} {size} {item} ({a}, {b}, {c})")
 
@@ -622,7 +628,7 @@ def projections():
         if (size is None) or (a is None) or (b is None):
             return render_template('error.html', errcode='403', errmsg='Invalid entry. All Items must have a size and at least 2 colors.')
 
-        # Test for presence of c_color        
+        # Test for presence of c_color
         ctest = db.execute("SELECT c FROM loterias WHERE nombre=:name", name=item)
 
         # No c is given
