@@ -226,11 +226,12 @@ def makequeue():
                                         name=nombre, size=size, a_color=a, b_color=b)
 
         print(items_onhand)
-        print(f"Counting {items_onhand[0]['qty']} {size} {nombre} {a} {b} {c} in inventory.")
-        items_onhand = items_onhand[0]['qty']
+        if items_onhand:
+            print(f"Counting {items_onhand[0]['qty']} {size} {nombre} {a} {b} {c} in inventory.")
+            items_onhand = items_onhand[0]['qty']
         
-        # Calculate items needed for production; subtract inventory items from projections['qty']
-        qty = qty - items_onhand
+            # Calculate items needed for production; subtract inventory items from projections['qty']
+            qty = qty - items_onhand
 
        # Check for need to add parts to production queue
         if qty > 0:
@@ -1015,6 +1016,10 @@ def config(path):
             db.execute("DELETE FROM boxes")
             return render_template('message.html', message="Success, boxes wiped.")
 
+        # Wipe boxes
+        if path == 'wipe-usedboxes':
+            db.execute("DELETE FROM boxused")
+            return render_template('message.html', message="Success, used boxes wiped.")
 
         # Not a valid admin route
         else:
