@@ -689,7 +689,10 @@ def projections():
                         updated=updated, name=item, size=size, a_color=a, b_color=b, c_color=c, cycle=cycle)
                 flash(f"Added to projections: {qty} {size} {item} ({a}, {b}, {c})")
 
-            print("Existing projection updated.")                        
+            print("Existing projection updated.")
+        
+        # Update production table
+        makequeue()
 
         return redirect('/projections')
 
@@ -751,7 +754,7 @@ def production():
             # backs
             queuebacks(name, size, qty)
 
-    flask("Projections (re)calculated.")
+    flash("Projections (re)calculated.")
     return redirect("/projections")
 
 
@@ -908,6 +911,21 @@ def config(path):
                 last_login TIMESTAMP \
                 )")
 
+            #TODO
+            # Create table: colors
+
+
+            # Create table: recent
+            # db.execute("CREATE TABLE IF NOT EXISTS recent ( \
+            #     user_id INTEGER, \
+            #     projection VARCHAR ( 255 ), \
+            #     item VARCHAR ( 255 ), \
+            #     part VARCHAR ( 255 ), \
+            #     PRIMARY KEY(user_id), \
+            #     CONSTRAINT
+            # )")
+
+
             # Create table: parts
             # db.execute("DROP TABLE parts")
             db.execute("CREATE TABLE IF NOT EXISTS parts ( \
@@ -918,7 +936,7 @@ def config(path):
                 )")
 
             # Create table: items
-            db.execute("DROP TABLE items")
+            # db.execute("DROP TABLE items")
             db.execute("CREATE TABLE IF NOT EXISTS items ( \
                 name VARCHAR ( 255 ) NOT NULL, \
                 size VARCHAR ( 255 ) NOT NULL, \
@@ -978,7 +996,8 @@ def config(path):
                 created_on TIMESTAMP, \
                 current BOOL \
                 )")
-            
+
+
             # If empty cycles table
             data = db.execute("SELECT * FROM cycles")
             if not data:
@@ -1039,10 +1058,12 @@ def config(path):
             db.execute("DELETE FROM boxes")
             return render_template('message.html', message="Success, boxes wiped.")
 
+
         # Wipe used boxes
         if path == 'wipe-usedboxes':
             db.execute("DELETE FROM boxused")
             return render_template('message.html', message="Success, used boxes wiped.")
+
 
         # Wipe projections
         if path == 'wipe-projections':
