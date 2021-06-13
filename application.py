@@ -64,7 +64,6 @@ sizes = ['S', 'M', 'L']
 def login_required(f):
     """
     Decorate routes to require login.
-
     http://flask.pocoo.org/docs/1.0/patterns/viewdecorators/
     """
     @wraps(f)
@@ -319,7 +318,7 @@ def dashboard():
         boxprod = db.execute("SELECT * FROM boxprod")
         boxused = db.execute("SELECT * FROM boxused")
 
-        production = db.execute("SELECT * FROM production ORDER BY qty DESC, size ASC")
+        production = db.execute("SELECT * FROM production ORDER BY size DESC, name DESC, color DESC")
         time = datetime.datetime.utcnow().isoformat()
         print(cycle)
         print(items)
@@ -580,6 +579,8 @@ def items():
             else:
                 db.execute("UPDATE items SET qty=:qty WHERE name=:item AND size=:size AND a_color=:a AND b_color=:b AND c_color=:c", \
                         item=item, size=size, a=a, b=b, c=c, qty=new_qty)
+
+        makequeue()
 
         flash(f"Added to items inventory: {qty} {size} {item} ({a}, {b}, {c})")
 
@@ -1186,7 +1187,3 @@ def logout():
 
     # Redirect user to login form
     return redirect("/")
-
-
-
-
