@@ -273,7 +273,6 @@ Dashboard
                 {% for part in production %}
                 {% if part.color is not none %}
                 <tr>
-                    <td>#1</td>
                     <td>{{ part.name }}</td>
                     <td>{{ part.size }}</td>
                     <td>{{ part.color }}</td>
@@ -284,7 +283,6 @@ Dashboard
                 {% for part in production %}
                 {% if part.color is none %}
                 <tr>
-                    <td>#2</td>
                     <td>{{ part.name }}</td>
                     <td>{{ part.size }}</td>
                     <td>🍑</td>
