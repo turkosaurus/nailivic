@@ -271,16 +271,26 @@ Dashboard
             <h3>Parts Laser Queue</h3>
             <table class="table table-dark table-hover">
                 {% for part in production %}
+                {% if part.color is not none %}
                 <tr>
+                    <td>#1</td>
                     <td>{{ part.name }}</td>
                     <td>{{ part.size }}</td>
-                    {% if part.color is not none %}
-                        <td>{{ part.color }}</td>
-                    {% else %}
-                        <td>🍑</td>
-                    {% endif %}
-                    <td>{{ part.qty }}</td>
-                </tr>
+                    <td>{{ part.color }}</td>
+                    <td>{{ part.qty }}</td>                
+                <tr>
+                {% endif %}
+                {% endfor %}
+                {% for part in production %}
+                {% if part.color is none %}
+                <tr>
+                    <td>#2</td>
+                    <td>{{ part.name }}</td>
+                    <td>{{ part.size }}</td>
+                    <td>🍑</td>
+                    <td>{{ part.qty }}</td>                
+                <tr>
+                {% endif %}
                 {% endfor %}
             </table>
         </div>
