@@ -59,7 +59,7 @@ colors = ['🖤 black', '❤️ red', '💙 TQ', '💛 yellow', '💚 green', '�
 sizes = ['S', 'M', 'L']
 
 
-###### Helper Functions ######
+###### DECORATORS ######
 
 def login_required(f):
     """
@@ -75,10 +75,12 @@ def login_required(f):
 
 
 ###### QUEUE ######
+
 # These functions produce production table, calculating projecitons less inventory
 # Negative values can dequeue items
 
-# Queue part(s) of specified color for production
+# Queue part(s) of specified color for production by 
+# Move qty parts 
 def queuepart(name, size, color, qty):
     print("queuepart()")
 
@@ -105,13 +107,14 @@ def queuepart(name, size, color, qty):
         # Update existing production queue entry
         db.execute("UPDATE production SET qty=:qty WHERE name=:name AND size=:size AND color=:color", 
                     name=name, size=size, color=color, qty=qty)
-        print(f"{size} {color} {name} production qty of {parts_inprod[0]['qty']} increased to {qty}")
+        print(f"{size} {color} {name} production qty of {parts_inprod[0]['qty']} changed to {qty}")
 
-    # Add new production queue entry
+    # Add new production queue entry when no entry exists and qty is positive
     else:
-        db.execute("INSERT INTO production (name, size, color, qty) VALUES (:name, :size, :color, :qty)", 
-                    name=name, size=size, color=color, qty=qty)
-        print(f"{qty} {size} {color} {name} inserted into production queue")
+        if qty > 0:
+            db.execute("INSERT INTO production (name, size, color, qty) VALUES (:name, :size, :color, :qty)", 
+                        name=name, size=size, color=color, qty=qty)
+            print(f"{qty} {size} {color} {name} inserted into production queue")
 
 
 # Queue backs for production            
@@ -198,8 +201,6 @@ def makequeue():
     db.execute("DELETE FROM production")
     db.execute("UPDATE boxprod SET qty=0")
 
-    newloterias = db.execute("SELECT * FROM loterias")
-
     # Ensure that every item in projections is added to the production queue (less inventory on hand)
     for item in projections:
         nombre = item['name']
@@ -261,13 +262,18 @@ def makequeue():
 
 
 
+# @app.context_processor
+# def colors():
+#     return dict(colors=colors)
+
+
 ###### MAIN ROUTES ######
 @app.route('/', methods=['GET', 'POST'])
 @login_required
 def dashboard():
 
     if request.method == 'GET':
-        print("--- LOADING ---")
+        print("--- / ---")
 
         # Query for relevant data
         cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
@@ -437,13 +443,28 @@ def dashboard():
         return redirect('/')
 
 
+@app.route('/parts/<part>', methods=['GET', 'POST'])
+@login_required
+def parts(part):
+
+    if request.method == 'GET':
+
+        if part in ['boxes', 'backs', 'black', 'red', 'turquoise', 'yellow', 'green', 'purple']:
+            print(session)
+            return render_template('parts.html', part=part)
+
+        else:
+            return "invalid part route"
+
+
 @app.route('/items', methods=['GET', 'POST'])
 @login_required
 def items():
     if request.method == 'GET':
+
         items = db.execute("SELECT * FROM items ORDER BY qty DESC, size ASC, name DESC")
         newloterias = db.execute("SELECT * FROM loterias")
-        print(newloterias)
+
         return render_template('items.html', items=items, loterias=newloterias, sizes=sizes, colors=colors)
 
     # Upon POSTing form submission
@@ -454,10 +475,15 @@ def items():
         b = request.form.get("Color B")
         c = request.form.get("Color C")
         qty = int(request.form.get("qty"))
+        deplete = request.form.get("deplete")
+
+        print(f"deplete:{deplete}")
+
         print("POST form with values:")
         print(qty, item, size, a, b, c)
 
-        ## Validation
+        ## Validation ##
+
         # Return error if missing basic entries
         if (size is None) or (a is None) or (b is None):
             return render_template('error.html', errcode='403', errmsg='Invalid entry. All Items must have a size and at least 2 colors.')
@@ -478,80 +504,85 @@ def items():
 
         # Validation complete. Now remove from parts and add to items.
 
-        # Deplete parts inventory
-        # Find parts names using item name
-        names = db.execute("SELECT * FROM loterias WHERE nombre=:item", item=item)
+        if deplete == "true":
+            print(f"deplete == {true}")
 
-        # Deplete backs
-        # Update inventory
-        backs_onhand = db.execute("SELECT qty FROM parts WHERE name=:backs AND size=:size", backs=names[0]['backs'], size=size)
-        if backs_onhand:
-            print(f'backs_onhand:{backs_onhand}')
-            new_qty = backs_onhand[0]['qty'] - qty
+            # Deplete parts inventory
+            # Find parts names using item name
+            names = db.execute("SELECT * FROM loterias WHERE nombre=:item", item=item)
 
-            # Remove entry if update would be cause qty to be less than 1
-            if new_qty < 1:
-                db.execute("DELETE FROM parts WHERE name=:backs AND size=:size", backs=names[0]['backs'], size=size)
-
-            # Update existing entry
-            else:
-                db.execute("UPDATE parts SET qty=:qty WHERE name=:backs AND size=:size", qty=new_qty, backs=names[0]['backs'], size=size)
-
-            queuebacks(names[0]['backs'], size, qty * -1)
-
-        # Deplete a
-        # Update inventory
-        a_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['a'], size=size, color=a)
-        if a_onhand:
-            new_qty = a_onhand[0]['qty'] - qty
-
-            # Remove entry if update would be cause qty to be less than 1
-            if new_qty < 1:
-                db.execute("DELETE FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['a'], size=size, color=a)
-
-            # Update existing entry
-            else:
-                db.execute("UPDATE parts SET qty=:qty WHERE name=:name AND size=:size AND color=:color", qty=new_qty, name=names[0]['a'], size=size, color=a)
-
-            # Update production
-            queuepart(names[0]['a'], size, a, qty * -1)
-
-        # Deplete b
-        # Update inventory
-        b_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['b'], size=size, color=b)
-        if b_onhand:
-            new_qty = b_onhand[0]['qty'] - qty
-
-            # Remove entry if update would be cause qty to be less than 1
-            if new_qty < 1:
-                db.execute("DELETE FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['b'], size=size, color=b)
-
-            # Update existing entry
-            else:
-                db.execute("UPDATE parts SET qty=:qty WHERE name=:name AND size=:size AND color=:color", qty=new_qty, name=names[0]['b'], size=size, color=b)
-
-            # Update production
-            queuepart(names[0]['b'], size, b, qty * -1)
-
-        # Deplete c and identify number of items already onhand
-        if c is not None:
+            # Deplete backs
             # Update inventory
-            c_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['c'], size=size, color=c)
-            if c_onhand:
-                new_qty = c_onhand[0]['qty'] - qty
+            backs_onhand = db.execute("SELECT qty FROM parts WHERE name=:backs AND size=:size", backs=names[0]['backs'], size=size)
+            if backs_onhand:
+                print(f'backs_onhand:{backs_onhand}')
+                new_qty = backs_onhand[0]['qty'] - qty
 
                 # Remove entry if update would be cause qty to be less than 1
                 if new_qty < 1:
-                    db.execute("DELETE FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['c'], size=size, color=c)
+                    db.execute("DELETE FROM parts WHERE name=:backs AND size=:size", backs=names[0]['backs'], size=size)
 
                 # Update existing entry
                 else:
-                    db.execute("UPDATE parts SET qty=:qty WHERE name=:name AND size=:size AND color=:color", qty=new_qty, name=names[0]['c'], size=size, color=c)
+                    db.execute("UPDATE parts SET qty=:qty WHERE name=:backs AND size=:size", qty=new_qty, backs=names[0]['backs'], size=size)
+
+                queuebacks(names[0]['backs'], size, qty * -1)
+
+            # Deplete a
+            # Update inventory
+            a_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['a'], size=size, color=a)
+            if a_onhand:
+                new_qty = a_onhand[0]['qty'] - qty
+
+                # Remove entry if update would be cause qty to be less than 1
+                if new_qty < 1:
+                    db.execute("DELETE FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['a'], size=size, color=a)
+
+                # Update existing entry
+                else:
+                    db.execute("UPDATE parts SET qty=:qty WHERE name=:name AND size=:size AND color=:color", qty=new_qty, name=names[0]['a'], size=size, color=a)
 
                 # Update production
-                queuepart(names[0]['c'], size, c, qty * -1)
+                queuepart(names[0]['a'], size, a, qty * -1)
 
-            # When c part exists, identify how many items exist in inventory
+            # Deplete b
+            # Update inventory
+            b_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['b'], size=size, color=b)
+            if b_onhand:
+                new_qty = b_onhand[0]['qty'] - qty
+
+                # Remove entry if update would be cause qty to be less than 1
+                if new_qty < 1:
+                    db.execute("DELETE FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['b'], size=size, color=b)
+
+                # Update existing entry
+                else:
+                    db.execute("UPDATE parts SET qty=:qty WHERE name=:name AND size=:size AND color=:color", qty=new_qty, name=names[0]['b'], size=size, color=b)
+
+                # Update production
+                queuepart(names[0]['b'], size, b, qty * -1)
+
+            # Deplete c
+            if c is not None:
+                # Update inventory
+                c_onhand = db.execute("SELECT qty FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['c'], size=size, color=c)
+                if c_onhand:
+                    new_qty = c_onhand[0]['qty'] - qty
+
+                    # Remove entry if update would be cause qty to be less than 1
+                    if new_qty < 1:
+                        db.execute("DELETE FROM parts WHERE name=:name AND size=:size AND color=:color", name=names[0]['c'], size=size, color=c)
+
+                    # Update existing entry
+                    else:
+                        db.execute("UPDATE parts SET qty=:qty WHERE name=:name AND size=:size AND color=:color", qty=new_qty, name=names[0]['c'], size=size, color=c)
+
+                    # Update production
+                    queuepart(names[0]['c'], size, c, qty * -1)
+
+        # How many items are already on hand?
+        # When c part exists, identify how many items exist in inventory
+        if c is not None:
             items_onhand = db.execute("SELECT qty FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
                         name=item, size=size, a_color=a, b_color=b, c_color=c)
 
@@ -560,6 +591,7 @@ def items():
             items_onhand = db.execute("SELECT qty FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color",
                             name=item, size=size, a_color=a, b_color=b)
         print(f"items on hand: {items_onhand}")
+
 
         # Make new item(s)
         if not items_onhand:
@@ -580,7 +612,8 @@ def items():
                 db.execute("UPDATE items SET qty=:qty WHERE name=:item AND size=:size AND a_color=:a AND b_color=:b AND c_color=:c", \
                         item=item, size=size, a=a, b=b, c=c, qty=new_qty)
 
-        makequeue()
+        # TODO: was this just superfluous?
+        # makequeue()
 
         flash(f"Added to items inventory: {qty} {size} {item} ({a}, {b}, {c})")
 
@@ -692,8 +725,9 @@ def projections():
 
             print("Existing projection updated.")
         
+        # TODO: was this also superfluous?
         # Update production table
-        makequeue()
+        # makequeue()
 
         return redirect('/projections')
 
@@ -1085,6 +1119,7 @@ def config(path):
 
 
 ###### USER ACCOUNTS ######
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""

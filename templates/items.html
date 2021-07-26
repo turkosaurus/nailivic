@@ -54,22 +54,42 @@ Items
                     <!-- Color A -->
                     <div class="col-md-4 col-sm-6">
                         <h6>Color A</h6>
+                        <!-- <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="true" id="skipdeplete_a" name="skipdeplete_a">
+                            <label class="form-check-label" for="skipdeplete_a">
+                                skip deplete
+                            </label>
+                        </div>
+
+                        <br> -->
+
                         <div class="form-group">
                             {% for color in colors %}
-                                <div class=" justify-content-center">
+                                <div class="justify-content-center">
                                     <input type="radio" id="{{ color }}a" name="Color A" value="{{ color }}">
                                     <label for="{{ color }}a">{{ color }}</label>    
                                 </div>
                             {% endfor %}
                         </div>
-                    </div>
+                        
+                    </div>  
 
                     <!-- Color B -->
                     <div class="col-md-4 col-sm-6">
                         <h6>Color B</h6>
+                        <!-- <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="true" id="skipdeplete_b" name="skipdeplete_b">
+                            <label class="form-check-label" for="skipdeplete_b">
+                                skip deplete
+                            </label>
+                        </div>
+
+                        <br> -->
+
+
                         <div class="form-group">
                             {% for color in colors %}
-                                <div class=" justify-content-center">
+                                <div class="justify-content-center">
                                     <input type="radio" id="{{ color }}b" name="Color B" value="{{ color }}">
                                     <label for="{{ color }}b">{{ color }}</label>    
                                 </div>
@@ -80,48 +100,80 @@ Items
                     <!-- Color C -->
                     <div class="col-md-4 col-sm-6">
                         <h6>Color C</h6>
+                        <!-- <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="true" id="skipdeplete_c" name="skipdeplete_c">
+                            <label class="form-check-label" for="skipdeplete_c">
+                                skip deplete
+                            </label>
+                        </div>
+
+                        <br> -->
+
                         <div class="form-group">
                             {% for color in colors %}
-                                <div class=" justify-content-center">
+                                <div class="justify-content-center">
                                     <input type="radio" id="{{ color }}c" name="Color C" value="{{ color }}">
                                     <label for="{{ color }}c">{{ color }}</label>    
                                 </div>
                             {% endfor %}
+                            <div class="justify-content-center">
+                                <input type="radio" id="emptyc" name="Color C" value="None">
+                                <label for="emptyc">None</label>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Final Buttons -->
-                <div class="row">
 
-                    <!-- Quantity -->
-                    <div clas="col">
+                
+                <!-- Quantity -->
+                <div class="row">
+                    <div class="col">
                         <div class="form-group">
                             <label for="qty">Quantity</label>
                             <input type="number" value="1" min="-999" max="999" step="1" name="qty" id="qty">
                         </div>
                     </div>
+                </div>
 
-                    <!-- Reset -->
+                <!-- Skip Depletion -->
+                <div class="row">
                     <div class="col">
-                        <button type="reset" class="btn btn-primary">Reset</button>                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="true" id="deplete" name="deplete" checked>                        
+                            <label class="form-check-label" for="deplete">
+                                Deplete parts inventory
+                            </label>
+                        </div>
                     </div>
+                </div>
 
+                <br>
+
+                <div class="row">
+                    
                     <!-- Submit -->
-                    <div class="col-6">
-                        <button type="submit" class="btn btn-primary btn-block">Add Item</button>                            
+                    <div class="col-8">
+                        <button type="submit" class="btn btn-primary btn-block">Make Item</button>                            
                         <small id="" class="form-text text-muted">
                             Adds Assembled Item to Inventory
-                        </small>    
+                        </small>
+                    </div>
+
+                    <!-- Reset -->
+                    <div class="col-4">
+                        <button type="reset" class="btn btn-primary">Reset</button>                        
                     </div>
 
                 </div>                            
 
+                
             </form>
         </div>
-
+        
         <hr>
-
+        
         <!-- Items on Hand -->
         <div class="col-md-6 col-sm-12">
             <h2>Items Inventory</h2>
