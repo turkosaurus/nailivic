@@ -5,7 +5,7 @@ import datetime
 import csv
 
 from cs50 import SQL
-from flask import Flask, redirect, render_template, request, session, url_for, flash
+from flask import Flask, redirect, render_template, request, session, url_for, flash, send_from_directory
 from flask_session import Session
 from tempfile import mkdtemp
 from functools import wraps
@@ -40,6 +40,8 @@ def after_request(response):
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+app.config['BACKUPS'] = os.getenv('PWD') + "/static/backups"
+
 Session(app)
 
 # Configure Heroku Postgres database
@@ -449,11 +451,16 @@ def parts(part):
 
     if request.method == 'GET':
 
-        if part in ['boxes', 'backs', 'black', 'red', 'turquoise', 'yellow', 'green', 'purple']:
-            print(session)
+        if part in ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']:
             return render_template('parts.html', part=part)
 
         else:
+            if part == "boxes":
+                return "boxes"
+
+
+
+            'boxes', 'backs', 
             return "invalid part route"
 
 
@@ -505,7 +512,7 @@ def items():
         # Validation complete. Now remove from parts and add to items.
 
         if deplete == "true":
-            print(f"deplete == {true}")
+            print(f"deplete == {deplete}")
 
             # Deplete parts inventory
             # Find parts names using item name
@@ -594,23 +601,31 @@ def items():
 
 
         # Make new item(s)
-        if not items_onhand:
+        if not items_onhand and qty > 0:
             db.execute("INSERT INTO items (name, size, a_color, b_color, c_color, qty) \
                         VALUES (:item, :size, :a_color, :b_color, :c_color, :qty)", \
                                 item=item, size=size, a_color=a, b_color=b, c_color=c, qty=qty)
 
-        # Update existing item quantity
+        # Update existing item quantity, deleting if new_qty == 0
         else:
             items_onhand = items_onhand[0]['qty']
             new_qty = items_onhand + qty
 
             if not c:
-                db.execute("UPDATE items SET qty=:qty WHERE name=:item AND size=:size AND a_color=:a AND b_color=:b", \
-                        item=item, size=size, a=a, b=b, qty=new_qty)
+                if new_qty <= 0:
+                    db.execute("DELETE FROM items WHERE name=:item AND size=:size AND a_color=:a AND b_color=:b", \
+                            item=item, size=size, a=a, b=b, qty=new_qty)
+                else:
+                    db.execute("UPDATE items SET qty=:qty WHERE name=:item AND size=:size AND a_color=:a AND b_color=:b", \
+                            item=item, size=size, a=a, b=b, qty=new_qty)
 
             else:
-                db.execute("UPDATE items SET qty=:qty WHERE name=:item AND size=:size AND a_color=:a AND b_color=:b AND c_color=:c", \
-                        item=item, size=size, a=a, b=b, c=c, qty=new_qty)
+                if new_qty <= 0:
+                    db.execute("DELETE FROM items WHERE name=:item AND size=:size AND a_color=:a AND b_color=:b AND c_color=:c", \
+                            item=item, size=size, a=a, b=b, c=c, qty=new_qty)
+                else:
+                    db.execute("UPDATE items SET qty=:qty WHERE name=:item AND size=:size AND a_color=:a AND b_color=:b AND c_color=:c", \
+                            item=item, size=size, a=a, b=b, c=c, qty=new_qty)
 
         # TODO: was this just superfluous?
         # makequeue()
@@ -937,6 +952,7 @@ def config(path):
 
         # Setup tables
         if path == 'setup-tables':
+
             # Create table: users
             db.execute("CREATE TABLE IF NOT EXISTS users ( \
                 id serial PRIMARY KEY NOT NULL, \
@@ -946,8 +962,28 @@ def config(path):
                 last_login TIMESTAMP \
                 )")
 
-            #TODO
+
             # Create table: colors
+            db.execute("CREATE TABLE IF NOT EXISTS colors ( \
+                id serial PRIMARY KEY NOT NULL, \
+                name VARCHAR ( 255 ), \
+                emoji VARCHAR ( 255 ) \
+                )")
+
+            colors = [['black', '🖤'],['red', '❤️'], ['TQ', '💙'], ['yellow', '💛'], ['green', '💚'], ['purple', '💜']]
+            for i in range(len(colors)):
+                db.execute("INSERT INTO colors (name, emoji) VALUES (:name, :emoji)", name=colors[i][0], emoji=colors[i][1])
+
+            # Create table: sizes
+            db.execute("CREATE TABLE IF NOT EXISTS sizes ( \
+                id serial PRIMARY KEY NOT NULL, \
+                shortname VARCHAR ( 255 ), \
+                longname VARCHAR ( 255 ) \
+                )")
+
+            sizes = [['S', 'small'], ['M', 'medium'], ['L', 'large']]
+            for i in range(len(sizes)):
+                db.execute("INSERT INTO sizes (shortname, longname) VALUES (:shortname, :longname)", shortname=sizes[i][0] , longname=sizes[i][1])
 
 
             # Create table: recent
@@ -1116,6 +1152,37 @@ def config(path):
         else:
             return redirect('/')
 
+
+@app.route('/file', methods=['GET', 'POST'])
+@login_required
+def file():
+    if request.method == 'POST':
+        file = request.files['inputfile']
+        # return file.filename
+
+        # TODO make the backup python code split off from the upload html. into different functions
+
+
+        # BACKUP PROJECTIONS
+        # Create new csv file
+        with open('static/backups/backup_projections.csv', 'w') as csvfile:
+
+            # Create writer object
+            scribe = csv.writer(csvfile)
+
+            # Pull all projections data
+            projections = db.execute("SELECT * FROM projections")
+
+            # Write projections into csv
+            for row in projections:
+                print("Scribe is writing a row...")
+                scribe.writerow([row['name'], row['size'], row['a_color'], row['b_color'], row['c_color'], row['qty'], row['cycle']])
+
+        print(app.config['BACKUPS'])
+
+        return send_from_directory(app.config['BACKUPS'], filename='backup_projections.csv', as_attachment=True, mimetype='csv')
+
+        # return render_template('message.html', message="I might have made a csv backup")
 
 
 ###### USER ACCOUNTS ######
