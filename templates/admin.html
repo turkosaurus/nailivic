@@ -5,54 +5,141 @@ Admin
 {% endblock %}
 {% block main %}
 <container class="text-monospace">
+
     <div class="row">
         <div class="col">
             <h1>Admin</h1>
         </div>
-    </div>    
-    <hr>
+    </div>
+
     <div class="row">
-        <!-- Produce New Item -->
-        <div class="col-lg-6 col-md-12">
-            <h2>Add a New Cycle</h2>
-            <form action="/admin/cycle" method="post">
-
-                <!-- Name -->
-                <div class="form-group">
-                    <label for="name">New Cycle Name</label>
-                    <input type="text" name="name" id="name">
-                </div>
-                <!-- <button type="reset" class="btn btn-primary">Reset</button> -->
-                <button type="submit" class="btn btn-primary">Make New Cycle // (Re)compute Projections</button>
-            </form>
+        <div class="col">
+            <p>
+                <a href='/admin#events'>Events</a> |
+                <a href='/admin#database'>Database</a>
+            </p>
         </div>
+    </div>
 
-        <!-- Delete a Cycle -->
-        <div class="col-lg-6 col-md-12">
-            <h2>Delete a Cycle</h2>
-            <form action="/admin/delete" method="post">
 
+    <hr>
+
+    <div class="row">
+        <div class="col">
+            <h2 id='events'>Manage Events</h2>        
+        </div>
+    </div>
+
+    <br>
+
+    <div class="row">
+        <div class="col">
+            <h4>Create New Empty Event</h4>
+        </div>    
+    </div>    
+
+    <div class="row">        
+        <div class="col">
+            <div class="form-group">
+                <form action="/admin/new-event" method="post">            
+                    <!-- Name -->
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" name="name" id="name">            
+                        <button type="submit" class="btn btn-primary btn-sm">Make Event</button>
+                        <!-- <small id="" class="form-text text-muted">
+                            Creates a new empty event.
+                        </small> -->                    
+                    </div>
+                </div>
+            </form>
+        </div>    
+    </div>
+
+    <br>
+
+    <div class="row">
+        <div class="col">
+            <h4>Import Event Data</h4>
+        </div>    
+    </div>    
+    <div class="row">  
+        <div class="col">
+            <form method="POST" action="/admin/import-event" enctype="multipart/form-data">
+
+                
+                <div class="form-group">
+                    <input type="file" name="inputfile" id="inputfile" accept=".csv">
+                    <!-- <small id="inputfile" class="form-text text-muted">
+                        Uploads projections template
+                    </small>     -->
+                </div>
+                
+                <div class="form-group">
+                    <label for="event"></label>
+                    <select name="event" id="event">
+                        <option title="Overrides all event data with import file">Select Event</option>
+                        {% for cycle in cycles %}
+                            <option title="Created on: {{ cycle.created_on }}" value="{{ cycle.id }}">{{ cycle.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm">Upload File</button>
+                </div>
+
+            </form>
+        </div>    
+    </div>
+
+    <br>
+
+    <div class="row">        
+        <div class="col">
+            <h4>Delete Event</h4>
+        </div>
+    </div>
+    <div class="row">        
+        <div class="col">
+            <form action="/admin/delete-event" method="post">
                 <!-- Name -->
                 <div class="form-group">
-                    <label for="delname">Cycle to Delete</label>
+                    <label for="delname"></label>
                     <select name="delname" id="delname">
                         {% for cycle in cycles %}
                             <option title="Created on: {{ cycle.created_on }}">{{ cycle.name }}</option>
                         {% endfor %}
                     </select>
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                 </div>
-                <!-- <button type="reset" class="btn btn-primary">Reset</button> -->
-                <button type="submit" class="btn btn-danger">Delete Cycle</button>
             </form>
         </div>
     </div>
+    
+    <br>
+
+    <div class="row">        
+        <div class="col">
+            <h4>Chomp Squaredata</h4>
+        </div>
+    </div>
+    <div class="row">        
+        <div class="col">
+            <form action="/admin/parse-squaredata" method="post">
+                <!-- Name -->
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-sm">Do it.</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <br>
+
     <hr>
-    <hr>
-    <hr>
+
     <hr>
     <div class="row">
         <div class="col">
-            <h2>
+            <h2 id='database'>
                 SQL Table Reconfigurations
             </h2>
         </div>

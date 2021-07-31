@@ -11,6 +11,7 @@ from tempfile import mkdtemp
 from functools import wraps
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 ###### DEFINITIONS ######
 """
@@ -40,7 +41,9 @@ def after_request(response):
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+app.config['UPLOAD_FOLDER'] = os.getenv('PWD') + "/static/uploads"
 app.config['BACKUPS'] = os.getenv('PWD') + "/static/backups"
+ALLOWED_EXTENSIONS = {'csv'}
 
 Session(app)
 
@@ -61,7 +64,7 @@ colors = ['🖤 black', '❤️ red', '💙 TQ', '💛 yellow', '💚 green', '�
 sizes = ['S', 'M', 'L']
 
 
-###### DECORATORS ######
+###### DECORATORS & HELPERS ######
 
 def login_required(f):
     """
@@ -75,6 +78,9 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 ###### QUEUE ######
 
@@ -903,52 +909,7 @@ def admin():
 @login_required
 def config(path):
 
-        # Change or make new cycle
-        if path == 'cycle':
-
-            print("Computing cycle productions.")
-            name = request.form.get("name")
-            print(f"name:{name}")
-
-            # Make all other cycles not current
-
-            # Change current cycle selection
-            if not name:
-                cycle_id = request.form.get("cycle")
-                print(f"cycle:{cycle_id}")
-
-                # Change active cycle
-                db.execute("UPDATE cycles SET current='FALSE'")
-                db.execute("UPDATE cycles SET current='TRUE' WHERE id=:id", id=cycle_id)
-
-                # Flash confirmation message
-                name = db.execute("SELECT name FROM cycles WHERE id=:id", id=cycle_id)
-                flash(f"{name[0]['name']} queue built.")
-
-            # Make a new cycle
-            else:
-                # Create new Cycle
-                db.execute("UPDATE cycles SET current='FALSE'")
-                time = datetime.datetime.utcnow().isoformat()
-                db.execute("INSERT INTO cycles (name, created_on, current) VALUES (:name, :time, 'TRUE')", name=name, time=time)
-
-            # Calculate production values
-            makequeue()
-
-            return redirect('/projections')
-
-
-        # Delete a Cycle
-        if path == 'delete':
-            name = request.form.get("delname")
-            print(name)
-            if name != 'test cycle':
-                db.execute("DELETE from CYCLES where name=:name", name=name)
-                db.execute("UPDATE cycles SET current='TRUE' WHERE id=1")
-                return render_template("message.html", message="Successfully deleted cycle.")
-            else:
-                return render_template("error.html", errcode="403", errmsg="Test cycle may not be deleted.")
-
+    if request.method == 'GET':
 
         # Setup tables
         if path == 'setup-tables':
@@ -1100,7 +1061,8 @@ def config(path):
                     a VARCHAR (255), \
                     b VARCHAR (255), \
                     c VARCHAR (255), \
-                    backs VARCHAR (255) \
+                    backs VARCHAR (255), \
+                    squarename VARCHAR (255) \
                     )")
 
                 db.execute("DELETE from loterias")
@@ -1152,6 +1114,172 @@ def config(path):
         else:
             return redirect('/')
 
+    # On POST
+    else:
+
+
+        # Change or make new event
+        if path == 'new-event':
+
+            print("Computing cycle productions.")
+            name = request.form.get("name")
+            print(f"name:{name}")
+
+            # Make all other cycles not current
+
+            # Change current cycle selection
+            if not name:
+                cycle_id = request.form.get("cycle")
+                print(f"cycle:{cycle_id}")
+
+                # Change active cycle
+                db.execute("UPDATE cycles SET current='FALSE'")
+                db.execute("UPDATE cycles SET current='TRUE' WHERE id=:id", id=cycle_id)
+
+                # Flash confirmation message
+                name = db.execute("SELECT name FROM cycles WHERE id=:id", id=cycle_id)
+                flash(f"{name[0]['name']} queue built.")
+
+            # Make a new cycle
+            else:
+                # Create new Cycle
+                db.execute("UPDATE cycles SET current='FALSE'")
+                time = datetime.datetime.utcnow().isoformat()
+                db.execute("INSERT INTO cycles (name, created_on, current) VALUES (:name, :time, 'TRUE')", name=name, time=time)
+
+            # Calculate production values
+            makequeue()
+
+            return redirect('/admin')
+
+
+        # Import event projections
+        if path == 'import-event':
+
+            event = request.form.get("event")
+            print(f"event:{event}")
+
+            # https://flask.palletsprojects.com/en/2.0.x/patterns/fileuploads/
+
+            # check if the post request has the file part
+            if 'inputfile' not in request.files:
+                flash('No file part')
+                return redirect(request.url)
+
+            file = request.files['inputfile']
+
+            # If the user does not select a file, the browser submits an empty file without a filename.
+            if file.filename == '':
+                flash('No selected file')
+                return redirect(request.url)
+
+            if file and allowed_file(file.filename):
+                # filename = secure_filename(file.filename) # User supplied filenames kept
+                filename = 'temp.csv'
+                print(f"filename:{filename}")
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                flash(f"Sucessfully received upload of {filename} to event #{event}")
+
+                with open('static/uploads/temp.csv', 'r') as csvfile:
+
+                    csv_reader = csv.reader(csvfile)
+
+                    db.execute("CREATE TABLE IF NOT EXISTS test ( \
+                        name VARCHAR (255), \
+                        size VARCHAR (255), \
+                        a VARCHAR (255), \
+                        b VARCHAR (255), \
+                        c VARCHAR (255), \
+                        qty INTEGER \
+                        )")
+
+                    print("    name    |    colors    |    catgory    |    qty   ")
+                    for row in csv_reader:
+                        print(f"{row[0]} | {row[1]} | {row[3]} | {row[4]}")
+
+                        db.execute("INSERT INTO test (name, a, b, c, qty) VALUES (:name, :a, :b, :c, :qty)", \
+                                        name=row[0], a=row[1], b=row[3], qty=row[4])
+
+                flash(f"Processed {filename} into database for event #{event}")
+                return redirect('/admin')
+
+
+
+            # # Read loterias.csv into a SQL table
+            # with open(file, 'r') as csvfile:
+
+            #     csv_reader = csv.reader(csvfile)
+
+            #     for row in csv_reader:
+            #         print(f"row:")
+            #         # db.execute("INSERT INTO loterias (nombre, a, b, c, backs) VALUES (:nombre, :a, :b, :c, :backs)", \
+            #         #                 nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
+
+            else:
+                #TODO
+                return 'unhandled error'
+
+
+        if path == 'parse-squaredata':
+
+            key = {
+
+                'column': {
+                    'squarename': 'db_name'
+                },
+
+                'item name': {
+                    'Boxed Boot': 'La Bota',
+                    'foo': 'bar'
+                },
+
+                'category': {
+                    'boxes': 'S',
+                    'Medium': 'M',
+                    'Large': 'L'
+                }
+            }
+                
+            print(key)
+
+            with open('static/squaredata.csv', 'r') as csvfile:
+
+                csv_reader = csv.reader(csvfile)
+
+                db.execute("CREATE TABLE IF NOT EXISTS test ( \
+                    name VARCHAR (255), \
+                    size VARCHAR (255), \
+                    a VARCHAR (255), \
+                    b VARCHAR (255), \
+                    c VARCHAR (255), \
+                    qty INTEGER \
+                    )")
+
+                print("    name    |    colors    |    catgory    |    qty   ")
+                for row in csv_reader:
+                    print(f"{row[0]} | {row[1]} | {row[3]} | {row[4]}")
+
+                    # db.execute("INSERT INTO test (nombre, a, b, c, backs) VALUES (:nombre, :a, :b, :c, :backs)", \
+                    #                 nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
+
+            return 'parsed squaredata'
+
+
+
+        # Delete a Event
+        if path == 'delete-event':
+            name = request.form.get("delname")
+            print(name)
+            if name != 'test cycle':
+                db.execute("DELETE from CYCLES where name=:name", name=name)
+                db.execute("UPDATE cycles SET current='TRUE' WHERE id=1")
+                return render_template("message.html", message="Successfully deleted cycle.")
+            else:
+                return render_template("error.html", errcode="403", errmsg="Test cycle may not be deleted.")
+
+
+
+
 
 @app.route('/file', methods=['GET', 'POST'])
 @login_required
@@ -1180,7 +1308,7 @@ def file():
 
         print(app.config['BACKUPS'])
 
-        return send_from_directory(app.config['BACKUPS'], filename='backup_projections.csv', as_attachment=True, mimetype='csv')
+        return send_from_directory(app.config['BACKUPS'], filename='backup_projections.csv', as_attachment=True, mimetype='text/csv')
 
         # return render_template('message.html', message="I might have made a csv backup")
 
