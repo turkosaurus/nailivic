@@ -1174,7 +1174,7 @@ def config(path):
                 return redirect(request.url)
 
             if file and allowed_file(file.filename):
-                # filename = secure_filename(file.filename) # User supplied filenames kept
+                filename_user = secure_filename(file.filename) # User supplied filenames kept
                 filename = 'temp.csv'
                 print(f"filename:{filename}")
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -1194,13 +1194,15 @@ def config(path):
                         )")
 
                     print("    name    |    colors    |    catgory    |    qty   ")
+    
+                    next(csv_reader)
                     for row in csv_reader:
                         print(f"{row[0]} | {row[1]} | {row[3]} | {row[4]}")
 
-                        db.execute("INSERT INTO test (name, a, b, c, qty) VALUES (:name, :a, :b, :c, :qty)", \
+                        db.execute("INSERT INTO test (name, a, b, qty) VALUES (:name, :a, :b, :qty)", \
                                         name=row[0], a=row[1], b=row[3], qty=row[4])
 
-                flash(f"Processed {filename} into database for event #{event}")
+                flash(f"Processed {filename_user} into database for event #{event}")
                 return redirect('/admin')
 
 
