@@ -8,7 +8,7 @@ main, body, .card, .list-group-item {
 }
 
 .form-control {
-    background-color: hsl(0, 0%, 95%);
+    background-color: hsla(0, 0%, 95%, 0.748);
 }
 /* .linkbutton */
 

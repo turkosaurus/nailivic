@@ -1178,7 +1178,6 @@ def config(path):
                 filename = 'temp.csv'
                 print(f"filename:{filename}")
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                flash(f"Sucessfully received upload of {filename} to event #{event}")
 
                 with open('static/uploads/temp.csv', 'r') as csvfile:
 
@@ -1227,7 +1226,9 @@ def config(path):
             key = {
 
                 'column': {
-                    'squarename': 'db_name'
+                    'db_name': 'sq_nameA',
+                    'db_name': 'sq_nameA'
+
                 },
 
                 'item name': {
@@ -1241,30 +1242,44 @@ def config(path):
                     'Large': 'L'
                 }
             }
-                
+
+
+            # function to return key for any value
+            def get_key(val):
+                for key, value in key.items():
+                    if val == value:
+                        return key
+                return 'NULL'
+
+            for key, value in key.items():
+                print(f"key:{key}, value:{value}")
+
             print(key)
 
-            with open('static/squaredata.csv', 'r') as csvfile:
+            return "TODO"
 
-                csv_reader = csv.reader(csvfile)
+            # with open('static/squaredata.csv', 'r') as csvfile:
 
-                db.execute("CREATE TABLE IF NOT EXISTS test ( \
-                    name VARCHAR (255), \
-                    size VARCHAR (255), \
-                    a VARCHAR (255), \
-                    b VARCHAR (255), \
-                    c VARCHAR (255), \
-                    qty INTEGER \
-                    )")
+            #     csv_reader = csv.reader(csvfile)
 
-                print("    name    |    colors    |    catgory    |    qty   ")
-                for row in csv_reader:
-                    print(f"{row[0]} | {row[1]} | {row[3]} | {row[4]}")
+            #     db.execute("CREATE TABLE IF NOT EXISTS test ( \
+            #         name VARCHAR (255), \
+            #         size VARCHAR (255), \
+            #         a VARCHAR (255), \
+            #         b VARCHAR (255), \
+            #         c VARCHAR (255), \
+            #         qty INTEGER \
+            #         )")
 
-                    # db.execute("INSERT INTO test (nombre, a, b, c, backs) VALUES (:nombre, :a, :b, :c, :backs)", \
-                    #                 nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
+            #     print("    name    |    colors    |    catgory    |    qty   ")
+            #     for row in csv_reader:
 
-            return 'parsed squaredata'
+            #         print(f"{row[0]} | {row[1]} | {row[3]} | {row[4]}")
+
+            #         # db.execute("INSERT INTO test (nombre, a, b, c, backs) VALUES (:nombre, :a, :b, :c, :backs)", \
+            #         #                 nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
+
+            # return 'parsed squaredata'
 
 
 
