@@ -1062,53 +1062,20 @@ def config(path):
                     b VARCHAR (255), \
                     c VARCHAR (255), \
                     backs VARCHAR (255), \
-                    squarename VARCHAR (255) \
+                    sku INTEGER \
                     )")
 
                 db.execute("DELETE from loterias")
 
+                next(csv_reader)
+                counter = 0
                 for row in csv_reader:
-                    db.execute("INSERT INTO loterias (nombre, a, b, c, backs) VALUES (:nombre, :a, :b, :c, :backs)", \
-                                    nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
+                    counter += 1
+                    db.execute("INSERT INTO loterias (sku, nombre, a, b, c, backs) VALUES (:sku, :nombre, :a, :b, :c, :backs)", \
+                                    sku=row[0], nombre=row[1], a=row[2], b=row[3], c=row[4], backs=row[5])
 
-            return render_template('message.html', message="Success, loterias updated.")
-
-
-        # Wipe items
-        if path == 'wipe-items':
-            db.execute("DELETE FROM items")
-            return render_template('message.html', message="Success, items wiped.")
-
-
-        # Wipe parts
-        if path == 'wipe-parts':
-            db.execute("DELETE FROM parts")
-            return render_template('message.html', message="Success, parts wiped.")
-
-
-        # Wipe boxes
-        if path == 'wipe-boxes':
-            db.execute("DELETE FROM boxes")
-            return render_template('message.html', message="Success, boxes wiped.")
-
-
-        # Wipe used boxes
-        if path == 'wipe-usedboxes':
-            db.execute("DELETE FROM boxused")
-            return render_template('message.html', message="Success, used boxes wiped.")
-
-
-        # Wipe projections
-        if path == 'wipe-projections':
-
-            # Identify current cycle
-            active = db.execute("SELECT id, name, created_on FROM cycles WHERE current='TRUE'")
-            print(f"active cycle:{active}")
-            cycle = active[0]['id']
-
-            db.execute("DELETE FROM projections where cycle=:cycle", cycle=cycle)
-            return render_template('message.html', message="Success, current event's projections wiped.")
-
+            flash(f"Loterias updated with {counter} items.")
+            return redirect('/adimn')
 
         # Not a valid admin route
         else:
@@ -1116,7 +1083,6 @@ def config(path):
 
     # On POST
     else:
-
 
         # Change or make new event
         if path == 'new-event':
@@ -1282,6 +1248,60 @@ def config(path):
             # return 'parsed squaredata'
 
 
+        if path == 'setup':
+
+            print("path setup")
+
+            items = request.form.get("wipe-items")
+            parts = request.form.get("wipe-parts")
+            boxes = request.form.get("wipe-boxes")
+            usedboxes = request.form.get("wipe-usedboxes")
+            projections = request.form.get("wipe-projections")
+
+            print(items)
+
+            if items == 'true':
+                # Wipe items
+                db.execute("DELETE FROM items")
+                return render_template('message.html', message="Success, items wiped.")
+
+
+
+
+
+
+
+
+
+
+            if parts == 'true':
+                # Wipe parts
+                db.execute("DELETE FROM parts")
+                return render_template('message.html', message="Success, parts wiped.")
+
+            if boxes == 'true':
+                # Wipe used boxes
+                db.execute("DELETE FROM boxused")
+                return render_template('message.html', message="Success, used boxes wiped.")
+
+            if usedboxes == 'true':
+                # Wipe boxes
+                db.execute("DELETE FROM boxes")
+                return render_template('message.html', message="Success, boxes wiped.")
+
+            if projections == 'true':
+                # Wipe projections
+                # Identify current cycle
+                active = db.execute("SELECT id, name, created_on FROM cycles WHERE current='TRUE'")
+                print(f"active cycle:{active}")
+                cycle = active[0]['id']
+
+                db.execute("DELETE FROM projections where cycle=:cycle", cycle=cycle)
+                return render_template('message.html', message="Success, current event's projections wiped.")
+
+            return "done"
+
+
 
         # Delete a Event
         if path == 'delete-event':
@@ -1296,6 +1316,31 @@ def config(path):
 
 
 
+
+
+
+@app.route('/test', methods=['GET', 'POST'])
+@login_required
+def test():
+    print("/test")
+    sku = request.form.get("sku")
+    print(f"sku:{sku}")
+
+    def parse_sku(sku):
+
+        parsed = {
+            'item': (int(sku[0]) * 10) + int(sku[1]),
+            'a': (int(sku[2]) * 10) + int(sku[3]),
+            'b': (int(sku[4]) * 10) + int(sku[5]),
+            'c': (int(sku[6]) * 10) + int(sku[7]),
+            'd': (int(sku[8]) * 10) + int(sku[9]),
+            'size': (int(sku[10]) * 10) + int(sku[11])
+            }
+        return parsed
+
+    sku = parse_sku(sku)
+
+    return sku
 
 
 @app.route('/file', methods=['GET', 'POST'])

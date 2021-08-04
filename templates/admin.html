@@ -6,7 +6,7 @@ Admin
 {% block main %}
 <container class="text-monospace">
 
-    <div class="row">
+    <div class="row" id="top">
         <div class="col">
             <h1>Admin</h1>
         </div>
@@ -21,12 +21,14 @@ Admin
         </div>
     </div>
 
-
-    <hr>
-
+    <br>
+    
     <div class="row">
         <div class="col">
             <h2 id='events'>Manage Events</h2>        
+            <p>
+                <a href='/admin#top'>Return to top</a>
+            </p>
         </div>
     </div>
 
@@ -35,6 +37,7 @@ Admin
     <div class="row">
         <div class="col">
             <h4>Create New Empty Event</h4>
+
         </div>    
     </div>    
 
@@ -46,46 +49,12 @@ Admin
                     <div class="form-group">
                         <label for="name">Name</label>
                         <input type="text" name="name" id="name">            
-                        <button type="submit" class="btn btn-primary btn-sm">Make Event</button>
                         <!-- <small id="" class="form-text text-muted">
                             Creates a new empty event.
                         </small> -->                    
                     </div>
+                    <button type="submit" class="btn btn-primary btn-sm">Make Event</button>
                 </div>
-            </form>
-        </div>    
-    </div>
-
-    <br>
-
-    <div class="row">
-        <div class="col">
-            <h4>Import Event Data</h4>
-        </div>    
-    </div>    
-    <div class="row">  
-        <div class="col">
-            <form method="POST" action="/admin/import-event" enctype="multipart/form-data">
-
-                
-                <div class="form-group">
-                    <input type="file" name="inputfile" id="inputfile" accept=".csv">
-                    <!-- <small id="inputfile" class="form-text text-muted">
-                        Uploads projections template
-                    </small>     -->
-                </div>
-                
-                <div class="form-group">
-                    <label for="event"></label>
-                    <select name="event" id="event">
-                        <option title="Overrides all event data with import file">Select Event</option>
-                        {% for cycle in cycles %}
-                            <option title="Created on: {{ cycle.created_on }}" value="{{ cycle.id }}">{{ cycle.name }}</option>
-                        {% endfor %}
-                    </select>
-                    <button type="submit" class="btn btn-primary btn-sm">Upload File</button>
-                </div>
-
             </form>
         </div>    
     </div>
@@ -105,17 +74,89 @@ Admin
                     <label for="delname"></label>
                     <select name="delname" id="delname">
                         {% for cycle in cycles %}
-                            <option title="Created on: {{ cycle.created_on }}">{{ cycle.name }}</option>
+                        <option title="Created on: {{ cycle.created_on }}">{{ cycle.name }}</option>
                         {% endfor %}
                     </select>
-                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                 </div>
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete event and all contents?')">Delete</button>
             </form>
         </div>
     </div>
     
     <br>
+    
+    <div class="row">
+        <div class="col">
+            <h4>Import Event Data</h4>
+        </div>        
+    </div>        
+    <div class="row">  
+        <div class="col">
+            <form method="POST" action="/admin/import-event" enctype="multipart/form-data">
+                
+                
+                
+                <div class="form-group">
+                    <label for="event"></label>
+                    <select name="event" id="event">
+                        <option title="Overrides all event data with import file">Select Event</option>
+                        {% for cycle in cycles %}
+                        <option title="Created on: {{ cycle.created_on }}" value="{{ cycle.id }}">{{ cycle.name }}</option>
+                        {% endfor %}    
+                    </select>
+                </div>    
+                
+                <div class="form-group">
+                    <input type="file" name="inputfile" id="inputfile" accept=".csv">
+                    <!-- <small id="inputfile" class="form-text text-muted">
+                        Uploads projections template
+                    </small>     -->    
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Overwrite event with file data?')">Upload File</button>
+                
+                <!-- <div class="input-group">
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" name="inputfile" accept=".csv" id="inputfile" aria-describedby="inputGroupFileAddon04">
+                        <label class="custom-file-label" for="inputfile">Choose file</label>
+                    </div>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="inputGroupFileAddon04">Import</button>
+                    </div>
+                </div>
+            -->
+            
+        </form>    
+    </div>        
+</div>    
 
+<br>
+
+<div class="row">        
+    <div class="col">
+        <h4>Backup Projections</h4>
+    </div>
+</div>
+<div class="row">        
+    <div class="col">
+        <form action="/admin/backup-projections" method="post">
+            <!-- Name -->
+            <div class="form-group">
+                <label for="backup-projections"></label>
+                <select name="backup-projections" id="backup-projections">
+                    {% for cycle in cycles %}
+                    <option title="Created on: {{ cycle.created_on }}">{{ cycle.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" title="TODO" class="btn btn-primary btn-sm" disabled>Download</button>
+            </form>
+        </div>
+    </div>
+    
+    <br>
+    
+    
     <div class="row">        
         <div class="col">
             <h4>Chomp Squaredata</h4>
@@ -133,67 +174,92 @@ Admin
     </div>
     
     <br>
-
+    
+    <div class="row">        
+        <div class="col">
+            <h4>Test</h4>
+        </div>
+    </div>
+    <div class="row">        
+        <div class="col">
+            <form action="/test" method="post">
+                <input type="number" value="123456789012" name="sku" autocomplete="on">
+                <!-- Name -->
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-sm">Test</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <br>
+    
+    
+    
+    
     <hr>
-
+    
     <hr>
     <div class="row">
         <div class="col">
             <h2 id='database'>
-                SQL Table Reconfigurations
+                Database
             </h2>
+            <p>
+                <a href='/admin#top'>Return to top</a>
+            </p>
         </div>
     </div>
     <hr>
+    
     <div class="row">
+        <div class="col">
+            <form action="/admin/setup" method="post">
+                <h4>
+                    Wipe Inventory
+                </h4>
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="wipe-items" id="wipe-items" value="true">
+                    <label class="form-check-label" for="wipe-items">Items</label>
+                </div>
+                
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="wipe-parts" id="wipe-parts" value="true">
+                    <label class="form-check-label" for="wipe-parts">Parts</label>
+                </div>
+                
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="wipe-boxes" id="wipe-boxes" value="true">
+                    <label class="form-check-label" for="wipe-boxes">Boxes</label>
+                </div>
+
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="wipe-usedboxes" id="wipe-usedboxes" value="true">
+                    <label class="form-check-label" for="wipe-usedboxes">Used Boxes</label>
+                </div>
+
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="wipe-projections" id="wipe-projections" value="true">
+                    <label class="form-check-label" for="wipe-projections">Projections (current event)</label>
+                </div>
+
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Wipe</button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- <div class="row">
         <div class="col">
             <a href="/admin/setup-tables"><button class="btn btn-primary">Setup Tables ☢</button></a>
         </div>
-    </div>
-    <hr>
+    </div> -->
+
     <div class="row">
         <div class="col">
             <a href="/admin/setup-loterias"><button class="btn btn-primary">Setup Loterias ☢</button></a>
         </div>
     </div>
-    <hr>
-    <div class="row">
-        <div class="col">
-            <a href="/admin/wipe-items"><button class="btn btn-primary">Wipe Items Inventory ☢</button></a>
-        </div>
-    </div>
-    <hr>
-    <div class="row">
-        <div class="col">
-            <a href="/admin/wipe-parts"><button class="btn btn-primary">Wipe Parts Inventory ☢</button></a>
-        </div>
-    </div>
-    <hr>
-    <div class="row">
-        <div class="col">
-            <a href="/admin/wipe-boxes"><button class="btn btn-primary">Wipe Box Inventory ☢</button></a>
-        </div>
-    </div>
-    <hr>
-    <div class="row">
-        <div class="col">
-            <a href="/admin/wipe-usedboxes"><button class="btn btn-primary">Wipe Used Box Inventory ☢</button></a>
-        </div>
-    </div>
-    <hr>
-    <div class="row">
-        <div class="col">
-            <a href="/admin/wipe-projections"><button class="btn btn-primary">Wipe Projections ☢</button></a>
-        </div>
-    </div>
 
-
-    <!-- <div class="form-check">
-        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-        <label class="form-check-label" for="flexCheckDefault">
-          Default checkbox
-        </label>
-    </div> -->
-    <br>
 </container>
 {% endblock %}

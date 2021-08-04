@@ -1,11 +1,12 @@
-La Dama,Frida,Frida Flowers,,Frida Backs
-La Sirena,Mermaid Body,Mermaid Hair,Mermaid Tail,Mermaid Backs
-La Mano,Hand,Hand Swirls,,Hand Backs
-La Bota,Boot,Boot Swirls,Boot Flames,Boot Backs
-El Corazon,Heart,Heart Swirls,,Heart Backs
-El Musico,Guitar,Guitar Hands,,Guitar Backs
-La Estrella,Star,Star Swirls,,Star Backs
-El Pulpo,Octopus,Octopus Swirls,Octopus Tentacles,Octopus Backs
-La Rosa,Rose,Rose Swirls,Rose Leaves,Rose Backs
-La Calavera,Skull,Skull Flames,Skull Swirls,Skull Backs
-El Poder,Fist,Fist Swirls,Fist Wrist,Fist Backs
+sku,nombre,a,b,c,backs
+3,La Dama,Frida,Frida Flowers,,Frida Backs
+6,La Sirena,Mermaid Body,Mermaid Hair,Mermaid Tail,Mermaid Backs
+21,La Mano,Hand,Hand Swirls,Hand Backs,Hand Backs
+22,La Bota,Boot,Boot Swirls,Boot Flames,Boot Backs
+27,El Corazon,Heart,Heart Swirls,,Heart Backs
+32,El Musico,Guitar,Guitar Hands,,Guitar Backs
+35,La Estrella,Star,Star Swirls,,Star Backs
+36,El Pulpo,Octopus,Octopus Swirls,Octopus Tentacles,Octopus Backs
+41,La Rosa,Rose,Rose Swirls,Rose Leaves,Rose Backs
+52,La Calavera,Skull,Skull Flames,Skull Swirls,Skull Backs
+26,El Poder,Fist,Fist Swirls,Fist Wrist,Fist Backs
