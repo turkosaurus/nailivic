@@ -926,25 +926,25 @@ def config(path):
 
             # Create table: colors
             db.execute("CREATE TABLE IF NOT EXISTS colors ( \
-                id serial PRIMARY KEY NOT NULL, \
+                sku INTEGER PRIMARY KEY NOT NULL, \
                 name VARCHAR ( 255 ), \
                 emoji VARCHAR ( 255 ) \
                 )")
 
             colors = [['black', '🖤'],['red', '❤️'], ['TQ', '💙'], ['yellow', '💛'], ['green', '💚'], ['purple', '💜']]
             for i in range(len(colors)):
-                db.execute("INSERT INTO colors (name, emoji) VALUES (:name, :emoji)", name=colors[i][0], emoji=colors[i][1])
+                db.execute("INSERT INTO colors (sku, name, emoji) VALUES (:sku, :name, :emoji)", sku=(i+1), name=colors[i][0], emoji=colors[i][1])
 
             # Create table: sizes
             db.execute("CREATE TABLE IF NOT EXISTS sizes ( \
-                id serial PRIMARY KEY NOT NULL, \
+                sku INTEGER PRIMARY KEY NOT NULL, \
                 shortname VARCHAR ( 255 ), \
                 longname VARCHAR ( 255 ) \
                 )")
 
             sizes = [['S', 'small'], ['M', 'medium'], ['L', 'large']]
             for i in range(len(sizes)):
-                db.execute("INSERT INTO sizes (shortname, longname) VALUES (:shortname, :longname)", shortname=sizes[i][0] , longname=sizes[i][1])
+                db.execute("INSERT INTO sizes (sku, shortname, longname) VALUES (:sku, :shortname, :longname)", sku=(i+1), shortname=sizes[i][0] , longname=sizes[i][1])
 
 
             # Create table: recent
@@ -1047,35 +1047,6 @@ def config(path):
             return render_template('message.html', message="Success, tables now setup.")
 
 
-        # Setup loterias
-        if path == 'setup-loterias':
-
-            # Read loterias.csv into a SQL table
-            with open('static/loterias.csv', 'r') as csvfile:
-
-                print('Reading loterias.csv...')
-                csv_reader = csv.reader(csvfile)
-
-                db.execute("CREATE TABLE IF NOT EXISTS loterias ( \
-                    nombre VARCHAR (255) NOT NULL, \
-                    a VARCHAR (255), \
-                    b VARCHAR (255), \
-                    c VARCHAR (255), \
-                    backs VARCHAR (255), \
-                    sku INTEGER \
-                    )")
-
-                db.execute("DELETE from loterias")
-
-                next(csv_reader)
-                counter = 0
-                for row in csv_reader:
-                    counter += 1
-                    db.execute("INSERT INTO loterias (sku, nombre, a, b, c, backs) VALUES (:sku, :nombre, :a, :b, :c, :backs)", \
-                                    sku=row[0], nombre=row[1], a=row[2], b=row[3], c=row[4], backs=row[5])
-
-            flash(f"Loterias updated with {counter} items.")
-            return redirect('/adimn')
 
         # Not a valid admin route
         else:
@@ -1083,6 +1054,61 @@ def config(path):
 
     # On POST
     else:
+
+        # Setup loterias
+        if path == 'setup-loterias':
+
+            # https://flask.palletsprojects.com/en/2.0.x/patterns/fileuploads/
+
+            # check if the post request has the file part
+            if 'inputfile' not in request.files:
+                flash('No file part')
+                return redirect(request.url)
+
+            file = request.files['inputfile']
+
+            # If the user does not select a file, the browser submits an empty file without a filename.
+            if file.filename == '':
+                flash('No selected file')
+                return redirect(request.url)
+
+            if file and allowed_file(file.filename):
+                filename_user = secure_filename(file.filename) # User supplied filenames kept
+                filename = 'temp.csv'
+                print(f"filename:{filename}")
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+                # Read loterias.csv into a SQL table
+                with open('static/uploads/temp.csv', 'r') as csvfile:
+
+                    print('Reading loterias.csv...')
+                    csv_reader = csv.reader(csvfile)
+
+                    db.execute("CREATE TABLE IF NOT EXISTS loterias ( \
+                        nombre VARCHAR (255) NOT NULL, \
+                        a VARCHAR (255), \
+                        b VARCHAR (255), \
+                        c VARCHAR (255), \
+                        backs VARCHAR (255), \
+                        sku INTEGER \
+                        )")
+
+                    db.execute("DELETE from loterias")
+
+                    next(csv_reader)
+                    counter = 0
+                    for row in csv_reader:
+                        counter += 1
+                        db.execute("INSERT INTO loterias (sku, nombre, a, b, c, backs) VALUES (:sku, :nombre, :a, :b, :c, :backs)", \
+                                        sku=row[0], nombre=row[1], a=row[2], b=row[3], c=row[4], backs=row[5])
+
+                flash(f"Loterias updated with {counter} items.")
+
+            else:
+                flash(f"Upload failure.")
+
+            return redirect('/admin')
+
 
         # Change or make new event
         if path == 'new-event':
@@ -1187,65 +1213,17 @@ def config(path):
                 return 'unhandled error'
 
 
-        if path == 'parse-squaredata':
+        # # TODO
+        # # function to return key for any value
+        # def get_key(val):
+        #     for key, value in key.items():
+        #         if val == value:
+        #             return key
+        #     return 'NULL'
 
-            key = {
+        # for key, value in key.items():
+        #     print(f"key:{key}, value:{value}")
 
-                'column': {
-                    'db_name': 'sq_nameA',
-                    'db_name': 'sq_nameA'
-
-                },
-
-                'item name': {
-                    'Boxed Boot': 'La Bota',
-                    'foo': 'bar'
-                },
-
-                'category': {
-                    'boxes': 'S',
-                    'Medium': 'M',
-                    'Large': 'L'
-                }
-            }
-
-
-            # function to return key for any value
-            def get_key(val):
-                for key, value in key.items():
-                    if val == value:
-                        return key
-                return 'NULL'
-
-            for key, value in key.items():
-                print(f"key:{key}, value:{value}")
-
-            print(key)
-
-            return "TODO"
-
-            # with open('static/squaredata.csv', 'r') as csvfile:
-
-            #     csv_reader = csv.reader(csvfile)
-
-            #     db.execute("CREATE TABLE IF NOT EXISTS test ( \
-            #         name VARCHAR (255), \
-            #         size VARCHAR (255), \
-            #         a VARCHAR (255), \
-            #         b VARCHAR (255), \
-            #         c VARCHAR (255), \
-            #         qty INTEGER \
-            #         )")
-
-            #     print("    name    |    colors    |    catgory    |    qty   ")
-            #     for row in csv_reader:
-
-            #         print(f"{row[0]} | {row[1]} | {row[3]} | {row[4]}")
-
-            #         # db.execute("INSERT INTO test (nombre, a, b, c, backs) VALUES (:nombre, :a, :b, :c, :backs)", \
-            #         #                 nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
-
-            # return 'parsed squaredata'
 
 
         if path == 'setup':

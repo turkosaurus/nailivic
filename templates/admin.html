@@ -247,13 +247,49 @@ Admin
             </form>
         </div>
 
+        <div class="col">
+            <h4>
+                Update Loterias
+            </h4>
+
+            <form method="POST" action="/admin/setup-loterias" enctype="multipart/form-data">
+                                    
+                <div class="form-group">
+                    <input type="file" name="inputfile" id="inputfile" accept=".csv">
+                    <!-- <small id="inputfile" class="form-text text-muted">
+                        text
+                    </small>     -->    
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Update loterias db table with this file?')">Upload File</button>
+                
+                <!-- <div class="input-group">
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" name="inputfile" accept=".csv" id="inputfile" aria-describedby="inputGroupFileAddon04">
+                        <label class="custom-file-label" for="inputfile">Choose file</label>
+                    </div>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="inputGroupFileAddon04">Import</button>
+                    </div>
+                </div>
+            -->
+            
+            </form>    
+        </div>
+
+
+
     </div>
 
-    <!-- <div class="row">
+    <br>
+
+    <div class="row">
         <div class="col">
             <a href="/admin/setup-tables"><button class="btn btn-primary">Setup Tables ☢</button></a>
         </div>
-    </div> -->
+    </div>
+
+    <br>
 
     <div class="row">
         <div class="col">
