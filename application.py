@@ -1105,12 +1105,12 @@ def config(path):
 
             if file and allowed_file(file.filename):
                 filename_user = secure_filename(file.filename) # User supplied filenames kept
-                filename = 'loteria.csv'
+                filename = 'loterias.csv'
                 print(f"filename:{filename}")
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
                 # Read loterias.csv into a SQL table
-                with open('static/uploads/loteria.csv', 'r') as csvfile:
+                with open('static/uploads/loterias.csv', 'r') as csvfile:
 
                     print('Reading loterias.csv...')
                     csv_reader = csv.reader(csvfile)
@@ -1317,11 +1317,19 @@ def config(path):
             else:
                 return render_template("error.html", errcode="403", errmsg="Test cycle may not be deleted.")
 
-@app.route('/download', methods=['POST'])
+
+@app.route('/downloads', methods=['POST'])
 @login_required
-def download():
+def downloads():
     file = request.form.get("file")
-    print(file)
+    print(f"/downloading: {file}")
+    return send_from_directory(app.config["UPLOAD_FOLDER"], file, as_attachment=True)
+
+
+@app.route('/foo', methods=['GET', 'POST'])
+@login_required
+def foo():
+    print(f"/downloading: {file}")
 
     return send_from_directory(app.config["UPLOAD_FOLDER"], "temp.csv", as_attachment=True)
 
