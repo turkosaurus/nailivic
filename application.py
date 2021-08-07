@@ -66,6 +66,7 @@ sizes = ['S', 'M', 'L']
 
 ###### DECORATORS & HELPERS ######
 
+#
 def login_required(f):
     """
     Decorate routes to require login.
@@ -82,14 +83,28 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def parse_sku(sku):
+    # turns SKU string into object with integers
+
+    parsed = {
+        'item': (int(sku[0]) * 10) + int(sku[1]),
+        'a': (int(sku[2]) * 10) + int(sku[3]),
+        'b': (int(sku[4]) * 10) + int(sku[5]),
+        'c': (int(sku[6]) * 10) + int(sku[7]),
+        'd': (int(sku[8]) * 10) + int(sku[9]),
+        'size': (int(sku[10]) * 10) + int(sku[11])
+        }
+
+    return parsed
+
 ###### QUEUE ######
 
 # These functions produce production table, calculating projecitons less inventory
 # Negative values can dequeue items
 
-# Queue part(s) of specified color for production by 
-# Move qty parts 
 def queuepart(name, size, color, qty):
+    # Queue part(s) of specified color for production by 
+
     print("queuepart()")
 
     # Identify how many parts of that type are already on hand
@@ -124,9 +139,8 @@ def queuepart(name, size, color, qty):
                         name=name, size=size, color=color, qty=qty)
             print(f"{qty} {size} {color} {name} inserted into production queue")
 
-
-# Queue backs for production            
 def queuebacks(name, size, qty):
+    # Queue backs for production            
     print("queuebacks()")
     
     # Identify how many parts of that type are already on hand
@@ -161,9 +175,8 @@ def queuebacks(name, size, qty):
                     name=name, size=size, qty=qty)
         print(f"{qty} {size} {name} inserted into production queue")
       
-
-# Queue boxes for production
 def queueboxes(name, qty):
+    # Queue boxes for production
     print("queueboxes()")
 
     db.execute("DELETE FROM boxprod where qty=0")
@@ -195,9 +208,9 @@ def queueboxes(name, qty):
         db.execute("INSERT INTO boxprod (name, qty) VALUES (:name, :qty)", name=name, qty=qty)
         print(f"{qty} {name} boxes in production queue")
 
-
-# (RE)BUILD PRODUCTION TABLE
 def makequeue():
+    # (RE)BUILDS PRODUCTION TABLE
+    # Uses of queuepart(), queuebacks(), and queueboxes()
 
     # Identify current cycle
     cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
@@ -269,7 +282,7 @@ def makequeue():
             queuebacks(name, size, qty)
 
 
-
+# TODO
 # @app.context_processor
 # def colors():
 #     return dict(colors=colors)
@@ -911,6 +924,23 @@ def config(path):
 
     if request.method == 'GET':
 
+
+        if path == 'convert':
+
+            if 1 == 1:
+                return redirect("/admin#sku")
+            else:
+                
+
+                db.execute("UPDATE items ")
+
+
+
+                return "still working"
+
+
+
+
         # Setup tables
         if path == 'setup-tables':
 
@@ -931,7 +961,7 @@ def config(path):
                 emoji VARCHAR ( 255 ) \
                 )")
 
-            colors = [['black', '🖤'],['red', '❤️'], ['TQ', '💙'], ['yellow', '💛'], ['green', '💚'], ['purple', '💜']]
+            colors = [['black', '⬛'],['red', '🟥'], ['TQ', '🟦'], ['yellow', '🟨'], ['green', '🟩'], ['purple', '🟪']]
             for i in range(len(colors)):
                 db.execute("INSERT INTO colors (sku, name, emoji) VALUES (:sku, :name, :emoji)", sku=(i+1), name=colors[i][0], emoji=colors[i][1])
 
@@ -1043,8 +1073,8 @@ def config(path):
             # db.execute("DROP TABLE summary")
             db.execute("CREATE TABLE IF NOT EXISTS summary ()")
 
-
-            return render_template('message.html', message="Success, tables now setup.")
+            flash("Tables setup.")
+            return redirect("/admin")
 
 
 
@@ -1243,15 +1273,6 @@ def config(path):
                 db.execute("DELETE FROM items")
                 return render_template('message.html', message="Success, items wiped.")
 
-
-
-
-
-
-
-
-
-
             if parts == 'true':
                 # Wipe parts
                 db.execute("DELETE FROM parts")
@@ -1277,7 +1298,9 @@ def config(path):
                 db.execute("DELETE FROM projections where cycle=:cycle", cycle=cycle)
                 return render_template('message.html', message="Success, current event's projections wiped.")
 
-            return "done"
+            #TODO create counter and return number of sucessful rows per action
+            flash("Setup changes complete.")
+            return redirect("/admin")
 
 
 
@@ -1288,12 +1311,10 @@ def config(path):
             if name != 'test cycle':
                 db.execute("DELETE from CYCLES where name=:name", name=name)
                 db.execute("UPDATE cycles SET current='TRUE' WHERE id=1")
-                return render_template("message.html", message="Successfully deleted cycle.")
+                flash(f"Successfully deleted {name} event cycle.")
+                return redirect("/admin")
             else:
                 return render_template("error.html", errcode="403", errmsg="Test cycle may not be deleted.")
-
-
-
 
 
 
@@ -1303,18 +1324,6 @@ def test():
     print("/test")
     sku = request.form.get("sku")
     print(f"sku:{sku}")
-
-    def parse_sku(sku):
-
-        parsed = {
-            'item': (int(sku[0]) * 10) + int(sku[1]),
-            'a': (int(sku[2]) * 10) + int(sku[3]),
-            'b': (int(sku[4]) * 10) + int(sku[5]),
-            'c': (int(sku[6]) * 10) + int(sku[7]),
-            'd': (int(sku[8]) * 10) + int(sku[9]),
-            'size': (int(sku[10]) * 10) + int(sku[11])
-            }
-        return parsed
 
     sku = parse_sku(sku)
 

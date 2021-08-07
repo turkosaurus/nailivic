@@ -1,7 +1,27 @@
+:root {
+
+}
+
 main, body, .card, .list-group-item {
     color:lightgray;
     background-color: black;
 }
+
+hr {
+    border-top: 1px solid white;
+}
+
+
+/* .navbar-brand
+{
+    position: relative;
+    background: url(../static/nailivicstudios.png);
+    width: 170px;
+    height: auto;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+} */
 
 .navbar-dark, .bg-dark {
     background-color: black;
