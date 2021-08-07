@@ -925,6 +925,7 @@ def config(path):
     if request.method == 'GET':
 
 
+
         if path == 'convert':
 
             if 1 == 1:
@@ -1093,23 +1094,23 @@ def config(path):
             # check if the post request has the file part
             if 'inputfile' not in request.files:
                 flash('No file part')
-                return redirect(request.url)
+                return redirect("/admin")
 
             file = request.files['inputfile']
 
             # If the user does not select a file, the browser submits an empty file without a filename.
             if file.filename == '':
                 flash('No selected file')
-                return redirect(request.url)
+                return redirect("/admin")
 
             if file and allowed_file(file.filename):
                 filename_user = secure_filename(file.filename) # User supplied filenames kept
-                filename = 'temp.csv'
+                filename = 'loteria.csv'
                 print(f"filename:{filename}")
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
                 # Read loterias.csv into a SQL table
-                with open('static/uploads/temp.csv', 'r') as csvfile:
+                with open('static/uploads/loteria.csv', 'r') as csvfile:
 
                     print('Reading loterias.csv...')
                     csv_reader = csv.reader(csvfile)
@@ -1316,6 +1317,13 @@ def config(path):
             else:
                 return render_template("error.html", errcode="403", errmsg="Test cycle may not be deleted.")
 
+@app.route('/download', methods=['POST'])
+@login_required
+def download():
+    file = request.form.get("file")
+    print(file)
+
+    return send_from_directory(app.config["UPLOAD_FOLDER"], "temp.csv", as_attachment=True)
 
 
 @app.route('/test', methods=['GET', 'POST'])

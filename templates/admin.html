@@ -91,7 +91,7 @@ Admin
                     </div>    
                     
                     <div class="form-group">
-                        <input type="file" name="inputfile" id="inputfile" accept=".csv">
+                        <input class="form-control" type="file" name="inputfile" id="inputfile" accept=".csv">
                         <!-- <small id="inputfile" class="form-text text-muted">
                             Uploads projections template
                         </small>     -->    
@@ -138,6 +138,8 @@ Admin
         
     <hr>
 
+    <br>
+    
     <div class="row">
         <div class="col">
             <h2 id='database'>
@@ -149,10 +151,8 @@ Admin
         </div>
     </div>
 
-    <br>
-
     <div class="row">
-        <div class="col">
+        <div class="col-lg-4 col-md-6 col-sm-12">
             <form action="/admin/setup" method="post">
                 <h5>
                     Wipe Inventory
@@ -179,28 +179,28 @@ Admin
 
                 <div class="form-group form-check">
                     <input type="checkbox" class="form-check-input" name="wipe-projections" id="wipe-projections" value="true">
-                    <label class="form-check-label" for="wipe-projections">Projections (current event)</label>
+                    <label class="form-check-label" for="wipe-projections">Projections <small>(current event)</small></label>
                 </div>
 
                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Wipe</button>
             </form>
         </div>
 
-        <div class="col">
+        <div class="col-lg-4 col-md-6 col-sm-12">
             <h5>
-                Update Loterias
+                Loterias Template
             </h5>
-
+            
             <form method="POST" action="/admin/setup-loterias" enctype="multipart/form-data">
-                                    
+                
                 <div class="form-group">
-                    <input type="file" name="inputfile" id="inputfile" accept=".csv">
+                    <input class="form-control" type="file" name="inputfile" id="inputfile" accept=".csv">
                     <!-- <small id="inputfile" class="form-text text-muted">
                         text
                     </small>     -->    
                 </div>
                 
-                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Update loterias db table with this file?')">Upload File</button>
+                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Update loterias db table with this file?')">Upload New</button>
                 
                 <!-- <div class="input-group">
                     <div class="custom-file">
@@ -213,12 +213,20 @@ Admin
                 </div>
             -->
             
-            </form>    
-        </div>
-
-
-
+        </form>
+        
+        <br>
+        
+        <form method="POST" action="/download">                
+            <button name="file" value="loterias.csv" type="submit" class="btn btn-primary btn-sm">Download Current</button>            
+        </form>
+        
+        
     </div>
+    
+    
+    
+</div>
 
     <br>
     <hr>
@@ -229,35 +237,56 @@ Admin
             <p>
                 <a href='/admin#top'>return to top</a>
             </p>
- 
-            <div class="row">        
-                <div class="col">
-                    <h5>Test SKU parser</h5>
+        </div>
+    </div>
+    <div class="row">        
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <h5>Test SKU parser</h5>
+            <form action="/test" method="post">
+                <input type="number" value="123456789012" id="sku" name="sku" autocomplete="on">
+                <!-- <label for="sku">Parse number into SKU object</label> -->
+                <div class="form-group">
+                    <small>returns parsed object from SKU string</small>
                 </div>
-            </div>
-            <div class="row">        
-                <div class="col">
-                    <form action="/test" method="post">
-                        <input type="number" value="123456789012" id="sku" name="sku" autocomplete="on">
-                        <label for="sku">Parse number into SKU object</label>
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary btn-sm">Test</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                <button type="submit" class="btn btn-primary btn-sm">Test</button>
+            </form>
+        </div>
         
-            <img src="/static/skuexample.png">
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <h5>SKU instructions</h5>
+            <p>12 digit SKU comprised of 6 pairs</p>
+            <ul>
+                <li>
+                    XX __ __ __ __ __ = item
+                </li>
+                <li>
+                    __ XX XX XX __ __ = colors
+                </li>
+                <li>
+                    __ __ __ __ XX __ = unused (default to 0)
+                </li>
+                <li>
+                    __ __ __ __ __ XX = size
+                </li>
+            </ul>
         </div>
     </div>
 
-
     <br>
 
-    
+    <div class="row">        
+        <div class="col">
+            <img class="img-fluid text-center" alt="SKU setup explained"  src="/static/skuexample.png">
+        </div>
+    </div>
+
+    <br>
+    <hr>
+
     <div class="row">
         <div class="col">
             <a href="/admin/convert"><button class="btn btn-primary">convert hearts</button></a>
+            <small>testing, Mark don't touch</small>
         </div>
     </div>
 
