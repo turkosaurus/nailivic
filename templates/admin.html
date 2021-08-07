@@ -35,11 +35,9 @@ Admin
         </div>
     </div>
 
-    <br>
-
     <div class="row"> 
-        <div class="col-lg-4 col-md-6 col-sm-12">
-            <h5>Create New Empty Event</h5>
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <h5>Create New</h5>
             <div class="form-group">
                 <form action="/admin/new-event" method="post">            
                     <!-- Name -->
@@ -53,32 +51,11 @@ Admin
                     <button type="submit" class="btn btn-primary btn-sm">Make Event</button>
                 </div>
             </form>
-        </div>    
-
-        <div class="col-lg-4 col-md-6 col-sm-12">
-            <h5>Delete Event</h5>
-            <form action="/admin/delete-event" method="post">
-                <!-- Name -->
-                <div class="form-group">
-                    <!-- <label for="delname"></label> -->
-                    <select class="form-control" name="delname" id="delname">
-                        {% for cycle in cycles %}
-                        <option title="Created on: {{ cycle.created_on }}">{{ cycle.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete event and all contents?')">Delete</button>
-            </form>
         </div>
-    </div>
-    
-    <br>
-    <br>
-
-    <div class="row">
-        <div class="col-lg-4 col-md-6 col-sm-12">
-            <h5>Import Event Data <p><small>(in testing)</small></p><h5>
-            <form method="POST" action="/admin/import-event" enctype="multipart/form-data">
+        
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <h5>Import Projections<h5>
+                <form method="POST" action="/admin/import-event" enctype="multipart/form-data">
                     
                     <div class="form-group">
                         <!-- <label for="event"></label> -->
@@ -98,7 +75,7 @@ Admin
                     </div>
                     
                     <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Overwrite event with file data?')">Upload File</button>
-                    
+                    <small>(in testing)</small>                    
                     <!-- <div class="input-group">
                         <div class="custom-file">
                             <input type="file" class="custom-file-input" name="inputfile" accept=".csv" id="inputfile" aria-describedby="inputGroupFileAddon04">
@@ -112,29 +89,38 @@ Admin
                 
             </form>    
         </div>
-    </div>
 
-<br>
-<br>
-
-<div class="row">        
-    <div class="col-lg-4 col-md-6 col-sm-12">
-        <h5>Backup Projections</h5>
-        <form action="/admin/backup-projections" method="post">
-            <div class="form-group">
-                <!-- <label for="backup-projections"></label> -->
-                <select class="form-control" name="backup-projections" id="backup-projections">
-                    {% for cycle in cycles %}
-                    <option title="Created on: {{ cycle.created_on }}">{{ cycle.name }}</option>
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <h5>Backup Projections</h5>
+            <form action="/admin/backup-projections" method="post">
+                <div class="form-group">
+                    <!-- <label for="backup-projections"></label> -->
+                    <select class="form-control" name="backup-projections" id="backup-projections">
+                        {% for cycle in cycles %}
+                        <option title="Created on: {{ cycle.created_on }}">{{ cycle.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" title="TODO" class="btn btn-primary btn-sm" disabled>Download</button>
+                </form>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <h5>Delete Event</h5>
+            <form action="/admin/delete-event" method="post">
+                <!-- Name -->
+                <div class="form-group">
+                    <!-- <label for="delname"></label> -->
+                    <select class="form-control" name="delname" id="delname">
+                        {% for cycle in cycles %}
+                        <option title="Created on: {{ cycle.created_on }}">{{ cycle.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                <button type="submit" title="TODO" class="btn btn-primary btn-sm" disabled>Download</button>
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete event and all contents?')">Delete</button>
             </form>
         </div>
     </div>
-        
-    <br>
         
     <hr>
 
@@ -152,7 +138,7 @@ Admin
     </div>
 
     <div class="row">
-        <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="col-md-6 col-sm-12">
             <form action="/admin/setup" method="post">
                 <h5>
                     Wipe Inventory
@@ -186,7 +172,7 @@ Admin
             </form>
         </div>
 
-        <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="col-md-6 col-sm-12">
             <h5>
                 Loterias Template
             </h5>
@@ -239,8 +225,9 @@ Admin
             </p>
         </div>
     </div>
+
     <div class="row">        
-        <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="col-lg-6 col-md-6 col-sm-12">
             <h5>Test SKU parser</h5>
             <form action="/test" method="post">
                 <input type="number" value="123456789012" id="sku" name="sku" autocomplete="on">
@@ -252,7 +239,7 @@ Admin
             </form>
         </div>
         
-        <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="col-lg-6 col-md-6 col-sm-12">
             <h5>SKU instructions</h5>
             <p>12 digit SKU comprised of 6 pairs</p>
             <ul>
