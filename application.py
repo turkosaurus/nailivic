@@ -112,35 +112,6 @@ def gather_templates():
 
     return response
 
-def build_sku(nombre, a, b, c, d, size):
-
-    templates = gather_templates()
-
-    sku = {}
-
-    # sku = {
-    #     'item': (int(sku[0]) * 10) + int(sku[1]),
-    #     'a': (int(sku[2]) * 10) + int(sku[3]),
-    #     'b': (int(sku[4]) * 10) + int(sku[5]),
-    #     'c': (int(sku[6]) * 10) + int(sku[7]),
-    #     'd': (int(sku[8]) * 10) + int(sku[9]),
-    #     'size': (int(sku[10]) * 10) + int(sku[11])
-    #     }
-
-    for i in templates.loterias:
-        if i.nombre == nombre:
-            sku.item = nombre
-
-
-
-
-
-    # sku = db.execute(" \
-    #     SELECT sku FROM loterias WHERE nombre=:nombre \
-    #     INNER JOIN  \
-    #     ")
-
-
 
 
 
@@ -963,6 +934,7 @@ def shipping():
 @app.route('/admin', methods=['GET'])
 @login_required
 def admin():
+
     cycles = db.execute("SELECT * FROM cycles")
     loterias = db.execute("SELECT * FROM loterias")
     sizes = db.execute("SELECT * FROM sizes")
@@ -1426,7 +1398,8 @@ def config(path):
             a = str(request.form.get("a")).zfill(2)
             b = str(request.form.get("b")).zfill(2)
             c = str(request.form.get("c")).zfill(2)
-            d = str(request.form.get("d")).zfill(2)
+            d = str("00")   
+            # d = str(request.form.get("d")).zfill(2)
             size = str(request.form.get("size")).zfill(2)
 
             sku = nombre + a + b + c + d + size
@@ -1438,6 +1411,7 @@ def config(path):
         else:
             #TODO
             return "how did I get here?"
+
 
 @app.route('/downloads', methods=['POST'])
 @login_required
