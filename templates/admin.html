@@ -81,7 +81,7 @@ Admin
                 </small>
                 <br>
                 
-                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Add projections to event?')">Upload File</button>
+                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Add projections to event?')"> File</button>
                 <br>
                 
             </form>
@@ -225,7 +225,7 @@ Admin
         <div class="col-lg-4 col-md-6 col-sm-12">
             <h5>Test SKU parser</h5>
             <form action="/admin/parse-sku" method="post">
-                <input type="number" value="123456789012" id="sku" name="sku" autocomplete="on">
+                <input class="form-control" type="number" value="000000000000" id="sku" name="sku" autocomplete="on">
                 <!-- <label for="sku">Parse number into SKU object</label> -->
                 <div class="form-group">
                     <small>returns parsed object from SKU string</small>
@@ -262,9 +262,9 @@ Admin
 
             <form class="form-group" action="/admin/make-sku" method="post">
 
-                <div class="form-group">
-                    <label for="nombre">Nombre</label>
-                    <select class="form-control" name="nombre" id="nombre">
+                <div class="form-row">
+                    <label class="col-4" for="nombre">Nombre</label>
+                    <select class="col-8 form-control" name="nombre" id="nombre">
                         <!-- <option title="">Select Event</option> -->
                         {% for loteria in loterias %}
                             <option title="" value="{{ loteria.sku }}">{{ loteria.nombre }}</option>
@@ -272,9 +272,23 @@ Admin
                     </select>
                 </div>    
 
-                <div class="form-group">
-                    <label for="a">Color A</label>
-                    <select class="form-control" name="a" id="a">
+                <br>
+
+                <div class="form-row">
+                    <label class="col-4" for="a">Color A</label>
+                    <select class="col-8 form-control" name="a" id="a">
+                        <option selected title="Defaults to 00" value="00">none</option>
+                        {% for color in colors %}
+                            <option title="" value="{{ color.sku }}">{{ color.emoji }} {{ color.name }}</option>
+                        {% endfor %}    
+                    </select>
+                </div>    
+                
+                <br>
+
+                <div class="form-row">
+                    <label class="col-4" for="b">Color B</label>
+                    <select class="col-8 form-control" name="b" id="b">
                         <option selected title="Defaults to 00" value="00">none</option>
                         {% for color in colors %}
                             <option title="" value="{{ color.sku }}">{{ color.emoji }} {{ color.name }}</option>
@@ -282,9 +296,11 @@ Admin
                     </select>
                 </div>    
 
-                <div class="form-group">
-                    <label for="b">Color B</label>
-                    <select class="form-control" name="b" id="b">
+                <br>
+
+                <div class="form-row">
+                    <label class="col-4" for="c">Color C</label>
+                    <select class="col-8 form-control" name="c" id="c">
                         <option selected title="Defaults to 00" value="00">none</option>
                         {% for color in colors %}
                             <option title="" value="{{ color.sku }}">{{ color.emoji }} {{ color.name }}</option>
@@ -292,34 +308,30 @@ Admin
                     </select>
                 </div>    
 
-                <div class="form-group">
-                    <label for="c">Color C</label>
-                    <select class="form-control" name="c" id="c">
+                <br>
+
+                <!-- <div class="form-row">
+                    <label class="col-4" for="d">Color D</label>
+                    <select class="col-8 form-control" name="d" id="d">
                         <option selected title="Defaults to 00" value="00">none</option>
                         {% for color in colors %}
                             <option title="" value="{{ color.sku }}">{{ color.emoji }} {{ color.name }}</option>
                         {% endfor %}    
                     </select>
-                </div>    
+                </div>     -->
 
-                <div class="form-group">
-                    <label for="d">Color D</label>
-                    <select class="form-control" name="d" id="d">
-                        <option selected title="Defaults to 00" value="00">none</option>
-                        {% for color in colors %}
-                            <option title="" value="{{ color.sku }}">{{ color.emoji }} {{ color.name }}</option>
-                        {% endfor %}    
-                    </select>
-                </div>    
+                <!-- <br> -->
 
-                <div class="form-group">
-                    <label for="size">Size</label>
-                    <select class="form-control" name="size" id="size">
+                <div class="form-row">
+                    <label class="col-4" for="size">Size</label>
+                    <select class="col-8 form-control" name="size" id="size">
                         {% for size in sizes %}
                         <option title="" value="{{ size.sku }}">{{ size.longname }}</option>
                         {% endfor %}    
                     </select>
                 </div>
+
+                <br>
 
                 <button type="submit" class="btn btn-primary btn-sm btn-block">Generate SKU</button>
 

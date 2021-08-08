@@ -97,6 +97,7 @@ def parse_sku(sku):
 
     return parsed
 
+#TODO maybe delete this
 def gather_templates():
 
     # Gather template data
@@ -326,6 +327,9 @@ def dashboard():
         parts = db.execute("SELECT * FROM parts ORDER BY size ASC, name DESC, color ASC, qty DESC")
         newloterias = db.execute("SELECT * FROM loterias")
 
+
+
+        # TODO replace this with fewer queries and for loops to build the table
         # Sum totals for each back, color & size
         totals = []
         # # For each size
@@ -356,6 +360,10 @@ def dashboard():
 
             print(totals)
 
+
+
+
+
         # Box Production Total
         box_prod_total = db.execute("SELECT SUM(qty) FROM boxprod")
         box_prod_total = box_prod_total[0]['sum']
@@ -367,9 +375,7 @@ def dashboard():
 
         production = db.execute("SELECT * FROM production ORDER BY size DESC, name DESC, color DESC")
         time = datetime.datetime.utcnow().isoformat()
-        print(cycle)
-        print(items)
-        print(newloterias)
+
         return render_template('index.html', production=production, boxes=boxes, boxprod=boxprod, box_prod_total=box_prod_total, boxused=boxused, backs=backs, loterias=newloterias, sizes=sizes, \
             colors=colors, user=user, items=items, parts=parts, projections=projections, totals=totals, cycle=cycle, time=time)
 
@@ -491,7 +497,19 @@ def parts(part):
     if request.method == 'GET':
 
         if part in ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']:
-            return render_template('parts.html', part=part)
+
+            loterias = db.execute("SELECT * FROM loterias")
+            colors = db.execute("SELECT * FROM colors")
+            sizes = db.execute("SELECT * FROM sizes")
+
+            part_search = '%' + part
+            # part_search = part
+            productions = db.execute("SELECT * FROM production WHERE color LIKE :name", name=part_search)
+
+            # for row in production:
+            #     size = 0
+
+            return render_template('parts.html', part=part, loterias=loterias, colors=colors, sizes=sizes, productions=productions)
 
         else:
             if part == "boxes":

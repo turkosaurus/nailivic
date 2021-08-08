@@ -23,7 +23,7 @@ hr {
     background-position: center;
 } */
 
-.navbar-dark, .bg-dark {
+.navbar-dark, .bg-dark, .navbar {
     background-color: black;
 }
 
