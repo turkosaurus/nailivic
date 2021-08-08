@@ -57,41 +57,32 @@ Admin
         
         <div class="col-lg-3 col-md-6 col-sm-12">
             <h5>Import Projections<h5>
-                <form method="POST" action="/admin/import-event" enctype="multipart/form-data">
-                    
-                    <div class="form-group">
-                        <!-- <label for="event"></label> -->
-                        <select class="form-control" name="event" id="event">
-                            <option title="Overrides all event data with import file">Select Event</option>
-                            {% for cycle in cycles %}
-                            <option title="Created on: {{ cycle.created_on }}" value="{{ cycle.id }}">{{ cycle.name }}</option>
-                            {% endfor %}    
-                        </select>
-                    </div>    
-                    
-                    <div class="form-group">
-                        <input class="form-control" type="file" name="inputfile" id="inputfile" accept=".csv">
-                        <!-- <small id="inputfile" class="form-text text-muted">
-                            Uploads projections template
-                        </small>     -->    
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Overwrite event with file data?')">Upload File</button>
-                    <small>(in testing)</small>                    
-                    <!-- <div class="input-group">
-                        <div class="custom-file">
-                            <input type="file" class="custom-file-input" name="inputfile" accept=".csv" id="inputfile" aria-describedby="inputGroupFileAddon04">
-                            <label class="custom-file-label" for="inputfile">Choose file</label>
-                        </div>
-                        <div class="input-group-append">
-                            <button class="btn btn-outline-secondary" type="button" id="inputGroupFileAddon04">Import</button>
-                        </div>
-                    </div>
-                -->
+            <form method="POST" action="/admin/import-event" enctype="multipart/form-data">
+                
+                <div class="form-group">
+                    <!-- <label for="event"></label> -->
+                    <select class="form-control" name="event" id="event">
+                        <option title="Overrides all event data with import file">Select Event</option>
+                        {% for cycle in cycles %}
+                        <option title="Created on: {{ cycle.created_on }}" value="{{ cycle.id }}">{{ cycle.name }}</option>
+                        {% endfor %}    
+                    </select>
+                </div>    
+                
+                <div class="form-group">
+                    <input class="form-control" type="file" name="inputfile" id="inputfile" accept=".csv">
+                </div>
+                
+                <!-- TODO why isn't this text smaller? -->
+                <small class="form-text text-muted">
+                    Adds Square sales export to Event's projections (in development)
+                </small>
+                <br>
+                
+                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Add projections to event?')">Upload File</button>
+                <br>
                 
             </form>
-            <br>
-
         </div>
 
         <div class="col-lg-3 col-md-6 col-sm-12">
@@ -101,13 +92,20 @@ Admin
                     <!-- <label for="backup-projections"></label> -->
                     <select class="form-control" name="backup-projections" id="backup-projections">
                         {% for cycle in cycles %}
-                        <option title="Created on: {{ cycle.created_on }}">{{ cycle.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <button type="submit" title="TODO" class="btn btn-primary btn-sm" disabled>Download</button>
-                </form>
+                            <option title="Created on: {{ cycle.created_on }}" value="{{ cycle.id }}">{{ cycle.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <small class="form-text text-muted">
+                    Download .csv of current event projections. (in development)
+                </small>
                 <br>
+
+                <button type="submit" title="" class="btn btn-primary btn-sm">Download</button>
+
+            </form>
+            <br>
         </div>
         
         <div class="col-lg-3 col-md-6 col-sm-12">
@@ -145,7 +143,7 @@ Admin
 
     <div class="row">
         <div class="col-md-6 col-sm-12">
-            <form action="/admin/setup" method="post">
+            <form action="/admin/wipe" method="post">
                 <h5>
                     Wipe Inventory
                 </h5>
@@ -188,38 +186,26 @@ Admin
                 
                 <div class="form-group">
                     <input class="form-control" type="file" name="inputfile" id="inputfile" accept=".csv">
-                    <!-- <small id="inputfile" class="form-text text-muted">
-                        text
-                    </small>     -->    
+                    <small class="form-text text-muted">
+                        Upload new loterias template. Do not modify without database edits; only add new items.
+                    </small>
                 </div>
                 
-                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Update loterias db table with this file?')">Upload New</button>
-                
-                <!-- <div class="input-group">
-                    <div class="custom-file">
-                        <input type="file" class="custom-file-input" name="inputfile" accept=".csv" id="inputfile" aria-describedby="inputGroupFileAddon04">
-                        <label class="custom-file-label" for="inputfile">Choose file</label>
-                    </div>
-                    <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button" id="inputGroupFileAddon04">Import</button>
-                    </div>
-                </div>
-            -->
-            
-        </form>
-        
-        <br>
 
-        <form action="/downloads" method="post">
-            <button name="file" value="loterias.csv" type="submit" class="btn btn-primary btn-sm">Download Current</button>
-        </form>
-        <br>
-        
+                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Update loterias db table with this file?')">Upload New</button>
+                                   
+            </form>
+            <br>
+
+            <form action="/downloads" method="post">
+                <button name="file" value="loterias.csv" type="submit" class="btn btn-primary btn-sm">Download Current</button>
+                <small class="form-text text-muted">
+                    Download active template for reference or additions.
+                </small>
+            </form>
+            <br>
+        </div>
     </div>
-    
-    
-    
-</div>
 
     <br>
     <hr>
@@ -234,9 +220,9 @@ Admin
     </div>
 
     <div class="row">        
-        <div class="col-lg-6 col-md-6 col-sm-12">
+        <div class="col-lg-4 col-md-6 col-sm-12">
             <h5>Test SKU parser</h5>
-            <form action="/test" method="post">
+            <form action="/admin/parse-sku" method="post">
                 <input type="number" value="123456789012" id="sku" name="sku" autocomplete="on">
                 <!-- <label for="sku">Parse number into SKU object</label> -->
                 <div class="form-group">
@@ -246,7 +232,7 @@ Admin
             </form>
         </div>
         
-        <div class="col-lg-6 col-md-6 col-sm-12">
+        <div class="col-lg-8 col-md-6 col-sm-12">
             <h5>SKU instructions</h5>
             <p>12 digit SKU comprised of 6 pairs</p>
             <ul>
@@ -268,15 +254,87 @@ Admin
 
     <br>
 
-    <div class="row">        
-        <div class="col">
+    <div class="row justify-content-around">
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <h5>Make SKU</h5>
+
+            <form class="form-group" action="/admin/make-sku" method="post">
+
+                <div class="form-group">
+                    <label for="nombre">Nombre</label>
+                    <select class="form-control" name="nombre" id="nombre">
+                        <!-- <option title="">Select Event</option> -->
+                        {% for loteria in loterias %}
+                            <option title="" value="{{ loteria.sku }}">{{ loteria.nombre }}</option>
+                        {% endfor %}    
+                    </select>
+                </div>    
+
+                <div class="form-group">
+                    <label for="a">Color A</label>
+                    <select class="form-control" name="a" id="a">
+                        <option selected title="Defaults to 00" value="00">none</option>
+                        {% for color in colors %}
+                            <option title="" value="{{ color.sku }}">{{ color.emoji }} {{ color.name }}</option>
+                        {% endfor %}    
+                    </select>
+                </div>    
+
+                <div class="form-group">
+                    <label for="b">Color B</label>
+                    <select class="form-control" name="b" id="b">
+                        <option selected title="Defaults to 00" value="00">none</option>
+                        {% for color in colors %}
+                            <option title="" value="{{ color.sku }}">{{ color.emoji }} {{ color.name }}</option>
+                        {% endfor %}    
+                    </select>
+                </div>    
+
+                <div class="form-group">
+                    <label for="c">Color C</label>
+                    <select class="form-control" name="c" id="c">
+                        <option selected title="Defaults to 00" value="00">none</option>
+                        {% for color in colors %}
+                            <option title="" value="{{ color.sku }}">{{ color.emoji }} {{ color.name }}</option>
+                        {% endfor %}    
+                    </select>
+                </div>    
+
+                <div class="form-group">
+                    <label for="d">Color D</label>
+                    <select class="form-control" name="d" id="d">
+                        <option selected title="Defaults to 00" value="00">none</option>
+                        {% for color in colors %}
+                            <option title="" value="{{ color.sku }}">{{ color.emoji }} {{ color.name }}</option>
+                        {% endfor %}    
+                    </select>
+                </div>    
+
+                <div class="form-group">
+                    <label for="size">Size</label>
+                    <select class="form-control" name="size" id="size">
+                        {% for size in sizes %}
+                        <option title="" value="{{ size.sku }}">{{ size.longname }}</option>
+                        {% endfor %}    
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-sm btn-block">Generate SKU</button>
+
+            </form>
+        </div>
+
+        <div class="col-lg-8 col-md-6 col-sm-12">
+            <h5>SKU example</h5>
             <img class="img-fluid text-center" alt="SKU setup explained"  src="/static/skuexample.png">
         </div>
+
     </div>
 
     <br>
-    <hr>
 
+    <hr>
+ 
     <div class="row">
         <div class="col">
             <a href="/admin/convert"><button class="btn btn-primary">convert hearts</button></a>

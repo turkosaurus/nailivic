@@ -97,6 +97,55 @@ def parse_sku(sku):
 
     return parsed
 
+def gather_templates():
+
+    # Gather template data
+    loterias = db.execute("SELECT * FROM loterias")
+    colors = db.execute("SELECT * FROM colors")
+    sizes = db.execute("SELECT * FROM sizes")
+
+    response = {
+        'loterias': loterias,
+        'colors': colors,
+        'sizes': sizes
+    }
+
+    return response
+
+def build_sku(nombre, a, b, c, d, size):
+
+    templates = gather_templates()
+
+    sku = {}
+
+    # sku = {
+    #     'item': (int(sku[0]) * 10) + int(sku[1]),
+    #     'a': (int(sku[2]) * 10) + int(sku[3]),
+    #     'b': (int(sku[4]) * 10) + int(sku[5]),
+    #     'c': (int(sku[6]) * 10) + int(sku[7]),
+    #     'd': (int(sku[8]) * 10) + int(sku[9]),
+    #     'size': (int(sku[10]) * 10) + int(sku[11])
+    #     }
+
+    for i in templates.loterias:
+        if i.nombre == nombre:
+            sku.item = nombre
+
+
+
+
+
+    # sku = db.execute(" \
+    #     SELECT sku FROM loterias WHERE nombre=:nombre \
+    #     INNER JOIN  \
+    #     ")
+
+
+
+
+
+
+
 ###### QUEUE ######
 
 # These functions produce production table, calculating projecitons less inventory
@@ -915,7 +964,11 @@ def shipping():
 @login_required
 def admin():
     cycles = db.execute("SELECT * FROM cycles")
-    return render_template('admin.html', cycles=cycles)
+    loterias = db.execute("SELECT * FROM loterias")
+    sizes = db.execute("SELECT * FROM sizes")
+    colors = db.execute("SELECT * FROM colors")
+
+    return render_template('admin.html', cycles=cycles, loterias=loterias, sizes=sizes, colors=colors)
 
 
 @app.route('/admin/<path>', methods=['GET', 'POST'])
@@ -1194,7 +1247,7 @@ def config(path):
             # If the user does not select a file, the browser submits an empty file without a filename.
             if file.filename == '':
                 flash('No selected file')
-                return redirect(request.url)
+                return redirect("/admin")
 
             if file and allowed_file(file.filename):
                 filename_user = secure_filename(file.filename) # User supplied filenames kept
@@ -1208,6 +1261,7 @@ def config(path):
 
                     db.execute("CREATE TABLE IF NOT EXISTS test ( \
                         name VARCHAR (255), \
+                        sku VARCHAR (255), \
                         size VARCHAR (255), \
                         a VARCHAR (255), \
                         b VARCHAR (255), \
@@ -1215,17 +1269,33 @@ def config(path):
                         qty INTEGER \
                         )")
 
-                    print("    name    |    colors    |    catgory    |    qty   ")
+                    print("    name    |    colors    |    sku    |    catgory    |    qty   ")
     
+                    total = 0
+                    skipped = 0
+
                     next(csv_reader)
                     for row in csv_reader:
-                        print(f"{row[0]} | {row[1]} | {row[3]} | {row[4]}")
+                        total += 1
 
-                        db.execute("INSERT INTO test (name, a, b, qty) VALUES (:name, :a, :b, :qty)", \
-                                        name=row[0], a=row[1], b=row[3], qty=row[4])
+                        if row[2]:
+                            sku = parse_sku(row[2])
+                            print(f"Found:{sku}")
 
-                flash(f"Processed {filename_user} into database for event #{event}")
-                return redirect('/admin')
+                        else:
+                            skipped += 1
+
+                        print(f"{row[0]} | {row[1]} | {row[2]} | {row[3]} | {row[4]}")
+
+                        db.execute("INSERT INTO test (name, sku, a, b, qty) VALUES (:name, :sku, :a, :b, :qty)", \
+                                        name=row[0], a=row[1], sku=row[2], b=row[3], qty=row[4])
+
+                total 
+                cycle_name = db.execute("SELECT name FROM cycles WHERE id=:event", event=event)
+
+                flash(f"""Processed "{filename_user}" into database for event "{cycle_name[0]['name']}." {skipped}/{total} failed (no SKU).""")
+
+            return redirect('/admin')
 
 
 
@@ -1239,10 +1309,6 @@ def config(path):
             #         # db.execute("INSERT INTO loterias (nombre, a, b, c, backs) VALUES (:nombre, :a, :b, :c, :backs)", \
             #         #                 nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
 
-            else:
-                #TODO
-                return 'unhandled error'
-
 
         # # TODO
         # # function to return key for any value
@@ -1255,11 +1321,38 @@ def config(path):
         # for key, value in key.items():
         #     print(f"key:{key}, value:{value}")
 
+        if path == 'backup-projections':
+
+            cycle = request.form.get("backup-projections")
+
+            # BACKUP PROJECTIONS
+            # Create new csv file
+            with open('static/backups/backup_projections.csv', 'w') as csvfile:
+
+                # Create writer object
+                scribe = csv.writer(csvfile)
+
+                # Pull all projections data
+                projections = db.execute("SELECT * FROM projections WHERE cycle=:cycle", cycle=cycle)
+
+                # TODO
+                # Generate SKU
+                sku = 0
+    
+                # Write projections into csv
+                for row in projections:
+                    print("Scribe is writing a row...")
+                    scribe.writerow([row['name'], row['size'], sku, row['a_color'], row['b_color'], row['c_color'], '', row['qty'], row['cycle']])
 
 
-        if path == 'setup':
+            print(app.config['BACKUPS'])
 
-            print("path setup")
+            return send_from_directory(app.config['BACKUPS'], filename='backup_projections.csv', as_attachment=True, mimetype='text/csv')
+
+
+        if path == 'wipe':
+
+            print("/admin/wipe")
 
             items = request.form.get("wipe-items")
             parts = request.form.get("wipe-parts")
@@ -1304,9 +1397,9 @@ def config(path):
             return redirect("/admin")
 
 
-
         # Delete a Event
         if path == 'delete-event':
+
             name = request.form.get("delname")
             print(name)
             if name != 'test cycle':
@@ -1318,6 +1411,34 @@ def config(path):
                 return render_template("error.html", errcode="403", errmsg="Test cycle may not be deleted.")
 
 
+        if path == 'parse-sku':
+            print("/test")
+            sku = request.form.get("sku")
+            print(f"sku:{sku}")
+
+            sku = parse_sku(sku)
+
+            return sku
+
+        if path == 'make-sku':
+             
+            nombre = str(request.form.get("nombre")).zfill(2)
+            a = str(request.form.get("a")).zfill(2)
+            b = str(request.form.get("b")).zfill(2)
+            c = str(request.form.get("c")).zfill(2)
+            d = str(request.form.get("d")).zfill(2)
+            size = str(request.form.get("size")).zfill(2)
+
+            sku = nombre + a + b + c + d + size
+
+            flash(f"SKU: {sku}")
+            return redirect("/admin")
+
+
+        else:
+            #TODO
+            return "how did I get here?"
+
 @app.route('/downloads', methods=['POST'])
 @login_required
 def downloads():
@@ -1326,56 +1447,10 @@ def downloads():
     return send_from_directory(app.config["UPLOAD_FOLDER"], file, as_attachment=True)
 
 
-@app.route('/foo', methods=['GET', 'POST'])
-@login_required
-def foo():
-    print(f"/downloading: {file}")
+# @app.route('/test', methods=['GET', 'POST'])
+# @login_required
+# def test():
 
-    return send_from_directory(app.config["UPLOAD_FOLDER"], "temp.csv", as_attachment=True)
-
-
-@app.route('/test', methods=['GET', 'POST'])
-@login_required
-def test():
-    print("/test")
-    sku = request.form.get("sku")
-    print(f"sku:{sku}")
-
-    sku = parse_sku(sku)
-
-    return sku
-
-
-@app.route('/file', methods=['GET', 'POST'])
-@login_required
-def file():
-    if request.method == 'POST':
-        file = request.files['inputfile']
-        # return file.filename
-
-        # TODO make the backup python code split off from the upload html. into different functions
-
-
-        # BACKUP PROJECTIONS
-        # Create new csv file
-        with open('static/backups/backup_projections.csv', 'w') as csvfile:
-
-            # Create writer object
-            scribe = csv.writer(csvfile)
-
-            # Pull all projections data
-            projections = db.execute("SELECT * FROM projections")
-
-            # Write projections into csv
-            for row in projections:
-                print("Scribe is writing a row...")
-                scribe.writerow([row['name'], row['size'], row['a_color'], row['b_color'], row['c_color'], row['qty'], row['cycle']])
-
-        print(app.config['BACKUPS'])
-
-        return send_from_directory(app.config['BACKUPS'], filename='backup_projections.csv', as_attachment=True, mimetype='text/csv')
-
-        # return render_template('message.html', message="I might have made a csv backup")
 
 
 ###### USER ACCOUNTS ######
