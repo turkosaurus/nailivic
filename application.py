@@ -1424,13 +1424,12 @@ def config(path):
 
             sku = nombre + a + b + c + d + size
 
-
             # flash(f"SKU: {sku}")
             message = Markup(f"""
             <div class="row justify-content-center">
                 <form class="form-inline">
-                    <label for="sku">SKU</label>
-                    <input type="text" readonly class="form-control" id="sku" value="{sku}">
+                    <label for="sku">SKU: </label>
+                    <input type="text" readonly class="form-control" id="sku" value="{sku}"> 
                     <button type="submit" class="btn btn-primary" id="copy">Copy</button>
                 </form>
             </div>            
