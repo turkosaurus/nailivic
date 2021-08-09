@@ -12,7 +12,7 @@ Items
     </div>    
     <hr>
 
-    <div class="row">
+    <div class="row align-items-start">
         <div class="col-lg-4 col-md-6 col-sm-12">
             <form action="/" method="post">
                 <div class="row">
@@ -20,9 +20,7 @@ Items
                         <h3>Make Part</h3>
                     </div>
                 </div>
-        
-        
-        
+
                 <div class="row">
                     <div class="col">
                         <div class="form-group">
@@ -39,9 +37,7 @@ Items
                             </select>
                         </div>
                     </div>
-                </div>
-        
-                    
+                </div>                    
                     
                 <!-- Color -->
                 <div class="row">
@@ -95,71 +91,55 @@ Items
         </div>
 
         <div class="col-lg-8 col-md-6 col-sm-12">
-            <ul>
-                <table class="table table-hover table-dark">
+            {% for size in sizes %}
+            <table class="table table-sm table-hover table-dark">
                     <thead>
                         <tr>
-                            <th scope="col-4">
-                                name
+                            <th scope="col">
+                                <h4>
+                                    {{ size.longname }}
+                                </h4>
                             </th>
-                            <th scope="col-2">
-                                size
+                            <th scope="col">
+                                queue
                             </th>
-                            <th scope="col-2">
-                                needed
-                            </th>
-                            <th scope="col-2">
+                            <th scope="col">
                                 made
                             </th>
-                            <th scope="col-2">
-                                
+                            <th scope="col">
+                                #
                             </th>
                         </tr>
                     </thead>
-                    <tbody>
 
+                    <tbody>
                         {% for production in productions %}
-                        <form class="">
-                            <tr>
-                                <td>
-                                    {{ production.name }}
-                                </td>
-                                <td>
-                                    {{ production.size}}                                    
-                                </td>
-                                <td>
-                                    {{ production.qty}}
-                                </td>
-                                <td colspan="3">
-                                    <input type="number">                                    
-                                </td>
-                                <td>
-                                    <button type="submit" class="btn btn-sm btn-primary">Make</button>
-                                </td>
-                            </tr>
-                        </form>
-                    {% endfor %}
+                            {% if production.size==size.shortname %}
+                                <tr>
+                                    <form>
+                                        <div class="">
+                                            <td>
+                                                {{ production.name }}
+                                            </td>
+                                            <td>
+                                                {{ production.qty}}
+                                            </td>
+                                            <td>
+                                                <input class="form-control form-control-sm" width="10px" type="number">                                    
+                                            </td>
+                                            <td>
+                                                <button disabled type="submit" class="btn btn-sm btn-primary">Make</button>
+                                            </td>
+                                        </div>
+                                    </form>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
                     </tbody>
                 </table>
-
-
-                    <div class="form-group col">
-                    </div>
-
-                    <div class="form-group col">
-                    </div>
-
-                    <li>
-                        {{ production }}
-                    </li>
-
-
-
-            </ul>
-        </div>
-
-    </div>    
-    
+            {% endfor%}
+        </div>    
+    </div>
 
     
 </container>

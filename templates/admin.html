@@ -6,6 +6,21 @@ Admin
 {% block main %}
 <container class="text-monospace">
 
+    <!-- TODO relocate this script -->
+    <script>
+
+        function copy() {
+            var copyText = document.querySelector("#sku");
+            copyText.select();
+            document.execCommand("copy");
+            // alert("SKU copied to clipboard: " + copyText.value);
+            }
+
+        document.querySelector("#copy").addEventListener("click", copy);
+
+    </script>                        
+
+
     <div class="row" id="top">
         <div class="col">
             <h1>Admin</h1>
@@ -14,13 +29,23 @@ Admin
 
     <div class="row">
         <div class="col">
-            <p>
+            <!-- <p>
                 Quick Navigation
-            </p>
+            </p> -->
+            <ul class="list-inline">
+                <li class="list-inline-item">
+                    <a href='/admin#events'>Events</a>
+                </li>
+                <li class="list-inline-item">
+                    <a href='/admin#database'>Database</a> 
+                </li>
+                <li class="list-inline-item">
+                    <a href='/admin#sku'>SKU</a>                   
+                </li>
+            </ul>
+
+
             <p>
-                <a href='/admin#events'>Events</a> |
-                <a href='/admin#database'>Database</a> |
-                <a href='/admin#sku'>SKU</a>
             </p>
             <hr>
         </div>

@@ -5,7 +5,7 @@ import datetime
 import csv
 
 from cs50 import SQL
-from flask import Flask, redirect, render_template, request, session, url_for, flash, send_from_directory
+from flask import Flask, redirect, render_template, request, session, url_for, flash, send_from_directory, Markup
 from flask_session import Session
 from tempfile import mkdtemp
 from functools import wraps
@@ -504,9 +504,11 @@ def parts(part):
 
             part_search = '%' + part
             # part_search = part
-            productions = db.execute("SELECT * FROM production WHERE color LIKE :name", name=part_search)
+            productions = db.execute("SELECT * FROM production WHERE color LIKE :name \
+                ORDER BY qty DESC", name=part_search)
 
             # for row in production:
+            #     if 
             #     size = 0
 
             return render_template('parts.html', part=part, loterias=loterias, colors=colors, sizes=sizes, productions=productions)
@@ -1422,7 +1424,19 @@ def config(path):
 
             sku = nombre + a + b + c + d + size
 
-            flash(f"SKU: {sku}")
+
+            # flash(f"SKU: {sku}")
+            message = Markup(f"""
+            <div class="row justify-content-center">
+                <form class="form-inline">
+                    <label for="sku">SKU</label>
+                    <input type="text" readonly class="form-control" id="sku" value="{sku}">
+                    <button type="submit" class="btn btn-primary" id="copy">Copy</button>
+                </form>
+            </div>            
+            """)
+
+            flash(message)
             return redirect("/admin")
 
 
