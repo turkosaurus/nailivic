@@ -52,7 +52,7 @@ Items
             <form action="/" method="post">
                 <div class="row">
                     <div class="col">
-                        <h3>Make Part</h3>
+                        <h3>Make {{ color }} Part</h3>
                     </div>
                 </div>
 
@@ -91,7 +91,10 @@ Items
                             </div>
                             {% endfor %}
                         </div>
-                            <!-- Quantity -->
+                    </div>
+
+                    <div class="col">
+                        <!-- Quantity -->
                         <div class="form-group">
                             <!-- <h4>Quantity</h4> -->
                             <label for="qty">Quantity</label>

@@ -331,7 +331,7 @@ def dashboard():
         # Version 2
 
         templates = gather_templates()
-        production = db.execute("SELECT * FROM production")
+        production = db.execute("SELECT * FROM production ORDER BY size DESC, name DESC, color DESC")
 
         # Build totals arrays
         totals = []
@@ -436,8 +436,6 @@ def dashboard():
         boxes = db.execute("SELECT * FROM boxes")
         boxprod = db.execute("SELECT * FROM boxprod")
         boxused = db.execute("SELECT * FROM boxused")
-
-        production = db.execute("SELECT * FROM production ORDER BY size DESC, name DESC, color DESC")
 
         time = datetime.datetime.utcnow().isoformat()
         loterias = templates['loterias']
