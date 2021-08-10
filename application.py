@@ -335,7 +335,9 @@ def dashboard():
 
         # Build totals arrays
         totals = []
-        print(f"totals:{totals}")
+        grand_total = 0
+
+        # print(f"totals:{totals}")
 
         # Build empty table
         for i in range(len(templates['sizes'])):
@@ -380,13 +382,15 @@ def dashboard():
                         if templates['colors'][j]['name'] in row['color']:
                             # print("match color")
 
-                            totals[i][j] = totals[i][j] + row['qty']
+                            totals[i][j] += row['qty']
+                            grand_total += row['qty']
 
                     #TODO v1.0 update get exact match instead of text search for Backs
                     # For the back of that size
                     if 'Backs' in row['name']:
 
                         totals[i][len(templates['colors'])] += row['qty']
+                        grand_total += row['qty']
 
         print(f"totals:{totals}")
 
@@ -431,6 +435,7 @@ def dashboard():
         # Box Production Total
         box_prod_total = db.execute("SELECT SUM(qty) FROM boxprod")
         box_prod_total = box_prod_total[0]['sum']
+        grand_total += box_prod_total
 
         # Box Inventory & Production
         boxes = db.execute("SELECT * FROM boxes")
@@ -441,7 +446,7 @@ def dashboard():
         loterias = templates['loterias']
 
         return render_template('index.html', production=production, boxes=boxes, boxprod=boxprod, box_prod_total=box_prod_total, boxused=boxused, loterias=loterias, sizes=sizes, \
-            colors=colors, user=user, items=items, parts=parts, totals=totals, cycle=cycle, time=time)
+            colors=colors, user=user, items=items, parts=parts, totals=totals, cycle=cycle, time=time, grand_total=grand_total)
 
     # Upon POSTing form submission
     else:
