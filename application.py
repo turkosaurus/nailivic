@@ -325,44 +325,108 @@ def dashboard():
         user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
         items = db.execute("SELECT * FROM items ORDER BY qty DESC, size ASC, name DESC")
         parts = db.execute("SELECT * FROM parts ORDER BY size ASC, name DESC, color ASC, qty DESC")
-        newloterias = db.execute("SELECT * FROM loterias")
 
+        #####################
 
+        # Version 2
+
+        templates = gather_templates()
+        production = db.execute("SELECT * FROM production")
+
+        # Build totals arrays
+        totals = []
+        print(f"totals:{totals}")
+
+        # Build empty table
+        for i in range(len(templates['sizes'])):
+
+            # Make a list to hold each sizes's color array
+            totals.append([])
+            # print(f"totals:{totals}")
+
+            for j in range(len(templates['colors'])):
+    
+                # Make a list to hold the color totoals
+                totals[i].append([])
+                # print(f"totals:{totals}")
+                
+                totals[i][j] = 0
+
+            # Append one more for backs
+            totals[i].append(0)
+            # print(f"totals:{totals}")
+
+        # print(f"Built totals table: {totals}")
+
+        # Loop through each production row, adding color totals
+        for row in production:
+            # print("row in production")
+
+            # Loop sizes for a match
+            for i in range(len(templates['sizes'])):
+
+                # Size match found
+                if templates['sizes'][i]['shortname'] == row['size']:
+                    # print("match size")
+
+                    # For each color within the size
+                    for j in range(len(templates['colors'])):
+
+                        # Sanitize "None" into ''
+                        if row['color'] == None:
+                            row['color'] = ''
+
+                        # print(f"comparing {templates['colors'][j]['name']} {row['color']}")
+                        if templates['colors'][j]['name'] in row['color']:
+                            # print("match color")
+
+                            totals[i][j] = totals[i][j] + row['qty']
+
+                    #TODO v1.0 update get exact match instead of text search for Backs
+                    # For the back of that size
+                    if 'Backs' in row['name']:
+
+                        totals[i][len(templates['colors'])] += row['qty']
+
+        print(f"totals:{totals}")
+
+        ###################################
 
         # TODO replace this with fewer queries and for loops to build the table
         # Sum totals for each back, color & size
-        totals = []
-        # # For each size
-        for i in range(len(sizes)):
 
-            # Make a list to hold the color totoals
-            totals.append([])
+        # totals = []
 
-            # For each color within the size, sum the number of parts
-            for j in range(len(colors)):
-                qty = db.execute("SELECT SUM(qty) FROM production WHERE size=:size AND color=:color", \
-                                    size=sizes[i], color=colors[j])
-                print(f'qty:{qty} for {sizes[i]}, {colors[j]}')
-                # Sanitize "None" into ''
-                if qty[0]['sum'] == None:
-                    qty[0]['sum'] = ''
-                print(f"qty {qty}")
+        # # # For each size
+        # for i in range(len(sizes)):
 
-                # Append current color's totals to the current size's list
-                totals[i].append(qty[0]['sum'])
+        #     # Make a list to hold the color totoals
+        #     totals.append([])
 
-            # Tally backs in production
-            backs = db.execute("SELECT SUM(qty) FROM production WHERE size=:size AND name IN (SELECT backs FROM loterias)", size=sizes[i])
-            # Sanitize "None" into ''
-            if backs[0]['sum'] == None:
-                backs[0]['sum'] = ''
-            totals[i].append(backs[0]['sum'])
+        #     # For each color within the size, sum the number of parts
+        #     for j in range(len(colors)):
+        #         qty = db.execute("SELECT SUM(qty) FROM production WHERE size=:size AND color=:color", \
+        #                             size=sizes[i], color=colors[j])
+        #         print(f'qty:{qty} for {sizes[i]}, {colors[j]}')
+        #         # Sanitize "None" into ''
+        #         if qty[0]['sum'] == None:
+        #             qty[0]['sum'] = ''
+        #         print(f"qty {qty}")
 
-            print(totals)
+        #         # Append current color's totals to the current size's list
+        #         totals[i].append(qty[0]['sum'])
+
+        #     # Tally backs in production
+        #     backs = db.execute("SELECT SUM(qty) FROM production WHERE size=:size AND name IN (SELECT backs FROM loterias)", size=sizes[i])
+        #     # Sanitize "None" into ''
+        #     if backs[0]['sum'] == None:
+        #         backs[0]['sum'] = ''
+        #     totals[i].append(backs[0]['sum'])
+
+        #     print(f"totals:{totals}")
 
 
-
-
+        #########################################
 
         # Box Production Total
         box_prod_total = db.execute("SELECT SUM(qty) FROM boxprod")
@@ -374,10 +438,12 @@ def dashboard():
         boxused = db.execute("SELECT * FROM boxused")
 
         production = db.execute("SELECT * FROM production ORDER BY size DESC, name DESC, color DESC")
-        time = datetime.datetime.utcnow().isoformat()
 
-        return render_template('index.html', production=production, boxes=boxes, boxprod=boxprod, box_prod_total=box_prod_total, boxused=boxused, backs=backs, loterias=newloterias, sizes=sizes, \
-            colors=colors, user=user, items=items, parts=parts, projections=projections, totals=totals, cycle=cycle, time=time)
+        time = datetime.datetime.utcnow().isoformat()
+        loterias = templates['loterias']
+
+        return render_template('index.html', production=production, boxes=boxes, boxprod=boxprod, box_prod_total=box_prod_total, boxused=boxused, loterias=loterias, sizes=sizes, \
+            colors=colors, user=user, items=items, parts=parts, totals=totals, cycle=cycle, time=time)
 
     # Upon POSTing form submission
     else:
@@ -968,23 +1034,6 @@ def admin():
 def config(path):
 
     if request.method == 'GET':
-
-
-
-        if path == 'convert':
-
-            if 1 == 1:
-                return redirect("/admin#sku")
-            else:
-                
-
-                db.execute("UPDATE items ")
-
-
-
-                return "still working"
-
-
 
 
         # Setup tables
