@@ -116,7 +116,8 @@ def parse_sku(sku):
         'b': (int(sku[4]) * 10) + int(sku[5]),
         'c': (int(sku[6]) * 10) + int(sku[7]),
         'd': (int(sku[8]) * 10) + int(sku[9]),
-        'size': (int(sku[10]) * 10) + int(sku[11])
+        'size': (int(sku[10]) * 10) + int(sku[11]),
+        'sku': sku
         }
 
     return parsed
@@ -145,7 +146,7 @@ def generate_item(templates, sku):
         if color['sku'] == sku['c']:
             sku['c'] = color['name']
 
-    else:
+    if sku['c'] == 0:
         sku['c'] = ''
 
     # Unused placeholder
@@ -1196,7 +1197,8 @@ def config(path):
                 b_color VARCHAR ( 255 ), \
                 c_color VARCHAR ( 255 ), \
                 qty INTEGER, \
-                cycle INTEGER \
+                cycle INTEGER, \
+                sku BIGINT \
                 )")
             
             # Create table: production
@@ -1395,12 +1397,30 @@ def config(path):
                         else:
                             skipped += 1
 
-                        print(f"{row[0]} | {row[1]} | {row[2]} | {row[3]} | {row[4]}")
+                        print(item['item'], item['size'], item['a'], item['b'], item['c'], event, row[7], sku['sku'])
 
-                        db.execute("INSERT INTO test (name, sku, a, b, qty) VALUES (:name, :sku, :a, :b, :qty)", \
-                                        name=row[0], a=row[1], sku=row[2], b=row[3], qty=row[4])
+                        # db.execute("INSERT INTO test (name, size, a, b, c, qty, cycle, sku) VALUES (:name, :size, :a, :b, :c, :qty, :cycle,:sku)", \
+                        #                 name=item['item'],
+                        #                 size=item['size'],
+                        #                 a=item['a'],
+                        #                 b=item['b'],
+                        #                 c=item['c'],
+                        #                 cycle=event,
+                        #                 qty=row[7],
+                        #                 sku=sku['sku'])
 
-                total 
+                        # TODO ensure no duplicate SKUs
+                        db.execute("INSERT INTO projections (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES (:name, :size, :a, :b, :c, :qty, :cycle,:sku)", \
+                                        name=item['item'],
+                                        size=item['size'],
+                                        a=item['a'],
+                                        b=item['b'],
+                                        c=item['c'],
+                                        cycle=event,
+                                        qty=row[7],
+                                        sku=sku['sku'])
+
+
                 cycle_name = db.execute("SELECT name FROM cycles WHERE id=:event", event=event)
 
                 flash(f"""Processed "{filename_user}" into database for event "{cycle_name[0]['name']}." {skipped}/{total} failed (no SKU).""")
@@ -1528,85 +1548,88 @@ def config(path):
 
             return send_from_directory(app.config['BACKUPS'], filename='backup_projections.csv', attachment_filename=attachname, as_attachment=True, mimetype='text/csv')
 
+        if path == 'backup-inventory':
 
-        if path == 'backup-inventory-parts':
+            type = request.form.get("type")
 
-            cycle = request.form.get("backup-parts")
-            templates = gather_templates()
+            if type == 'parts':
+                
+                cycle = request.form.get("backup-parts")
+                templates = gather_templates()
 
-            # BACKUP PARTS
-            # Create new csv file
-            with open('static/backups/parts_inventory.csv', 'w') as csvfile:
+                # BACKUP PARTS
+                # Create new csv file
+                with open('static/backups/parts_inventory.csv', 'w') as csvfile:
 
-                # Create writer object
-                scribe = csv.writer(csvfile)
+                    # Create writer object
+                    scribe = csv.writer(csvfile)
 
-                # Pull all parts data
-                parts = db.execute("SELECT * FROM parts")
+                    # Pull all parts data
+                    parts = db.execute("SELECT * FROM parts")
 
-                # Write headers
-                # Skulet is a little sku missing the first two digits for the item identifier. 
-                    # It associates colors and sizes, but does not associate the part name by means of numbers
-                scribe.writerow(['skulet', 'name', 'size',  'color', 'qty'])
+                    # Write headers
+                    # Skulet is a little sku missing the first two digits for the item identifier. 
+                        # It associates colors and sizes, but does not associate the part name by means of numbers
+                    scribe.writerow(['skulet', 'name', 'size',  'color', 'qty'])
 
-                # Write parts into csv
-                for row in parts:
+                    # Write parts into csv
+                    for row in parts:
 
-                    sku = '00'
+                        sku = '00'
 
-                    # A color name > SKU
-                    for color in templates['colors']:
-                        if color['name'] in row['color']:
-                            sku = sku + str(color['sku']).zfill(2)
-                            print(f"matched {color['name']} to {row['color']}. SKU:{sku}")
+                        # A color name > SKU
+                        for color in templates['colors']:
+                            if color['name'] in row['color']:
+                                sku = sku + str(color['sku']).zfill(2)
+                                print(f"matched {color['name']} to {row['color']}. SKU:{sku}")
 
-                    sku = sku + '000000'
+                        sku = sku + '000000'
 
-                    # Size name > SKU
-                    for size in templates['sizes']:
-                        if size['shortname'] in row['size']:
-                            sku = sku + str(size['sku']).zfill(2)
-                            print(f"matched {size['longname']} to {row['size']}. SKU:{sku}")
+                        # Size name > SKU
+                        for size in templates['sizes']:
+                            if size['shortname'] in row['size']:
+                                sku = sku + str(size['sku']).zfill(2)
+                                print(f"matched {size['longname']} to {row['size']}. SKU:{sku}")
 
-                    print("Scribe is writing a row...")
-                    scribe.writerow([sku, row['name'], row['size'],  row['color'], row['qty']])
+                        print("Scribe is writing a row...")
+                        scribe.writerow([sku, row['name'], row['size'],  row['color'], row['qty']])
 
-            time = datetime.datetime.utcnow().isoformat()
-            attachname = 'parts_inventory' + time + '.csv'
+                time = datetime.datetime.utcnow().isoformat()
+                attachname = 'parts_inventory' + time + '.csv'
 
-            return send_from_directory(app.config['BACKUPS'], filename='parts_inventory.csv', as_attachment=True, attachment_filename=attachname, mimetype='text/csv')
+                return send_from_directory(app.config['BACKUPS'], filename='parts_inventory.csv', as_attachment=True, attachment_filename=attachname, mimetype='text/csv')
 
+            if type == 'items':
 
-        if path == 'backup-inventory-items':
+                cycle = request.form.get("backup-items")
+                templates = gather_templates()
 
-            cycle = request.form.get("backup-items")
-            templates = gather_templates()
+                # BACKUP PARTS
+                # Create new csv file
+                with open('static/backups/items_inventory.csv', 'w') as csvfile:
 
-            # BACKUP PARTS
-            # Create new csv file
-            with open('static/backups/items_inventory.csv', 'w') as csvfile:
+                    # Create writer object
+                    scribe = csv.writer(csvfile)
 
-                # Create writer object
-                scribe = csv.writer(csvfile)
+                    # Pull all items data
+                    items = db.execute("SELECT * FROM items")
+        
+                    # Write headers
+                    scribe.writerow(['sku', 'name', 'size', 'a_color', 'b_color', 'c_color', 'd_unused', 'qty'])
 
-                # Pull all items data
-                items = db.execute("SELECT * FROM items")
-    
-                # Write headers
-                scribe.writerow(['sku', 'name', 'size', 'a_color', 'b_color', 'c_color', 'd_unused', 'qty'])
+                    # Write items into csv
+                    for row in items:
 
-                # Write items into csv
-                for row in items:
+                        sku = generate_sku(templates, row)
 
-                    sku = generate_sku(templates, row)
+                        print("Scribe is writing a row...")
+                        scribe.writerow([sku, row['name'], row['size'], row['a_color'], row['b_color'], row['c_color'], '', row['qty']])
 
-                    print("Scribe is writing a row...")
-                    scribe.writerow([sku, row['name'], row['size'], row['a_color'], row['b_color'], row['c_color'], '', row['qty']])
+                time = datetime.datetime.utcnow().isoformat()
+                attachname = 'items_inventory' + time + '.csv'
 
-            time = datetime.datetime.utcnow().isoformat()
-            attachname = 'items_inventory' + time + '.csv'
+                return send_from_directory(app.config['BACKUPS'], filename='items_inventory.csv', as_attachment=True, attachment_filename=attachname, mimetype='text/csv')
 
-            return send_from_directory(app.config['BACKUPS'], filename='items_inventory.csv', as_attachment=True, attachment_filename=attachname, mimetype='text/csv')
 
 
         if path == 'download-loterias':
@@ -1703,7 +1726,8 @@ def config(path):
             templates = gather_templates()
             item = generate_item(templates, sku)
 
-            return item
+            flash(f"{sku['sku']}: {sku['item']} - {sku['a']}/{sku['b']}/{sku['c']} ({sku['size']})")
+            return redirect('/admin')
 
 
         if path == 'make-sku':

@@ -86,7 +86,8 @@ Admin
                 
                 <div class="form-group">
                     <input class="form-control" type="file" name="inputfile" id="inputfile" accept=".csv">
-                    <small class="form-text text-muted">Adds Square sales export to Event's projections</small>
+                    <small class="form-text text-muted">Adds .csv export to Event's projections</small>
+                    <small class="form-text text-muted">Utilizes SKUs in column C</small>
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Add projections to event?')">
@@ -194,29 +195,23 @@ Admin
             <h5>
                 Backup Inventory
             </h5>
-            <small class="form-text text-muted">
-                Export current inventory counts as .csv
-            </small>
-
-            <br>
-
-            <form method="POST" action="/admin/backup-inventory-items">
-                <p>Items</p>
-                <button type="submit" class="btn btn-primary btn-sm">Download Items</button>
-            </form>
-            <small class="form-text text-muted">
-                with full SKU
-            </small>
-
-            <br>
             
-            <form method="POST" action="/admin/backup-inventory-parts">
-                <p>Parts</p>
-                <button type="submit" class="btn btn-primary btn-sm">Download Parts</button>
+            <form method="POST" action="/admin/backup-inventory">
+                <div class="form-group">
+                    <!-- <label for="type"></label> -->
+                    <select class="form-control" name="type" id="type">
+                        <option title="Select Type" disabled selected value="">Select Type</option>
+                        <option title="items" value="items">Items</option>
+                        <option title="parts" value="parts">Parts</option>
+                    </select>
+                    <small class="form-text text-muted">
+                        Export current inventory counts as .csv
+                    </small>
+                </div>    
+                <button type="submit" class="btn btn-primary btn-sm">Download Inventory</button>
+                <!-- <small class="form-text text-muted">
+                </small> -->
             </form>
-            <small class="form-text text-muted">
-                partial SKU
-            </small>
             <br>
         </div>
         
