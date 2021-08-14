@@ -22,13 +22,13 @@ Admin
                     <a href='/admin#sku'>SKU</a>                   
                 </li>
                 <li class="list-inline-item">
-                    <a href='/admin#database'>Database</a> 
+                    <a href='/admin#inventory'>Inventory</a> 
                 </li>
             </ul>
             <hr>
         </div>
     </div>
-
+    
     <br>
 
     <div class="row">
@@ -40,7 +40,7 @@ Admin
         </div>
     </div>
 
-    <div class="row"> 
+    <div class="row">
         <div class="col-lg-3 col-md-6 col-sm-12">
             <h5>Create New</h5>
             <div class="form-group">
@@ -58,7 +58,9 @@ Admin
                     <br>
                 </div>
             </form>
+            <br>
         </div>
+
         
         <div class="col-lg-3 col-md-6 col-sm-12">
             <div>
@@ -90,7 +92,9 @@ Admin
                 <br>
                 
             </form>
+            <br>
         </div>
+
 
         <div class="col-lg-3 col-md-6 col-sm-12">
             <h5>Backup Projections</h5>
@@ -131,12 +135,10 @@ Admin
             </form>
             <br>
         </div>
+        <br>
     </div>
         
     <hr>
-
-    <br>
-    
     
     <div class="row">
         <div class="col">
@@ -276,8 +278,8 @@ Admin
 
     <div class="row">
         <div class="col">
-            <h2 id='database'>
-                Database
+            <h2 id='inventory'>
+                Inventory
             </h2>
             <p>
                 <a href='/admin#top'>return to top</a>
@@ -285,8 +287,47 @@ Admin
         </div>
     </div>
     
-    <div class="row">
-        <div class="col-md-6 col-sm-12">
+    <div class="row">        
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <h5>
+                Loterias Template
+            </h5>
+            
+            <form method="POST" action="/admin/setup-loterias" enctype="multipart/form-data">
+                
+                <div class="form-group">
+                    <input class="form-control" type="file" name="inputfile" id="inputfile" accept=".csv">
+                    <small class="form-text text-muted">
+                        Upload new loterias template. Do not modify without database edits; only add new items.
+                    </small>
+                </div>
+                
+                
+                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Update loterias db table with this file?')">Upload New</button>
+                
+            </form>
+            <br>
+            
+            <form action="/downloads" method="post">
+                <button name="file" value="loterias.csv" type="submit" class="btn btn-primary btn-sm">Download Current</button>
+                <small class="form-text text-muted">
+                    Download active template for reference or additions.
+                </small>
+            </form>
+            <br>
+        </div>
+
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            
+            <br>
+        </div>
+
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            
+            <br>
+        </div>
+
+        <div class="col-lg-3 col-md-6 col-sm-12">
             <form action="/admin/wipe" method="post">
                 <h5>
                     Wipe Inventory
@@ -318,37 +359,19 @@ Admin
                 
                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Wipe</button>
             </form>
+            
+            <br>
+        </div>
+    </div>
+
+
+
+
+    <div class="row">
+        <div class="col-md-6 col-sm-12">
             <br>
         </div>
         
-        <div class="col-md-6 col-sm-12">
-            <h5>
-                Loterias Template
-            </h5>
-            
-            <form method="POST" action="/admin/setup-loterias" enctype="multipart/form-data">
-                
-                <div class="form-group">
-                    <input class="form-control" type="file" name="inputfile" id="inputfile" accept=".csv">
-                    <small class="form-text text-muted">
-                        Upload new loterias template. Do not modify without database edits; only add new items.
-                    </small>
-                </div>
-                
-                
-                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Update loterias db table with this file?')">Upload New</button>
-                
-            </form>
-            <br>
-            
-            <form action="/downloads" method="post">
-                <button name="file" value="loterias.csv" type="submit" class="btn btn-primary btn-sm">Download Current</button>
-                <small class="form-text text-muted">
-                    Download active template for reference or additions.
-                </small>
-            </form>
-            <br>
-        </div>
     </div>
 
 

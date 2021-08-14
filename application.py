@@ -114,10 +114,6 @@ def gather_templates():
     return response
 
 
-
-
-
-
 ###### QUEUE ######
 
 # These functions produce production table, calculating projecitons less inventory
@@ -565,31 +561,30 @@ def parts(part):
 
     if request.method == 'GET':
 
-        if part in ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']:
+        if part in ['black', 'red', 'TQ', 'yellow', 'green', 'purple']:
 
             loterias = db.execute("SELECT * FROM loterias")
             colors = db.execute("SELECT * FROM colors")
             sizes = db.execute("SELECT * FROM sizes")
 
-            part_search = '%' + part
-            # part_search = part
+
+            #TODO v1.0 update, eliminate like
+            part_like = '%' + part
+            # part_like = part
             productions = db.execute("SELECT * FROM production WHERE color LIKE :name \
-                ORDER BY qty DESC", name=part_search)
+                ORDER BY qty DESC", name=part_like)
+
+            cur_color = db.execute("SELECT * FROM colors WHERE name LIKE :name", name=part_like)            
+
 
             # for row in production:
             #     if 
             #     size = 0
 
-            return render_template('parts.html', part=part, loterias=loterias, colors=colors, sizes=sizes, productions=productions)
+            return render_template('parts.html', cur_color=cur_color[0], part=part, loterias=loterias, colors=colors, sizes=sizes, productions=productions)
 
         else:
-            if part == "boxes":
-                return "boxes"
-
-
-
-            'boxes', 'backs', 
-            return "invalid part route"
+            return "boxes and backs coming soon"
 
 
 @app.route('/items', methods=['GET', 'POST'])
@@ -890,7 +885,8 @@ def production():
     db.execute("DELETE FROM production")
     db.execute("UPDATE boxprod SET qty=0")
 
-    newloterias = db.execute("SELECT * FROM loterias")
+    total_items = 0
+    total_parts = 0
 
     # Ensure that every item in projections is added to the production queue (less inventory on hand)
     for item in projections:
@@ -902,15 +898,23 @@ def production():
         c = item['c_color']
         print(f"One {nombre} produces...")
 
+        total_items += qty
+
         # Queue box for production of small items
         if size == sizes[0]:
-            queueboxes(name, qty)
-        
+            total_parts += qty
+            queueboxes(nombre, qty)
+
+
         # Identify how many items exist in inventory
         items_onhand = db.execute("SELECT qty FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
                         name=nombre, size=size, a_color=a, b_color=b, c_color=c)
-        items_onhand = items_onhand[0]['qty']
-        
+        print(items_onhand)
+        if items_onhand:
+            items_onhand = items_onhand[0]['qty']
+        else:
+            items_onhand = 0
+
         # Subtract inventory items from projections['qty']
         qty = qty - items_onhand
 
@@ -923,16 +927,20 @@ def production():
 
             # Update parts production queue
             # a_color
+            total_parts += qty
             queuepart(name, size, a, qty)
             # b_color
+            total_parts += qty
             queuepart(name, size, b, qty)
             # c_color
             if c is not None:
+                total_parts += qty
                 queuepart(name, size, c, qty)
             # backs
+            total_parts += qty
             queuebacks(name, size, qty)
 
-    flash("Projections (re)calculated.")
+    flash(f"Projections (re)calculated! {total_items} items require {total_parts} parts and boxes.")
     return redirect("/projections")
 
 
@@ -1059,7 +1067,7 @@ def config(path):
                 emoji VARCHAR ( 255 ) \
                 )")
 
-            colors = [['black', '⬛'],['red', '🟥'], ['TQ', '🟦'], ['yellow', '🟨'], ['green', '🟩'], ['purple', '🟪']]
+            colors = [['black', '⬛'],['red', '🟥'], ['TQ', '🟦'], ['yellow', '🟨'], ['green', '🟩'], ['purple', '🟪'], ['white', '⬜']]
             for i in range(len(colors)):
                 db.execute("INSERT INTO colors (sku, name, emoji) VALUES (:sku, :name, :emoji)", sku=(i+1), name=colors[i][0], emoji=colors[i][1])
 
@@ -1354,17 +1362,6 @@ def config(path):
             #         #                 nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
 
 
-        # # TODO
-        # # function to return key for any value
-        # def get_key(val):
-        #     for key, value in key.items():
-        #         if val == value:
-        #             return key
-        #     return 'NULL'
-
-        # for key, value in key.items():
-        #     print(f"key:{key}, value:{value}")
-
         if path == 'backup-projections':
 
             cycle = request.form.get("backup-projections")
@@ -1378,13 +1375,92 @@ def config(path):
 
                 # Pull all projections data
                 projections = db.execute("SELECT * FROM projections WHERE cycle=:cycle", cycle=cycle)
+                cycle = db.execute("SELECT name FROM cycles WHERE id=:cycle", cycle=cycle)
+
+                templates = gather_templates()
+    
+                # TODO
+                # Generate SKU
+                # sku = 0
+
+                # def generate_sku (items):
+
+                #     skus = []
+                #     sku = {}
+
+
+                #     return 'skus'
+
+                # Write projections into csv
+
+                for row in projections:
+
+                    ## SKUinator!
+
+                    # Loteria name > SKU
+                    for loteria in templates['loterias']:
+                        if loteria['nombre'] in row['name']:
+                            sku = 'SKU' + str(loteria['sku']).zfill(2)
+                            print(f"matched {loteria['nombre']} to {row['name']}. SKU:{sku}")
+
+                    # A color name > SKU
+                    for color in templates['colors']:
+                        if color['name'] in row['a_color']:
+                            sku = sku + str(color['sku']).zfill(2)
+                            print(f"matched {color['sku']} to {row['a_color']}. SKU:{sku}")
+
+                    # B color name > SKU
+                    for color in templates['colors']:
+                        if color['name'] in row['a_color']:
+                            sku = sku + str(color['sku']).zfill(2)
+                            print(f"matched {color['sku']} to {row['a_color']}. SKU:{sku}")
+
+                    # C color name > SKU
+                    for color in templates['colors']:
+                        if color['name'] in row['a_color']:
+                            sku = sku + str(color['sku']).zfill(2)
+                            print(f"matched {color['sku']} to {row['a_color']}. SKU:{sku}")
+
+                    sku = sku + str(00).zfill(2)
+
+                    # Size name > SKU
+                    for size in templates['sizes']:
+                        if size['shortname'] in row['size']:
+                            sku = sku + str(size['sku']).zfill(2)
+                            print(f"matched {size['sku']} to {row['size']}. SKU:{sku}")
+
+
+                    print("Scribe is writing a row...")
+                    scribe.writerow([row['name'], row['size'], sku, row['a_color'], row['b_color'], row['c_color'], '', row['qty'], row['cycle']])
+
+            # TODO delete
+            # print(app.config['BACKUPS'])
+
+
+            filename = 'backup_projections_' + str(cycle) + '.csv'
+            return send_from_directory(app.config['BACKUPS'], filename=filename, as_attachment=True, mimetype='text/csv')
+
+
+        if path == 'backup-inventory-parts':
+
+            cycle = request.form.get("backup-parts")
+
+            # BACKUP PARTS
+            # Create new csv file
+            with open('static/backups/parts-inventory.csv', 'w') as csvfile:
+
+                # Create writer object
+                scribe = csv.writer(csvfile)
+
+                # Pull all parts data
+                parts = db.execute("SELECT * FROM parts")
 
                 # TODO
                 # Generate SKU
                 sku = 0
     
-                # Write projections into csv
-                for row in projections:
+                # Write parts into csv
+                for row in parts:
                     print("Scribe is writing a row...")
                     scribe.writerow([row['name'], row['size'], sku, row['a_color'], row['b_color'], row['c_color'], '', row['qty'], row['cycle']])
 
@@ -1393,6 +1469,13 @@ def config(path):
 
             return send_from_directory(app.config['BACKUPS'], filename='backup_projections.csv', as_attachment=True, mimetype='text/csv')
 
+        if path == 'cycle':
+
+            cycle = request.form.get("cycle")
+            db.execute("UPDATE cycles SET current='FALSE'")
+            db.execute("UPDATE cycles SET current='TRUE' WHERE id=:id", id=cycle)
+
+            return redirect('/production')
 
         if path == 'wipe':
 
@@ -1441,7 +1524,6 @@ def config(path):
             return redirect("/admin")
 
 
-        # Delete a Event
         if path == 'delete-event':
 
             name = request.form.get("delname")
@@ -1488,7 +1570,10 @@ def config(path):
             """)
 
             flash(message)
-            return redirect("/admin")
+            return redirect("/admin#sku")
+
+
+
 
 
         else:

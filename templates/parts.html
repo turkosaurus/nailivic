@@ -7,7 +7,7 @@ Items
 <container class="text-monospace">
     <div class="row">
         <div class="col">
-            <h1>{{ part }}</h1>
+            <h1 style="text-transform: capitalize">{{ cur_color.name }}</h1>
         </div>
     </div>
 
@@ -18,32 +18,20 @@ Items
                 <!-- <li class="list-inline-item">
                     <a class="dropdown-item" href="/parts/black">Black</a>
                 </li> -->
-                <li class="list-inline-item">
-                    <a class="" href="/parts/black">Black</a>
-                </li>
-                <li class="list-inline-item">
-                    <a class="" href="/parts/red">Red</a>
-                </li>
-                <li class="list-inline-item">
-                    <a class="" href="/parts/turquoise">Turquoise</a>
-                </li>
-                <li class="list-inline-item">
-                    <a class="" href="/parts/yellow">Yellow</a>
-                </li>
-                <li class="list-inline-item">
-                    <a class="" href="/parts/green">Green</a>
-                </li>
-                <li class="list-inline-item">
-                    <a class="" href="/parts/purple">Purple</a>
-                </li>
+
+                {% for color in colors %}
+                    <li class="list-inline-item">
+                        <a style="text-transform: capitalize" class="" href="/parts/{{ color.name }}">{{ color.emoji }} {{ color.name }}</a>
+                    </li>
+                {% endfor %}
                 <li>
                     
                 </li>
                 <li class="list-inline-item">
-                    <a class="" href="/parts/boxes">Boxes</a>
+                    <a class="" href="/parts/boxes">📦 Boxes</a>
                 </li>
                 <li class="list-inline-item">
-                    <a class="" href="/parts/backs">Backs</a>
+                    <a class="" href="/parts/backs">🍑 Backs</a>
                 </li>
             </ul>
             <hr>
@@ -57,9 +45,10 @@ Items
     </div> -->
 
 
-
     <div class="row align-items-start">
         <div class="col-lg-4 col-md-5 col-sm-12">
+
+            <br>
 
             <!-- No Color -->
             <form action="/" method="post">
@@ -216,7 +205,17 @@ Items
         </div>
 
         <div class="col-lg-7 col-md-6 col-sm-12">
+            <br>
+            <!-- <div class="row">
+                <div class="col"> -->
+                    <h3 style="text-transform: capitalize;">{{ part }} Part Queue</h3>
+                <!-- </div>
+            </div> -->
+
+
+
             {% for size in sizes %}
+            <br>
             <table class="table table-sm table-hover table-dark">
                     <thead>
                         <tr>
