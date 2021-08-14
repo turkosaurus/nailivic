@@ -1,128 +1,28 @@
 :root {
-	--blue: #007bff;
-	--indigo: #6610f2;
-	--purple: #6f42c1;
-	--pink: #e83e8c;
-	--red: #dc3545;
-	--orange: #fd7e14;
-	--yellow: #ffc107;
-	--green: #28a745;
-	--teal: #20c997;
-	--cyan: #17a2b8;
-	--white: #fff;
-	--gray: #6c757d;
-	--gray-dark: #343a40;
-	--primary: #007bff;
-	--secondary: #6c757d;
-	--success: #28a745;
-	--info: #17a2b8;
-	--warning: #ffc107;
-	--danger: #dc3545;
-	--light: #f8f9fa;
-	--dark: #343a40;
-	--breakpoint-xs: 0;
-	--breakpoint-sm: 576px;
-	--breakpoint-md: 768px;
-	--breakpoint-lg: 992px;
-	--breakpoint-xl: 1200px;
-	--font-family-sans-serif: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
-	--font-family-monospace: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+  --gray: rgba(211, 211, 211, 0.611);
 }
 
-.navbar .navbar-expand-md .navbar-dark .bg-dark {
-    color: rgb(184, 16, 16);
-    background-color: rgb(187, 38, 38);
-    border-color: rgb(165, 102, 102);
+.navbar, .navbar-expand-md, .navbar-dark, .bg-dark {
+    color: rgb(163, 33, 33);
+    background-color: rgb(0, 0, 0);
+    border-bottom: .7rem solid var(--gray);
+
+    /* border-color: rgba(0, 0, 0, 0.46); */
 }
 
 main, body, .card, .list-group-item {
-    color:lightgray;
+    color: var(--gray);
     background-color: black;
+}
+
+.form-control {
+  background-color: hsla(0, 0%, 95%, 0.816);
 }
 
 hr {
-    border-top: .8em solid rgba(255, 255, 255, 0.618);
+    border-top: .8rem solid rgba(255, 255, 255, 0.618);
 }
 
-
-/* .navbar-brand
-{
-    position: relative;
-    background: url(../static/nailivicstudios.png);
-    width: 170px;
-    height: auto;
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-} */
-
-/* 
-
-.navbar-dark .navbar-brand {
-    color: #fff;
-  }
-  
-  .navbar-dark .navbar-brand:hover, .navbar-dark .navbar-brand:focus {
-    color: #fff;
-  }
-  
-  .navbar-dark .navbar-nav .nav-link {
-    color: rgba(255, 255, 255, 0.5);
-  }
-  
-  .navbar-dark .navbar-nav .nav-link:hover, .navbar-dark .navbar-nav .nav-link:focus {
-    color: rgba(255, 255, 255, 0.75);
-  }
-  
-  .navbar-dark .navbar-nav .nav-link.disabled {
-    color: rgba(255, 255, 255, 0.25);
-  }
-  
-  .navbar-dark .navbar-nav .show > .nav-link,
-  .navbar-dark .navbar-nav .active > .nav-link,
-  .navbar-dark .navbar-nav .nav-link.show,
-  .navbar-dark .navbar-nav .nav-link.active {
-    color: #fff;
-  }
-  
-  .navbar-dark .navbar-toggler {
-    color: rgba(255, 255, 255, 0.5);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  .navbar-dark .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(255, 255, 255, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
-  }
-  
-  .navbar-dark .navbar-text {
-    color: rgba(255, 255, 255, 0.5);
-  }
-  
-  .navbar-dark .navbar-text a {
-    color: #fff;
-  }
-  
-  .navbar-dark .navbar-text a:hover, .navbar-dark .navbar-text a:focus {
-    color: #fff;
-  }
-  
- */
-
-
-
-
-
-/* 
-
-.navbar-dark, .bg-dark, .navbar {
-    background-color: black;
-} */
-
-.form-control {
-    background-color: hsla(0, 0%, 95%, 0.741);
+h5 {
+  font-size: 1.1rem;
 }
-/* .linkbutton */
-
-html {
-    font-size: 0.95rem;
-  }

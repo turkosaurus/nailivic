@@ -83,21 +83,6 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def parse_sku(sku):
-    # turns SKU string into object with integers
-
-    parsed = {
-        'item': (int(sku[0]) * 10) + int(sku[1]),
-        'a': (int(sku[2]) * 10) + int(sku[3]),
-        'b': (int(sku[4]) * 10) + int(sku[5]),
-        'c': (int(sku[6]) * 10) + int(sku[7]),
-        'd': (int(sku[8]) * 10) + int(sku[9]),
-        'size': (int(sku[10]) * 10) + int(sku[11])
-        }
-
-    return parsed
-
-#TODO maybe delete this
 def gather_templates():
 
     # Gather template data
@@ -112,6 +97,74 @@ def gather_templates():
     }
 
     return response
+
+def parse_sku(sku):
+    # turns SKU string into object with integers
+
+    # # Chop the first 3 digits
+    # if len(sku) == 15:
+    #     sku = sku[3:]
+    #     print(f"sku:{sku}")
+
+    if len(sku) != 12:
+        flash(f"Invalid SKU length. ({len(sku)}/12 characters)")
+        return redirect("/admin")
+
+    parsed = {
+        'item': (int(sku[0]) * 10) + int(sku[1]),
+        'a': (int(sku[2]) * 10) + int(sku[3]),
+        'b': (int(sku[4]) * 10) + int(sku[5]),
+        'c': (int(sku[6]) * 10) + int(sku[7]),
+        'd': (int(sku[8]) * 10) + int(sku[9]),
+        'size': (int(sku[10]) * 10) + int(sku[11])
+        }
+
+    return parsed
+
+## SKUinator!
+def generate_sku(templates, item):
+
+    # Loteria name > SKU
+    for loteria in templates['loterias']:
+        if loteria['nombre'] in item['name']:
+            sku = str(loteria['sku']).zfill(2)
+            print(f"matched {loteria['nombre']} to {item['name']}. SKU:{sku}")
+
+    # A color name > SKU
+    for color in templates['colors']:
+        if color['name'] in item['a_color']:
+            sku = sku + str(color['sku']).zfill(2)
+            print(f"matched {color['name']} to {item['a_color']}. SKU:{sku}")
+
+    # B color name > SKU
+    for color in templates['colors']:
+        if color['name'] in item['b_color']:
+            sku = sku + str(color['sku']).zfill(2)
+            print(f"matched {color['name']} to {item['b_color']}. SKU:{sku}")
+
+    # C color name > SKU
+    if item['c_color']:
+        for color in templates['colors']:
+            if color['name'] in item['c_color']:
+                sku = sku + str(color['sku']).zfill(2)
+                print(f"matched {color['name']} to {item['c_color']}. SKU:{sku}")
+
+    else:
+        print("no c_color found")
+        sku = sku + str(00).zfill(2)
+
+    # Unused placeholder
+    sku = sku + str(00).zfill(2)
+
+    # Size name > SKU
+    for size in templates['sizes']:
+        if size['shortname'] in item['size']:
+            sku = sku + str(size['sku']).zfill(2)
+            print(f"matched {size['longname']} to {item['size']}. SKU:{sku}")
+
+    return sku
+
+
 
 
 ###### QUEUE ######
@@ -389,44 +442,6 @@ def dashboard():
                         grand_total += row['qty']
 
         print(f"totals:{totals}")
-
-        ###################################
-
-        # TODO replace this with fewer queries and for loops to build the table
-        # Sum totals for each back, color & size
-
-        # totals = []
-
-        # # # For each size
-        # for i in range(len(sizes)):
-
-        #     # Make a list to hold the color totoals
-        #     totals.append([])
-
-        #     # For each color within the size, sum the number of parts
-        #     for j in range(len(colors)):
-        #         qty = db.execute("SELECT SUM(qty) FROM production WHERE size=:size AND color=:color", \
-        #                             size=sizes[i], color=colors[j])
-        #         print(f'qty:{qty} for {sizes[i]}, {colors[j]}')
-        #         # Sanitize "None" into ''
-        #         if qty[0]['sum'] == None:
-        #             qty[0]['sum'] = ''
-        #         print(f"qty {qty}")
-
-        #         # Append current color's totals to the current size's list
-        #         totals[i].append(qty[0]['sum'])
-
-        #     # Tally backs in production
-        #     backs = db.execute("SELECT SUM(qty) FROM production WHERE size=:size AND name IN (SELECT backs FROM loterias)", size=sizes[i])
-        #     # Sanitize "None" into ''
-        #     if backs[0]['sum'] == None:
-        #         backs[0]['sum'] = ''
-        #     totals[i].append(backs[0]['sum'])
-
-        #     print(f"totals:{totals}")
-
-
-        #########################################
 
         # Box Production Total
         box_prod_total = db.execute("SELECT SUM(qty) FROM boxprod")
@@ -1374,100 +1389,94 @@ def config(path):
                 scribe = csv.writer(csvfile)
 
                 # Pull all projections data
-                projections = db.execute("SELECT * FROM projections WHERE cycle=:cycle", cycle=cycle)
-                cycle = db.execute("SELECT name FROM cycles WHERE id=:cycle", cycle=cycle)
-
                 templates = gather_templates()
-    
-                # TODO
-                # Generate SKU
-                # sku = 0
-
-                # def generate_sku (items):
-
-                #     skus = []
-                #     sku = {}
-
-
-                #     return 'skus'
-
-                # Write projections into csv
+                cycle = db.execute("SELECT * FROM cycles WHERE id=:cycle", cycle=cycle)
+                projections = db.execute("SELECT * FROM projections WHERE cycle=:cycle", cycle=cycle[0]['id'])
 
                 for row in projections:
 
-                    ## SKUinator!
+                    sku = generate_sku(templates, row)
 
-                    # Loteria name > SKU
-                    for loteria in templates['loterias']:
-                        if loteria['nombre'] in row['name']:
-                            sku = 'SKU' + str(loteria['sku']).zfill(2)
-                            print(f"matched {loteria['nombre']} to {row['name']}. SKU:{sku}")
-
-                    # A color name > SKU
-                    for color in templates['colors']:
-                        if color['name'] in row['a_color']:
-                            sku = sku + str(color['sku']).zfill(2)
-                            print(f"matched {color['sku']} to {row['a_color']}. SKU:{sku}")
-
-                    # B color name > SKU
-                    for color in templates['colors']:
-                        if color['name'] in row['a_color']:
-                            sku = sku + str(color['sku']).zfill(2)
-                            print(f"matched {color['sku']} to {row['a_color']}. SKU:{sku}")
-
-                    # C color name > SKU
-                    for color in templates['colors']:
-                        if color['name'] in row['a_color']:
-                            sku = sku + str(color['sku']).zfill(2)
-                            print(f"matched {color['sku']} to {row['a_color']}. SKU:{sku}")
-
-                    sku = sku + str(00).zfill(2)
-
-                    # Size name > SKU
-                    for size in templates['sizes']:
-                        if size['shortname'] in row['size']:
-                            sku = sku + str(size['sku']).zfill(2)
-                            print(f"matched {size['sku']} to {row['size']}. SKU:{sku}")
-
-
+                    # Write projections into csv
                     print("Scribe is writing a row...")
                     scribe.writerow([row['name'], row['size'], sku, row['a_color'], row['b_color'], row['c_color'], '', row['qty'], row['cycle']])
 
-            # TODO delete
-            # print(app.config['BACKUPS'])
+            # filename = 'backup_projections_' + str(cycle[0]['id']) + '.csv'
+            # print(filename)
+            # return send_from_directory(app.config['BACKUPS'], filename=filename, as_attachment=True, mimetype='text/csv')
 
-
-            filename = 'backup_projections_' + str(cycle) + '.csv'
-            return send_from_directory(app.config['BACKUPS'], filename=filename, as_attachment=True, mimetype='text/csv')
+            return send_from_directory(app.config['BACKUPS'], filename='backup_projections.csv', as_attachment=True, mimetype='text/csv')
 
 
         if path == 'backup-inventory-parts':
 
             cycle = request.form.get("backup-parts")
+            templates = gather_templates()
 
             # BACKUP PARTS
             # Create new csv file
-            with open('static/backups/parts-inventory.csv', 'w') as csvfile:
+            with open('static/backups/parts_inventory.csv', 'w') as csvfile:
 
                 # Create writer object
                 scribe = csv.writer(csvfile)
 
                 # Pull all parts data
                 parts = db.execute("SELECT * FROM parts")
-
-                # TODO
-                # Generate SKU
-                sku = 0
     
                 # Write parts into csv
                 for row in parts:
+
+                    sku = '00'
+
+                    # A color name > SKU
+                    for color in templates['colors']:
+                        if color['name'] in row['color']:
+                            sku = sku + str(color['sku']).zfill(2)
+                            print(f"matched {color['name']} to {row['color']}. SKU:{sku}")
+
+                    sku = sku + '000000'
+
+                    # Size name > SKU
+                    for size in templates['sizes']:
+                        if size['shortname'] in row['size']:
+                            sku = sku + str(size['sku']).zfill(2)
+                            print(f"matched {size['longname']} to {row['size']}. SKU:{sku}")
+
                     print("Scribe is writing a row...")
-                    scribe.writerow([row['name'], row['size'], sku, row['a_color'], row['b_color'], row['c_color'], '', row['qty'], row['cycle']])
+                    scribe.writerow([sku, row['name'], row['size'],  row['color'], row['qty']])
+
+            return send_from_directory(app.config['BACKUPS'], filename='parts_inventory.csv', as_attachment=True, mimetype='text/csv')
 
 
-            print(app.config['BACKUPS'])
+        if path == 'backup-inventory-items':
 
-            return send_from_directory(app.config['BACKUPS'], filename='backup_projections.csv', as_attachment=True, mimetype='text/csv')
+            cycle = request.form.get("backup-items")
+            templates = gather_templates()
+
+            # BACKUP PARTS
+            # Create new csv file
+            with open('static/backups/items_inventory.csv', 'w') as csvfile:
+
+                # Create writer object
+                scribe = csv.writer(csvfile)
+
+                # Pull all items data
+                items = db.execute("SELECT * FROM items")
+    
+                # Write items into csv
+                for row in items:
+
+                    sku = generate_sku(templates, row)
+
+                    print("Scribe is writing a row...")
+                    scribe.writerow([sku, row['name'], row['size'], row['a_color'], row['b_color'], row['c_color'], '', row['qty']])
+
+            # print(app.config['BACKUPS'])
+
+            return send_from_directory(app.config['BACKUPS'], filename='items_inventory.csv', as_attachment=True, mimetype='text/csv')
+
+
+
 
         if path == 'cycle':
 
@@ -1581,12 +1590,12 @@ def config(path):
             return "how did I get here?"
 
 
-@app.route('/downloads', methods=['POST'])
-@login_required
-def downloads():
-    file = request.form.get("file")
-    print(f"/downloading: {file}")
-    return send_from_directory(app.config["UPLOAD_FOLDER"], file, as_attachment=True)
+# @app.route('/downloads', methods=['POST'])
+# @login_required
+# def downloads():
+#     file = request.form.get("file")
+#     print(f"/downloading: {file}")
+#     return send_from_directory(app.config["UPLOAD_FOLDER"], file, as_attachment=True)
 
 
 # @app.route('/test', methods=['GET', 'POST'])

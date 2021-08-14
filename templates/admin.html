@@ -12,6 +12,7 @@ Admin
         </div>
     </div>
 
+    <!-- Submenu -->
     <div class="row">
         <div class="col">
             <ul class="list-inline">
@@ -19,10 +20,10 @@ Admin
                     <a href='/admin#events'>Events</a>
                 </li>
                 <li class="list-inline-item">
-                    <a href='/admin#sku'>SKU</a>                   
+                    <a href='/admin#inventory'>Inventory</a> 
                 </li>
                 <li class="list-inline-item">
-                    <a href='/admin#inventory'>Inventory</a> 
+                    <a href='/admin#sku'>SKU</a>                   
                 </li>
             </ul>
             <hr>
@@ -35,7 +36,7 @@ Admin
         <div class="col">
             <h2 id='events'>Manage Events</h2>        
             <p>
-                <a href='/admin#top'>return to top</a>
+                <a href='/admin#navbartop'>return to top</a>
             </p>
         </div>
     </div>
@@ -139,12 +140,119 @@ Admin
     </div>
         
     <hr>
+    <br>
+
+    <div class="row">
+        <div class="col">
+            <h2 id='inventory'>
+                Inventory
+            </h2>
+            <p>
+                <a href='/admin#navbartop'>return to top</a>
+            </p>
+        </div>
+    </div>
     
+    <div class="row">        
+        
+        <div class="col-lg-6 col-md-12 col-sm-12">
+            <h5>
+                Loterias Template
+            </h5>
+            
+            <form action="/downloads" method="post">
+                <button name="file" value="loterias.csv" type="submit" class="btn btn-primary btn-sm">Download Current</button>
+                <small class="form-text text-muted">
+                    Download active template for reference or additions.
+                </small>
+            </form>
+
+            <br>
+
+            <form method="POST" action="/admin/setup-loterias" enctype="multipart/form-data">
+                
+                <div class="form-group">
+                    <input class="form-control" type="file" name="inputfile" id="inputfile" accept=".csv">
+                    <small class="form-text text-muted">
+                        Upload new loterias template. Do not modify without database edits; only add new items.
+                    </small>
+                </div>
+                
+                
+                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Update loterias db table with this file?')">Upload New</button>
+                
+            </form>
+            <br>
+            
+        </div>
+
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <h5>
+                Backup Inventory
+            </h5>
+
+            <form method="POST" action="/admin/backup-inventory-items">
+                <button type="submit" class="btn btn-block btn-primary btn-sm">Items</button>
+            </form>            
+            <br>
+            <form method="POST" action="/admin/backup-inventory-parts">
+                <button type="submit" class="btn btn-block btn-primary btn-sm">Parts</button>
+            </form>            
+            <br>
+        </div>
+        
+        <!-- <div class="col-lg-3 col-md-6 col-sm-12">
+            <h5>
+                -
+            </h5>
+        </div> -->
+
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <form action="/admin/wipe" method="post">
+                <h5>
+                    Wipe Inventory
+                </h5>
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="wipe-items" id="wipe-items" value="true">
+                    <label class="form-check-label" for="wipe-items">Items</label>
+                </div>
+                
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="wipe-parts" id="wipe-parts" value="true">
+                    <label class="form-check-label" for="wipe-parts">Parts</label>
+                </div>
+                
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="wipe-boxes" id="wipe-boxes" value="true">
+                    <label class="form-check-label" for="wipe-boxes">Boxes</label>
+                </div>
+                
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="wipe-usedboxes" id="wipe-usedboxes" value="true">
+                    <label class="form-check-label" for="wipe-usedboxes">Used Boxes</label>
+                </div>
+
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="wipe-projections" id="wipe-projections" value="true">
+                    <label class="form-check-label" for="wipe-projections">Projections <small>(current event)</small></label>
+                </div>
+                
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Wipe</button>
+            </form>
+            
+            <br>
+        </div>
+        
+    </div>
+
+    <hr>
+    <br>
+
     <div class="row">
         <div class="col">
             <h2 id='sku'>SKUs</h2>        
             <p>
-                <a href='/admin#top'>return to top</a>
+                <a href='/admin#navbartop'>return to top</a>
             </p>
         </div>
     </div>
@@ -272,98 +380,6 @@ Admin
         </div>
 
     </div>
-
-    <hr>
-    <br>
-
-    <div class="row">
-        <div class="col">
-            <h2 id='inventory'>
-                Inventory
-            </h2>
-            <p>
-                <a href='/admin#top'>return to top</a>
-            </p>
-        </div>
-    </div>
-    
-    <div class="row">        
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <h5>
-                Loterias Template
-            </h5>
-            
-            <form method="POST" action="/admin/setup-loterias" enctype="multipart/form-data">
-                
-                <div class="form-group">
-                    <input class="form-control" type="file" name="inputfile" id="inputfile" accept=".csv">
-                    <small class="form-text text-muted">
-                        Upload new loterias template. Do not modify without database edits; only add new items.
-                    </small>
-                </div>
-                
-                
-                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Update loterias db table with this file?')">Upload New</button>
-                
-            </form>
-            <br>
-            
-            <form action="/downloads" method="post">
-                <button name="file" value="loterias.csv" type="submit" class="btn btn-primary btn-sm">Download Current</button>
-                <small class="form-text text-muted">
-                    Download active template for reference or additions.
-                </small>
-            </form>
-            <br>
-        </div>
-
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            
-            <br>
-        </div>
-
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            
-            <br>
-        </div>
-
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <form action="/admin/wipe" method="post">
-                <h5>
-                    Wipe Inventory
-                </h5>
-                <div class="form-group form-check">
-                    <input type="checkbox" class="form-check-input" name="wipe-items" id="wipe-items" value="true">
-                    <label class="form-check-label" for="wipe-items">Items</label>
-                </div>
-                
-                <div class="form-group form-check">
-                    <input type="checkbox" class="form-check-input" name="wipe-parts" id="wipe-parts" value="true">
-                    <label class="form-check-label" for="wipe-parts">Parts</label>
-                </div>
-                
-                <div class="form-group form-check">
-                    <input type="checkbox" class="form-check-input" name="wipe-boxes" id="wipe-boxes" value="true">
-                    <label class="form-check-label" for="wipe-boxes">Boxes</label>
-                </div>
-                
-                <div class="form-group form-check">
-                    <input type="checkbox" class="form-check-input" name="wipe-usedboxes" id="wipe-usedboxes" value="true">
-                    <label class="form-check-label" for="wipe-usedboxes">Used Boxes</label>
-                </div>
-
-                <div class="form-group form-check">
-                    <input type="checkbox" class="form-check-input" name="wipe-projections" id="wipe-projections" value="true">
-                    <label class="form-check-label" for="wipe-projections">Projections <small>(current event)</small></label>
-                </div>
-                
-                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Wipe</button>
-            </form>
-            
-            <br>
-        </div>
-    </div>
-
 
 
 
