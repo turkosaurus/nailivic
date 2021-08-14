@@ -5,10 +5,10 @@ Register
 {% endblock %}
 {% block main %}
 <container>
-    <div class="row">
-        <h1>Register</h1>
+    <div class="row justify-content-center">
+        <h1 class="display-3">Register</h1>
     </div>
-    <div class="row">
+    <div class="row justify-content-center">
         <form action="/register" method="post">
             <div class="form-group">
                 <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
@@ -18,9 +18,9 @@ Register
             </div>
             <div class="form-group">
                 <input class="form-control" name="passwordconfirm" placeholder="Password (confirm)" type="password">
-                <small id="passwordhelp" class="form-text text-muted">Pro Tip: password managers FTW (8 character minimum)</small>
+                <small id="passwordhelp" class="form-text text-muted">8 character minimum</small>
             </div>
-            <button class="btn btn-primary" type="submit">Register</button>
+            <button class="btn btn-primary btn-block" type="submit">Register</button>
         </form>    
 </container>
 {% endblock %}

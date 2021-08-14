@@ -159,7 +159,6 @@ def generate_item(templates, sku):
     return sku
 
 
-## SKUinator!
 # from names
 def generate_sku(templates, item):
 
@@ -202,8 +201,6 @@ def generate_sku(templates, item):
             print(f"matched {size['longname']} to {item['size']}. SKU:{sku}")
 
     return sku
-
-
 
 
 ###### QUEUE ######
@@ -1340,6 +1337,8 @@ def config(path):
         if path == 'import-event':
 
             event = request.form.get("event")
+            templates = gather_templates()
+
             print(f"event:{event}")
 
             # https://flask.palletsprojects.com/en/2.0.x/patterns/fileuploads/
@@ -1368,26 +1367,30 @@ def config(path):
 
                     db.execute("CREATE TABLE IF NOT EXISTS test ( \
                         name VARCHAR (255), \
-                        sku VARCHAR (255), \
                         size VARCHAR (255), \
                         a VARCHAR (255), \
                         b VARCHAR (255), \
                         c VARCHAR (255), \
-                        qty INTEGER \
+                        qty INTEGER, \
+                        cycle INTEGER, \
+                        sku VARCHAR (255) \
                         )")
 
-                    print("    name    |    colors    |    sku    |    catgory    |    qty   ")
+                    # # print("    name    |    colors    |    sku    |    catgory    |    qty   ")
     
                     total = 0
                     skipped = 0
 
                     next(csv_reader)
                     for row in csv_reader:
+
                         total += 1
 
                         if row[2]:
                             sku = parse_sku(row[2])
-                            print(f"Found:{sku}")
+                            item = generate_item(templates, sku)
+
+                            print(f"Item from production:{item}")
 
                         else:
                             skipped += 1
@@ -1417,6 +1420,7 @@ def config(path):
             #         #                 nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
 
 
+        # TODO this is copied over and not correct, just an outline
         if path == 'import-inventory':
             type = request.form.get('type')
 

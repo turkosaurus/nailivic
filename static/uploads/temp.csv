@@ -1,47 +1,68 @@
-Item Name,Item Variation,SKU,Category,Items Sold,Gross Sales,Items Refunded,Refunds,Discounts & Comps,Net Sales,Tax,Unit,Units Sold,Units Refunded,GTIN
-Boxed Boot,Black/Red,,Boxes,1,$35.00 ,0,$0.00 ,$0.00 ,$35.00 ,$2.89 ,ea,1,0,
-Boxed Boot,Regular,,Boxes,1,$35.00 ,0,$0.00 ,$0.00 ,$35.00 ,$2.89 ,ea,1,0,
-Boxed Frida,Black/Red,,Boxes,1,$35.00 ,0,$0.00 ,$0.00 ,$35.00 ,$2.89 ,ea,1,0,
-Boxed Frida,Black/TQ,,Boxes,3,$105.00 ,0,$0.00 ,$0.00 ,$105.00 ,$8.67 ,ea,3,0,
-Boxed Frida,Red/TQ,,Boxes,1,$35.00 ,0,$0.00 ,$0.00 ,$35.00 ,$2.89 ,ea,1,0,
-Boxed Guitar,Black/Red,,Boxes,1,$35.00 ,0,$0.00 ,($2.67),$32.33 ,$2.67 ,ea,1,0,
-Boxed Guitar,Black/TQ,,Boxes,1,$35.00 ,0,$0.00 ,$0.00 ,$35.00 ,$2.89 ,ea,1,0,
-Boxed Guitar,Red/TQ,,Boxes,2,$70.00 ,0,$0.00 ,$0.00 ,$70.00 ,$5.78 ,ea,2,0,
-Boxed Heart,Black/Red,270102000001,Boxes,8,$280.00 ,0,$0.00 ,($5.34),$274.66 ,$22.68 ,ea,8,0,
-Boxed Heart,Black/TQ,270105000001,Boxes,3,$105.00 ,0,$0.00 ,$0.00 ,$105.00 ,$8.67 ,ea,3,0,
-Boxed Heart,Red/TQ,270205000001,Boxes,9,$315.00 ,0,$0.00 ,($8.01),$306.99 ,$25.35 ,ea,9,0,
-Boxed Heart,TQ/Red,270302000001,Boxes,3,$105.00 ,0,$0.00 ,($2.67),$102.33 ,$8.45 ,ea,3,0,
-Boxed Mermaid,Black/Red,060102000001,Boxes,2,$70.00 ,0,$0.00 ,($2.67),$67.33 ,$5.56 ,ea,2,0,
-Boxed Mermaid,Black/Red/Green,,Boxes,5,$175.00 ,0,$0.00 ,($5.34),$169.66 ,$14.01 ,ea,5,0,
-Boxed Mermaid,Black/TQ,,Boxes,2,$70.00 ,0,$0.00 ,($2.67),$67.33 ,$5.55 ,ea,2,0,
-Boxed Mermaid,Black/Yellow/Green,,Boxes,2,$70.00 ,0,$0.00 ,($3.50),$66.50 ,$5.49 ,ea,2,0,
-Boxed Mermaid,Red/Yellow/TQ,,Boxes,3,$105.00 ,0,$0.00 ,($2.67),$102.33 ,$8.45 ,ea,3,0,
-Boxed Octopus,Black/Red,,Boxes,3,$105.00 ,0,$0.00 ,($3.50),$101.50 ,$8.38 ,ea,3,0,
-Boxed Octopus,Black/TQ,,Boxes,5,$175.00 ,0,$0.00 ,($2.67),$172.33 ,$14.23 ,ea,5,0,
-Boxed Octopus,Red/TQ,,Boxes,1,$35.00 ,0,$0.00 ,($2.67),$32.33 ,$2.67 ,ea,1,0,
-Boxed Octopus,TQ/Red,,Boxes,2,$70.00 ,0,$0.00 ,$0.00 ,$70.00 ,$5.78 ,ea,2,0,
-Boxed Skull,Black/Red,,Boxes,1,$35.00 ,0,$0.00 ,$0.00 ,$35.00 ,$2.89 ,ea,1,0,
-Large Guitar,Black/Red,,Large,1,$125.00 ,0,$0.00 ,$0.00 ,$125.00 ,$10.31 ,ea,1,0,
-Large Octopus,Red/TQ,,Large,1,$95.00 ,0,$0.00 ,$0.00 ,$95.00 ,$7.84 ,ea,1,0,
-Large Octopus,TQ/Red,,Large,1,$95.00 ,0,$0.00 ,$0.00 ,$95.00 ,$7.84 ,ea,1,0,
-"Loteria, Big",Guitar,,Large,1,$125.00 ,0,$0.00 ,$0.00 ,$125.00 ,$10.31 ,ea,1,0,
-"Loteria, Big",Heart,,Large,1,$125.00 ,0,$0.00 ,$0.00 ,$125.00 ,$10.31 ,ea,1,0,
-"Loteria, Big",Mermaid,,Large,1,$125.00 ,0,$0.00 ,$0.00 ,$125.00 ,$10.31 ,ea,1,0,
-"Loteria, Small",Rose,,Large,1,$85.00 ,0,$0.00 ,$0.00 ,$85.00 ,$7.01 ,ea,1,0,
-Medium Boot,Black/Red,,Medium,1,$55.00 ,0,$0.00 ,$0.00 ,$55.00 ,$4.54 ,ea,1,0,
-Medium Frida,Black/Red,,Medium,1,$55.00 ,0,$0.00 ,$0.00 ,$55.00 ,$4.54 ,ea,1,0,
-Medium Frida,Black/TQ,,Medium,1,$55.00 ,0,$0.00 ,($4.19),$50.81 ,$4.19 ,ea,1,0,
-Medium Guitar,Black/TQ,,Medium,1,$55.00 ,0,$0.00 ,$0.00 ,$55.00 ,$4.54 ,ea,1,0,
-Medium Guitar,Red/TQ,,Medium,1,$55.00 ,0,$0.00 ,$0.00 ,$55.00 ,$4.54 ,ea,1,0,
-Medium Guitar,TQ/Red,,Medium,1,$55.00 ,0,$0.00 ,$0.00 ,$55.00 ,$4.54 ,ea,1,0,
-Medium Hand,TQ/Red,,Medium,1,$55.00 ,0,$0.00 ,$0.00 ,$55.00 ,$4.54 ,ea,1,0,
-Medium Heart,Black/Red,,Medium,1,$55.00 ,0,$0.00 ,$0.00 ,$55.00 ,$4.54 ,ea,1,0,
-Medium Heart,Red/TQ,,Medium,1,$55.00 ,0,$0.00 ,$0.00 ,$55.00 ,$4.54 ,ea,1,0,
-Medium Heart,TQ/Red,,Medium,1,$55.00 ,0,$0.00 ,$0.00 ,$55.00 ,$4.54 ,ea,1,0,
-Medium Mermaid,Black/Red/Green,,Medium,3,$165.00 ,0,$0.00 ,$0.00 ,$165.00 ,$13.62 ,ea,3,0,
-Medium Mermaid,Red/Yellow/TQ,,Medium,1,$55.00 ,0,$0.00 ,$0.00 ,$55.00 ,$4.54 ,ea,1,0,
-Medium Octopus,Black/TQ,,Medium,3,$165.00 ,0,$0.00 ,$0.00 ,$165.00 ,$13.62 ,ea,3,0,
-Medium Octopus,Red/TQ,,Medium,1,$55.00 ,0,$0.00 ,$0.00 ,$55.00 ,$4.54 ,ea,1,0,
-Medium Octopus,TQ/Red,,Medium,3,$165.00 ,0,$0.00 ,$0.00 ,$165.00 ,$13.61 ,ea,3,0,
-Medium Skull,Black/Red,,Medium,2,$110.00 ,0,$0.00 ,$0.00 ,$110.00 ,$9.08 ,ea,2,0,
-Medium Skull,Green,,Medium,3,$165.00 ,0,$0.00 ,($4.19),$160.81 ,$13.27 ,ea,3,0,
+La Calavera,S,520101010001,🖤 black,💙 TQ,💙 TQ,,5,15
+La Calavera,S,520101010001,🖤 black,💚 green,💚 green,,5,15
+La Estrella,S,350101010001,🖤 black,❤️ red,,,3,15
+La Estrella,S,350101010001,🖤 black,💙 TQ,,,3,15
+La Estrella,S,350202020001,❤️ red,💙 TQ,,,3,15
+El Pulpo,S,360101010001,🖤 black,❤️ red,❤️ red,,15,15
+El Pulpo,S,360101010001,🖤 black,💙 TQ,💙 TQ,,15,15
+El Pulpo,S,360202020001,❤️ red,💙 TQ,💙 TQ,,15,15
+El Pulpo,S,360303030001,💙 TQ,❤️ red,❤️ red,,15,15
+La Dama,M,030101010002,🖤 black,❤️ red,,,5,15
+La Dama,M,030101010002,🖤 black,💙 TQ,,,3,15
+La Dama,M,030202020002,❤️ red,💙 TQ,,,3,15
+El Musico,M,320101010002,🖤 black,❤️ red,,,2,15
+La Dama,S,030101010001,🖤 black,❤️ red,,,10,15
+La Dama,S,030101010001,🖤 black,💙 TQ,,,5,15
+La Dama,S,030202020001,❤️ red,💙 TQ,,,5,15
+El Musico,S,320101010001,🖤 black,❤️ red,,,4,15
+El Musico,S,320101010001,🖤 black,💙 TQ,,,4,15
+El Musico,S,320202020001,❤️ red,💙 TQ,,,4,15
+El Corazon,S,270101010001,🖤 black,💙 TQ,,,5,15
+El Corazon,S,270303030001,💙 TQ,❤️ red,,,12,15
+El Corazon,S,270202020001,❤️ red,💙 TQ,,,25,15
+La Sirena,S,060101010001,🖤 black,❤️ red,❤️ red,,5,15
+La Sirena,S,060101010001,🖤 black,❤️ red,💚 green,,15,15
+La Sirena,S,060101010001,🖤 black,💙 TQ,💙 TQ,,10,15
+La Sirena,S,060101010001,🖤 black,💛 yellow,💚 green,,10,15
+La Sirena,S,060202020001,❤️ red,💛 yellow,💙 TQ,,10,15
+La Calavera,S,520101010001,🖤 black,❤️ red,❤️ red,,5,15
+El Musico,M,320101010002,🖤 black,💙 TQ,,,2,15
+El Musico,M,320202020002,❤️ red,💙 TQ,,,2,15
+El Musico,M,320303030002,💙 TQ,❤️ red,,,2,15
+La Mano,M,210101010002,🖤 black,❤️ red,,,3,15
+La Mano,M,210101010002,🖤 black,💙 TQ,,,3,15
+La Mano,M,210202020002,❤️ red,💙 TQ,,,3,15
+El Corazon,M,270101010002,🖤 black,❤️ red,,,5,15
+El Corazon,M,270202020002,❤️ red,💙 TQ,,,5,15
+El Corazon,M,270101010002,🖤 black,💙 TQ,,,2,15
+El Corazon,M,270303030002,💙 TQ,❤️ red,,,2,15
+La Sirena,M,060101010002,🖤 black,❤️ red,💚 green,,7,15
+La Sirena,M,060101010002,🖤 black,❤️ red,❤️ red,,3,15
+La Sirena,M,060101010002,🖤 black,💙 TQ,💙 TQ,,5,15
+La Sirena,M,060101010002,🖤 black,💛 yellow,💚 green,,3,15
+La Sirena,M,060202020002,❤️ red,💛 yellow,💙 TQ,,3,15
+La Calavera,M,520101010002,🖤 black,❤️ red,❤️ red,,3,15
+La Calavera,M,520101010002,🖤 black,💙 TQ,💙 TQ,,3,15
+La Calavera,M,520101010002,🖤 black,💚 green,💚 green,,3,15
+El Pulpo,M,360101010002,🖤 black,❤️ red,❤️ red,,5,15
+El Pulpo,M,360101010002,🖤 black,💙 TQ,💙 TQ,,5,15
+El Pulpo,M,360202020002,❤️ red,💙 TQ,💙 TQ,,5,15
+El Pulpo,M,360303030002,💙 TQ,❤️ red,❤️ red,,5,15
+La Bota,M,220101010002,🖤 black,❤️ red,❤️ red,,3,15
+La Bota,M,220101010002,🖤 black,💙 TQ,💙 TQ,,3,15
+La Dama,L,030101010003,🖤 black,❤️ red,,,2,15
+La Dama,L,030101010003,🖤 black,💙 TQ,,,2,15
+El Corazon,L,270101010003,🖤 black,❤️ red,,,3,15
+El Corazon,L,270202020003,❤️ red,💙 TQ,,,3,15
+El Corazon,L,270303030003,💙 TQ,❤️ red,,,2,15
+El Corazon,L,270101010003,🖤 black,💙 TQ,,,2,15
+El Musico,L,320101010003,🖤 black,❤️ red,,,2,15
+El Musico,L,320101010003,🖤 black,💙 TQ,,,2,15
+La Sirena,L,060101010003,🖤 black,❤️ red,💚 green,,3,15
+La Sirena,L,060101010003,🖤 black,❤️ red,❤️ red,,1,15
+La Sirena,L,060101010003,🖤 black,💙 TQ,💙 TQ,,2,15
+El Pulpo,L,360101010003,🖤 black,❤️ red,❤️ red,,3,15
+El Pulpo,L,360202020003,❤️ red,💙 TQ,💙 TQ,,3,15
+El Pulpo,L,360101010003,🖤 black,💙 TQ,💙 TQ,,3,15
+El Pulpo,L,360303030003,💙 TQ,❤️ red,❤️ red,,3,15
+El Corazon,S,270101010001,🖤 black,❤️ red,,,21,15
