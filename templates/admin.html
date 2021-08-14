@@ -6,9 +6,9 @@ Admin
 {% block main %}
 <container class="text-monospace">
 
-    <div class="row" id="top">
+    <div class="row">
         <div class="col">
-            <h1>Admin</h1>
+            <h1 class="display-2">Admin</h1>
         </div>
     </div>
 
@@ -23,6 +23,9 @@ Admin
                     <a href='/admin#inventory'>Inventory</a> 
                 </li>
                 <li class="list-inline-item">
+                    <a href='/admin#templates'>Templates</a>                   
+                </li>
+                <li class="list-inline-item">
                     <a href='/admin#sku'>SKU</a>                   
                 </li>
             </ul>
@@ -34,10 +37,13 @@ Admin
 
     <div class="row">
         <div class="col">
-            <h2 id='events'>Manage Events</h2>        
+            <h2 class="display-4" id='events'>
+                Manage Events
+            </h2>
             <p>
-                <a href='/admin#navbartop'>return to top</a>
+                <a href='/admin#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"> return to top</a>
             </p>
+            <br>
         </div>
     </div>
 
@@ -64,10 +70,9 @@ Admin
 
         
         <div class="col-lg-3 col-md-6 col-sm-12">
-            <div>
-                <h5>Import Projections<h5>
-            </div>
-            <form method="POST" action="/admin/import-event" enctype="multipart/form-data">
+            <h5>Import Projections<h5>
+
+                <form method="POST" action="/admin/import-event" enctype="multipart/form-data">
                 
                 <div class="form-group">
                     <!-- <label for="event"></label> -->
@@ -81,15 +86,12 @@ Admin
                 
                 <div class="form-group">
                     <input class="form-control" type="file" name="inputfile" id="inputfile" accept=".csv">
+                    <small class="form-text text-muted">Adds Square sales export to Event's projections</small>
                 </div>
                 
-                <!-- TODO why isn't this text smaller? -->
-                <small class="form-text text-muted">
-                    Adds Square sales export to Event's projections (in development)
-                </small>
-                <br>
-                
-                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Add projections to event?')">Import File</button>
+                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Add projections to event?')">
+                    Import File ⚠
+                </button>
                 <br>
                 
             </form>
@@ -107,13 +109,10 @@ Admin
                             <option title="Created on: {{ cycle.created_on }}" value="{{ cycle.id }}">{{ cycle.name }}</option>
                         {% endfor %}
                     </select>
+                    <small class="form-text text-muted">
+                        Download .csv of current event projections
+                    </small>
                 </div>
-
-                <small class="form-text text-muted">
-                    Download .csv of current event projections. (in development)
-                </small>
-                <br>
-
                 <button type="submit" title="" class="btn btn-primary btn-sm">Download</button>
 
             </form>
@@ -144,60 +143,80 @@ Admin
 
     <div class="row">
         <div class="col">
-            <h2 id='inventory'>
+            <h2 class="display-4" id='inventory'>
                 Inventory
             </h2>
             <p>
-                <a href='/admin#navbartop'>return to top</a>
+                <a href='/admin#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"> return to top</a>
             </p>
+            <br>
         </div>
     </div>
     
     <div class="row">        
-        
         <div class="col-lg-6 col-md-12 col-sm-12">
             <h5>
-                Loterias Template
+                Import Inventory
             </h5>
-            
-            <form action="/downloads" method="post">
-                <button name="file" value="loterias.csv" type="submit" class="btn btn-primary btn-sm">Download Current</button>
-                <small class="form-text text-muted">
-                    Download active template for reference or additions.
-                </small>
-            </form>
 
-            <br>
-
-            <form method="POST" action="/admin/setup-loterias" enctype="multipart/form-data">
+            <form method="POST" action="/admin/import-inventory" enctype="multipart/form-data">
+                
+                <div class="form-group">
+                    <!-- <label for="type"></label> -->
+                    <select class="form-control" name="type" id="type">
+                        <option title="Select Type" disabled selected value="">Select Type</option>
+                        <option title="items" value="items">Items</option>
+                        <option title="parts" value="parts">Parts</option>
+                    </select>
+                </div>    
                 
                 <div class="form-group">
                     <input class="form-control" type="file" name="inputfile" id="inputfile" accept=".csv">
                     <small class="form-text text-muted">
-                        Upload new loterias template. Do not modify without database edits; only add new items.
+                        Adds to current inventory counts using SKU from .csv
                     </small>
                 </div>
                 
-                
-                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Update loterias db table with this file?')">Upload New</button>
+                <button type="submit" class="btn btn-primary btn-sm">Import File ⚠</button>
+                <br>
                 
             </form>
+
             <br>
+
+
+
             
+
         </div>
 
         <div class="col-lg-3 col-md-6 col-sm-12">
             <h5>
                 Backup Inventory
             </h5>
+            <small class="form-text text-muted">
+                Export current inventory counts as .csv
+            </small>
+
+            <br>
 
             <form method="POST" action="/admin/backup-inventory-items">
-                <button type="submit" class="btn btn-block btn-primary btn-sm">Items</button>
-            </form>            
+                <p>Items</p>
+                <button type="submit" class="btn btn-primary btn-sm">Download Items</button>
+            </form>
+            <small class="form-text text-muted">
+                with full SKU
+            </small>
+
             <br>
+            
             <form method="POST" action="/admin/backup-inventory-parts">
-                <button type="submit" class="btn btn-block btn-primary btn-sm">Parts</button>
-            </form>            
+                <p>Parts</p>
+                <button type="submit" class="btn btn-primary btn-sm">Download Parts</button>
+            </form>
+            <small class="form-text text-muted">
+                partial SKU
+            </small>
             <br>
         </div>
         
@@ -245,15 +264,85 @@ Admin
         
     </div>
 
+
+
+
+
+
+
     <hr>
     <br>
 
     <div class="row">
         <div class="col">
-            <h2 id='sku'>SKUs</h2>        
+            <h2 class="display-4" id='templates'>
+                Templates
+            </h2>
             <p>
-                <a href='/admin#navbartop'>return to top</a>
+                <a href='/admin#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"> return to top</a>
             </p>
+            <br>
+        </div>
+    </div>
+    
+    <div class="row">        
+        
+        <div class="col-lg-6 col-md-12 col-sm-12">
+            <h5>
+                Loterias
+            </h5>
+
+            <br>
+
+            <form action="/admin/download-loterias" method="post">
+                <button type="submit" class="btn btn-primary btn-sm">Download Current</button>
+                <small class="form-text text-muted">
+                    Download active template for reference or additions.
+                </small>
+            </form>
+
+            <br>
+
+            <form method="POST" action="/admin/setup-loterias" enctype="multipart/form-data">
+                
+                <div class="form-group">
+                    <input class="form-control" type="file" name="inputfile" id="inputfile" accept=".csv">
+                    <small class="form-text text-muted">
+                        Upload new loterias template. Do not modify without database edits; only add new items.
+                    </small>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Update loterias db table with this file?')">Upload New</button>
+            </form>
+            <br>
+            
+        </div>
+
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <br>
+        </div>
+        
+        <!-- <div class="col-lg-3 col-md-6 col-sm-12">
+            <h5>
+                -
+            </h5>
+        </div> -->
+
+        <div class="col-lg-3 col-md-6 col-sm-12">            
+            <br>
+        </div>
+        
+    </div>
+
+    <hr>
+    <br>
+
+    <div class="row">
+        <div class="col">
+            <h2 class="display-4" id='sku'>SKUs</h2>
+            <p>
+                <a href='/admin#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"> return to top</a>
+            </p>
+            <br>
         </div>
     </div>
     
@@ -261,7 +350,7 @@ Admin
         <div class="col-lg-4 col-md-6 col-sm-12">
             <h5>Test SKU parser</h5>
             <form action="/admin/parse-sku" method="post">
-                <input class="form-control" type="number" value="000000000000" id="sku" name="sku" autocomplete="on">
+                <input class="form-control" type="number" value="270102030003" id="sku" name="sku" autocomplete="on">
                 <!-- <label for="sku">Parse number into SKU object</label> -->
                 <div class="form-group">
                     <small>returns parsed object from SKU string</small>

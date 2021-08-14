@@ -99,14 +99,14 @@ def gather_templates():
     return response
 
 def parse_sku(sku):
-    # turns SKU string into object with integers
+    # turns SKU into object with integers
 
-    # # Chop the first 3 digits
-    # if len(sku) == 15:
-    #     sku = sku[3:]
-    #     print(f"sku:{sku}")
+    # Add leading zero, if needed
+    if len(sku) == 11:
+        sku = sku.zfill(12)
 
     if len(sku) != 12:
+
         flash(f"Invalid SKU length. ({len(sku)}/12 characters)")
         return redirect("/admin")
 
@@ -121,7 +121,46 @@ def parse_sku(sku):
 
     return parsed
 
+
+def generate_item(templates, sku):
+    # Intakes a dictionary object sku, outputs word dictionary
+
+    # Loteria name > SKU
+    for loteria in templates['loterias']:
+        if loteria['sku'] == sku['item']:
+            sku['item'] = loteria['nombre'] 
+
+    # A color name > SKU
+    for color in templates['colors']:
+        if color['sku'] == sku['a']:
+            sku['a'] = color['name']
+
+    # B color name > SKU
+    for color in templates['colors']:
+        if color['sku'] == sku['b']:
+            sku['b'] = color['name']
+
+    # C color name > SKU
+    for color in templates['colors']:
+        if color['sku'] == sku['c']:
+            sku['c'] = color['name']
+
+    else:
+        sku['c'] = ''
+
+    # Unused placeholder
+    sku['d'] = ''
+
+    # Size name > SKU
+    for size in templates['sizes']:
+        if size['sku'] == sku['size']:
+            sku['size'] = size['shortname'] 
+
+    return sku
+
+
 ## SKUinator!
+# from names
 def generate_sku(templates, item):
 
     # Loteria name > SKU
@@ -1086,6 +1125,7 @@ def config(path):
             for i in range(len(colors)):
                 db.execute("INSERT INTO colors (sku, name, emoji) VALUES (:sku, :name, :emoji)", sku=(i+1), name=colors[i][0], emoji=colors[i][1])
 
+
             # Create table: sizes
             db.execute("CREATE TABLE IF NOT EXISTS sizes ( \
                 sku INTEGER PRIMARY KEY NOT NULL, \
@@ -1180,7 +1220,6 @@ def config(path):
                 current BOOL \
                 )")
 
-
             # If empty cycles table
             data = db.execute("SELECT * FROM cycles")
             if not data:
@@ -1196,7 +1235,6 @@ def config(path):
 
             flash("Tables setup.")
             return redirect("/admin")
-
 
 
         # Not a valid admin route
@@ -1296,6 +1334,8 @@ def config(path):
             return redirect('/admin')
 
 
+    # Imports
+
         # Import event projections
         if path == 'import-event':
 
@@ -1307,7 +1347,7 @@ def config(path):
             # check if the post request has the file part
             if 'inputfile' not in request.files:
                 flash('No file part')
-                return redirect(request.url)
+                return redirect("/admin")
 
             file = request.files['inputfile']
 
@@ -1377,6 +1417,81 @@ def config(path):
             #         #                 nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
 
 
+        if path == 'import-inventory':
+            type = request.form.get('type')
+
+            if type == 'items':
+
+                # https://flask.palletsprojects.com/en/2.0.x/patterns/fileuploads/
+
+                # check if the post request has the file part
+                if 'inputfile' not in request.files:
+                    flash('No file part')
+                    return redirect("/admin")
+
+                file = request.files['inputfile']
+
+                # If the user does not select a file, the browser submits an empty file without a filename.
+                if file.filename == '':
+                    flash('No selected file')
+                    return redirect("/admin")
+
+                if file and allowed_file(file.filename):
+                    filename_user = secure_filename(file.filename) # User supplied filenames kept
+                    filename = 'temp.csv'
+                    print(f"filename:{filename}")
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+                    with open('static/uploads/temp.csv', 'r') as csvfile:
+
+                        csv_reader = csv.reader(csvfile)
+
+                        db.execute("CREATE TABLE IF NOT EXISTS test ( \
+                            name VARCHAR (255), \
+                            sku VARCHAR (255), \
+                            size VARCHAR (255), \
+                            a VARCHAR (255), \
+                            b VARCHAR (255), \
+                            c VARCHAR (255), \
+                            qty INTEGER \
+                            )")
+
+                        print("    name    |    colors    |    sku    |    catgory    |    qty   ")
+        
+                        total = 0
+                        skipped = 0
+
+                        next(csv_reader)
+                        for row in csv_reader:
+                            total += 1
+
+                            if row[2]:
+                                sku = parse_sku(row[2])
+                                print(f"Found:{sku}")
+
+                            else:
+                                skipped += 1
+
+                            print(f"{row[0]} | {row[1]} | {row[2]} | {row[3]} | {row[4]}")
+
+                            db.execute("INSERT INTO test (name, sku, a, b, qty) VALUES (:name, :sku, :a, :b, :qty)", \
+                                            name=row[0], a=row[1], sku=row[2], b=row[3], qty=row[4])
+
+                    total 
+                    cycle_name = db.execute("SELECT name FROM cycles WHERE id=:event", event=event)
+
+                    flash(f"""Processed "{filename_user}" into database for event "{cycle_name[0]['name']}." {skipped}/{total} failed (no SKU).""")
+
+                return redirect('/admin')
+
+
+
+            if type == 'parts':
+                return 'parts'
+
+
+    # Backups
+
         if path == 'backup-projections':
 
             cycle = request.form.get("backup-projections")
@@ -1393,6 +1508,9 @@ def config(path):
                 cycle = db.execute("SELECT * FROM cycles WHERE id=:cycle", cycle=cycle)
                 projections = db.execute("SELECT * FROM projections WHERE cycle=:cycle", cycle=cycle[0]['id'])
 
+                # Headers
+                scribe.writerow(['name', 'size', 'sku', 'a_color', 'b_color', 'c_color', 'd_unused', 'qty', 'cycle'])
+
                 for row in projections:
 
                     sku = generate_sku(templates, row)
@@ -1401,11 +1519,10 @@ def config(path):
                     print("Scribe is writing a row...")
                     scribe.writerow([row['name'], row['size'], sku, row['a_color'], row['b_color'], row['c_color'], '', row['qty'], row['cycle']])
 
-            # filename = 'backup_projections_' + str(cycle[0]['id']) + '.csv'
-            # print(filename)
-            # return send_from_directory(app.config['BACKUPS'], filename=filename, as_attachment=True, mimetype='text/csv')
+            time = datetime.datetime.utcnow().isoformat()
+            attachname = 'backup_projections_' + cycle[0]['name'] + ' ' + time + '.csv'
 
-            return send_from_directory(app.config['BACKUPS'], filename='backup_projections.csv', as_attachment=True, mimetype='text/csv')
+            return send_from_directory(app.config['BACKUPS'], filename='backup_projections.csv', attachment_filename=attachname, as_attachment=True, mimetype='text/csv')
 
 
         if path == 'backup-inventory-parts':
@@ -1422,7 +1539,12 @@ def config(path):
 
                 # Pull all parts data
                 parts = db.execute("SELECT * FROM parts")
-    
+
+                # Write headers
+                # Skulet is a little sku missing the first two digits for the item identifier. 
+                    # It associates colors and sizes, but does not associate the part name by means of numbers
+                scribe.writerow(['skulet', 'name', 'size',  'color', 'qty'])
+
                 # Write parts into csv
                 for row in parts:
 
@@ -1445,7 +1567,10 @@ def config(path):
                     print("Scribe is writing a row...")
                     scribe.writerow([sku, row['name'], row['size'],  row['color'], row['qty']])
 
-            return send_from_directory(app.config['BACKUPS'], filename='parts_inventory.csv', as_attachment=True, mimetype='text/csv')
+            time = datetime.datetime.utcnow().isoformat()
+            attachname = 'parts_inventory' + time + '.csv'
+
+            return send_from_directory(app.config['BACKUPS'], filename='parts_inventory.csv', as_attachment=True, attachment_filename=attachname, mimetype='text/csv')
 
 
         if path == 'backup-inventory-items':
@@ -1463,6 +1588,9 @@ def config(path):
                 # Pull all items data
                 items = db.execute("SELECT * FROM items")
     
+                # Write headers
+                scribe.writerow(['sku', 'name', 'size', 'a_color', 'b_color', 'c_color', 'd_unused', 'qty'])
+
                 # Write items into csv
                 for row in items:
 
@@ -1471,12 +1599,23 @@ def config(path):
                     print("Scribe is writing a row...")
                     scribe.writerow([sku, row['name'], row['size'], row['a_color'], row['b_color'], row['c_color'], '', row['qty']])
 
-            # print(app.config['BACKUPS'])
+            time = datetime.datetime.utcnow().isoformat()
+            attachname = 'items_inventory' + time + '.csv'
 
-            return send_from_directory(app.config['BACKUPS'], filename='items_inventory.csv', as_attachment=True, mimetype='text/csv')
+            return send_from_directory(app.config['BACKUPS'], filename='items_inventory.csv', as_attachment=True, attachment_filename=attachname, mimetype='text/csv')
 
 
+        if path == 'download-loterias':
 
+            file = 'loterias.csv'
+            time = datetime.datetime.utcnow().isoformat()
+            attachname = 'loterias_' + time + '.csv'
+
+            print(f"/downloading: {file}")
+            return send_from_directory(app.config["UPLOAD_FOLDER"], file, attachment_filename=attachname, as_attachment=True)
+
+
+    # Misc
 
         if path == 'cycle':
 
@@ -1485,6 +1624,7 @@ def config(path):
             db.execute("UPDATE cycles SET current='TRUE' WHERE id=:id", id=cycle)
 
             return redirect('/production')
+
 
         if path == 'wipe':
 
@@ -1545,15 +1685,22 @@ def config(path):
             else:
                 return render_template("error.html", errcode="403", errmsg="Test cycle may not be deleted.")
 
+    # SKU
 
         if path == 'parse-sku':
+
             print("/test")
             sku = request.form.get("sku")
             print(f"sku:{sku}")
-
+            
+            # Convert string into dict object with integers
             sku = parse_sku(sku)
 
-            return sku
+            templates = gather_templates()
+            item = generate_item(templates, sku)
+
+            return item
+
 
         if path == 'make-sku':
              
@@ -1582,13 +1729,15 @@ def config(path):
             return redirect("/admin#sku")
 
 
-
-
-
         else:
             #TODO
+
             return "how did I get here?"
 
+
+# TODO universalize upload process to scale a DRY approach to file serving
+# Current file serving routes can validate and appropriate file name,
+# ... then request /downloads to engage in download process
 
 # @app.route('/downloads', methods=['POST'])
 # @login_required

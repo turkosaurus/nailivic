@@ -1,2 +1,69 @@
-La Bota,S,220102020001,🖤 black,❤️ red,❤️ red,,3,16
-La Bota,S,220103030001,🖤 black,💙 TQ,💙 TQ,,3,16
+name,size,sku,a_color,b_color,c_color,d_unused,qty,cycle
+La Calavera,S,520103030001,🖤 black,💙 TQ,💙 TQ,,5,15
+La Calavera,S,520105050001,🖤 black,💚 green,💚 green,,5,15
+La Estrella,S,350102000001,🖤 black,❤️ red,,,3,15
+La Estrella,S,350103000001,🖤 black,💙 TQ,,,3,15
+La Estrella,S,350203000001,❤️ red,💙 TQ,,,3,15
+El Pulpo,S,360102020001,🖤 black,❤️ red,❤️ red,,15,15
+El Pulpo,S,360103030001,🖤 black,💙 TQ,💙 TQ,,15,15
+El Pulpo,S,360203030001,❤️ red,💙 TQ,💙 TQ,,15,15
+El Pulpo,S,360302020001,💙 TQ,❤️ red,❤️ red,,15,15
+La Dama,M,030102000002,🖤 black,❤️ red,,,5,15
+La Dama,M,030103000002,🖤 black,💙 TQ,,,3,15
+La Dama,M,030203000002,❤️ red,💙 TQ,,,3,15
+El Musico,M,320102000002,🖤 black,❤️ red,,,2,15
+La Dama,S,030102000001,🖤 black,❤️ red,,,10,15
+La Dama,S,030103000001,🖤 black,💙 TQ,,,5,15
+La Dama,S,030203000001,❤️ red,💙 TQ,,,5,15
+El Musico,S,320102000001,🖤 black,❤️ red,,,4,15
+El Musico,S,320103000001,🖤 black,💙 TQ,,,4,15
+El Musico,S,320203000001,❤️ red,💙 TQ,,,4,15
+El Corazon,S,270103000001,🖤 black,💙 TQ,,,5,15
+El Corazon,S,270302000001,💙 TQ,❤️ red,,,12,15
+El Corazon,S,270203000001,❤️ red,💙 TQ,,,25,15
+La Sirena,S,060102020001,🖤 black,❤️ red,❤️ red,,5,15
+La Sirena,S,060102050001,🖤 black,❤️ red,💚 green,,15,15
+La Sirena,S,060103030001,🖤 black,💙 TQ,💙 TQ,,10,15
+La Sirena,S,060104050001,🖤 black,💛 yellow,💚 green,,10,15
+La Sirena,S,060204030001,❤️ red,💛 yellow,💙 TQ,,10,15
+La Calavera,S,520102020001,🖤 black,❤️ red,❤️ red,,5,15
+El Musico,M,320103000002,🖤 black,💙 TQ,,,2,15
+El Musico,M,320203000002,❤️ red,💙 TQ,,,2,15
+El Musico,M,320302000002,💙 TQ,❤️ red,,,2,15
+La Mano,M,210102000002,🖤 black,❤️ red,,,3,15
+La Mano,M,210103000002,🖤 black,💙 TQ,,,3,15
+La Mano,M,210203000002,❤️ red,💙 TQ,,,3,15
+El Corazon,M,270102000002,🖤 black,❤️ red,,,5,15
+El Corazon,M,270203000002,❤️ red,💙 TQ,,,5,15
+El Corazon,M,270103000002,🖤 black,💙 TQ,,,2,15
+El Corazon,M,270302000002,💙 TQ,❤️ red,,,2,15
+La Sirena,M,060102050002,🖤 black,❤️ red,💚 green,,7,15
+La Sirena,M,060102020002,🖤 black,❤️ red,❤️ red,,3,15
+La Sirena,M,060103030002,🖤 black,💙 TQ,💙 TQ,,5,15
+La Sirena,M,060104050002,🖤 black,💛 yellow,💚 green,,3,15
+La Sirena,M,060204030002,❤️ red,💛 yellow,💙 TQ,,3,15
+La Calavera,M,520102020002,🖤 black,❤️ red,❤️ red,,3,15
+La Calavera,M,520103030002,🖤 black,💙 TQ,💙 TQ,,3,15
+La Calavera,M,520105050002,🖤 black,💚 green,💚 green,,3,15
+El Pulpo,M,360102020002,🖤 black,❤️ red,❤️ red,,5,15
+El Pulpo,M,360103030002,🖤 black,💙 TQ,💙 TQ,,5,15
+El Pulpo,M,360203030002,❤️ red,💙 TQ,💙 TQ,,5,15
+El Pulpo,M,360302020002,💙 TQ,❤️ red,❤️ red,,5,15
+La Bota,M,220102020002,🖤 black,❤️ red,❤️ red,,3,15
+La Bota,M,220103030002,🖤 black,💙 TQ,💙 TQ,,3,15
+La Dama,L,030102000003,🖤 black,❤️ red,,,2,15
+La Dama,L,030103000003,🖤 black,💙 TQ,,,2,15
+El Corazon,L,270102000003,🖤 black,❤️ red,,,3,15
+El Corazon,L,270203000003,❤️ red,💙 TQ,,,3,15
+El Corazon,L,270302000003,💙 TQ,❤️ red,,,2,15
+El Corazon,L,270103000003,🖤 black,💙 TQ,,,2,15
+El Musico,L,320102000003,🖤 black,❤️ red,,,2,15
+El Musico,L,320103000003,🖤 black,💙 TQ,,,2,15
+La Sirena,L,060102050003,🖤 black,❤️ red,💚 green,,3,15
+La Sirena,L,060102020003,🖤 black,❤️ red,❤️ red,,1,15
+La Sirena,L,060103030003,🖤 black,💙 TQ,💙 TQ,,2,15
+El Pulpo,L,360102020003,🖤 black,❤️ red,❤️ red,,3,15
+El Pulpo,L,360203030003,❤️ red,💙 TQ,💙 TQ,,3,15
+El Pulpo,L,360103030003,🖤 black,💙 TQ,💙 TQ,,3,15
+El Pulpo,L,360302020003,💙 TQ,❤️ red,❤️ red,,3,15
+El Corazon,S,270102000001,🖤 black,❤️ red,,,21,15
