@@ -646,8 +646,9 @@ def items():
 
         items = db.execute("SELECT * FROM items ORDER BY qty DESC, size ASC, name DESC")
         newloterias = db.execute("SELECT * FROM loterias")
+        templates = gather_templates()
 
-        return render_template('items.html', items=items, loterias=newloterias, sizes=sizes, colors=colors)
+        return render_template('items.html', templates=templates, items=items, loterias=newloterias, sizes=sizes, colors=colors)
 
     # Upon POSTing form submission
     else:
@@ -837,9 +838,11 @@ def projections():
         newloterias = db.execute("SELECT * FROM loterias")
         print(newloterias)
 
+        templates = gather_templates()
+
         # Select projections from current cycle only
         projections = db.execute("SELECT * FROM projections WHERE cycle=:active ORDER BY size ASC, name DESC, qty DESC", active=active)
-        return render_template('projections.html', projections=projections, current=current, cycles=cycles, loterias=newloterias, sizes=sizes, colors=colors)
+        return render_template('projections.html', templates=templates, projections=projections, current=current, cycles=cycles, loterias=newloterias, sizes=sizes, colors=colors)
 
     # Upon POSTing form submission
     else:
@@ -992,7 +995,7 @@ def production():
             total_parts += qty
             queuebacks(name, size, qty)
 
-    flash(f"Projections (re)calculated! {total_items} items require {total_parts} parts and boxes.")
+    flash(f"Projections (re)calculated: {total_items} items require {total_parts} parts and boxes.")
     return redirect("/projections")
 
 
@@ -1443,6 +1446,7 @@ def config(path):
         # TODO this is copied over and not correct, just an outline
         if path == 'import-inventory':
             type = request.form.get('type')
+            event = request.form.get('event')
 
             if type == 'items':
 

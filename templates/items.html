@@ -7,177 +7,145 @@ Items
 <container class="text-monospace">
     <div class="row">
         <div class="col">
-            <h1>Items</h1>
+            <h1 class="display-2">Items</h1>
         </div>
-    </div>    
+    </div>
+
     <hr>
 
     <!-- Add Item to Projections -->
     <div class="row">
-        <div class="col-lg-6 col-md-12">
-            <div class="row">
-                <div class="col">
-                    <h2>Add Assembled Item</h2>
-                </div>
-            </div>
+        <div class="col">
+
             <form action="/items" method="post" autocomplete="on">
                 <div class="row">
+                    <div class="col">
+                        <br>
+                        <h2>Add Assembled Item</h2>
+                    </div>
+                </div>
 
+                <div class="row">
                     <!-- Item -->
-                    <div class="col-6">
+                    <div class="col-6 col-sm-12">
                         <div class="form-group">
                             <label for="item">Item</label>
-                            <select name="item" id="item">
-                                {% for loteria in loterias %}                                    
-                                    <option value="{{ loteria['nombre'] }}" title="{{ loteria['a'] }}, {{ loteria['b'] }}{% if not loteria['c'] %}{% else %}, {{ loteria['c']}}{% endif %}">{{ loteria['nombre'] }}</option>
-                                {% endfor %}
+                            <select class="form-control" name="item" id="item">
+                                <optgroup label="2 colors">
+                                    {% for loteria in templates.loterias %}
+                                        {% if not loteria.c %}
+                                            <option value="{{ loteria['nombre'] }}" title="{{ loteria['a'] }}, {{ loteria['b'] }}{% if not loteria['c'] %}{% else %}, {{ loteria['c']}}{% endif %}">{{ loteria['nombre'] }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </optgroup>
+
+                                <optgroup label="3 colors">
+                                    {% for loteria in templates.loterias %}
+                                        {% if loteria.c %}
+                                            <option value="{{ loteria['nombre'] }}" title="{{ loteria['a'] }}, {{ loteria['b'] }}{% if not loteria['c'] %}{% else %}, {{ loteria['c']}}{% endif %}">{{ loteria['nombre'] }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </optgroup>
                             </select>
                         </div>    
                     </div>
-
-                    <!-- Size -->
-                    <div class="col-6">
-                        <div class="form-group">
-                        <label for="size">Size</label>
-                        {% for size in sizes %}
-                            <input type="radio" id="{{ size }}" name="size" value="{{ size }}">
-                            <label for="{{ size }}">{{ size }}</label>
-                        {% endfor %}
-                        </div>
-                    </div>
-
                 </div>
 
                 <!-- Colors -->
                 <div class="row">
 
                     <!-- Color A -->
-                    <div class="col-md-4 col-sm-6">
-                        <h6>Color A</h6>
-                        <!-- <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="true" id="skipdeplete_a" name="skipdeplete_a">
-                            <label class="form-check-label" for="skipdeplete_a">
-                                skip deplete
-                            </label>
-                        </div>
-
-                        <br> -->
-
+                    <div class="col-md-3 col-sm-6">
                         <div class="form-group">
-                            {% for color in colors %}
-                                <div class="justify-content-center">
-                                    <input type="radio" id="{{ color }}a" name="Color A" value="{{ color }}">
-                                    <label for="{{ color }}a">{{ color }}</label>    
-                                </div>
+                            <h6>Color A</h6>
+                            {% for color in templates.colors %}
+                            <div class="custom-control custom-radio">
+                                <input class="form-check-input" type="radio" id="{{ color.name }}a" name="color_a" value="{{ color.sku }}">
+                                <label for="{{ color.name }}a">{{ color.emoji }} {{ color.name }}</label>
+                            </div>
                             {% endfor %}
                         </div>
-                        
-                    </div>  
+                    </div>
 
                     <!-- Color B -->
-                    <div class="col-md-4 col-sm-6">
-                        <h6>Color B</h6>
-                        <!-- <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="true" id="skipdeplete_b" name="skipdeplete_b">
-                            <label class="form-check-label" for="skipdeplete_b">
-                                skip deplete
-                            </label>
-                        </div>
-
-                        <br> -->
-
-
+                    <div class="col-md-3 col-sm-6">
                         <div class="form-group">
-                            {% for color in colors %}
-                                <div class="justify-content-center">
-                                    <input type="radio" id="{{ color }}b" name="Color B" value="{{ color }}">
-                                    <label for="{{ color }}b">{{ color }}</label>    
-                                </div>
+                            <h6>Color B</h6>
+                            {% for color in templates.colors %}
+                            <div class="custom-control custom-radio">
+                                <input class="form-check-input" type="radio" id="{{ color.name }}b" name="color_b" value="{{ color.sku }}">
+                                <label for="{{ color.name }}b">{{ color.emoji }} {{ color.name }}</label>
+                            </div>
                             {% endfor %}
                         </div>
                     </div>
 
                     <!-- Color C -->
-                    <div class="col-md-4 col-sm-6">
-                        <h6>Color C</h6>
-                        <!-- <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="true" id="skipdeplete_c" name="skipdeplete_c">
-                            <label class="form-check-label" for="skipdeplete_c">
-                                skip deplete
-                            </label>
-                        </div>
-
-                        <br> -->
-
+                    <div class="col-md-3 col-sm-6">
                         <div class="form-group">
-                            {% for color in colors %}
-                                <div class="justify-content-center">
-                                    <input type="radio" id="{{ color }}c" name="Color C" value="{{ color }}">
-                                    <label for="{{ color }}c">{{ color }}</label>    
-                                </div>
-                            {% endfor %}
-                            <div class="justify-content-center">
-                                <input type="radio" id="emptyc" name="Color C" value="None">
-                                <label for="emptyc">None</label>
+                            <h6>Color C</h6>
+                            {% for color in templates.colors %}
+                            <div class="custom-control custom-radio">
+                                <input class="form-check-input" type="radio" id="{{ color.name }}c" name="color_c" value="{{ color.sku }}">
+                                <label for="{{ color.name }}c">{{ color.emoji }} {{ color.name }}</label>
                             </div>
+                            {% endfor %}
                         </div>
                     </div>
-                </div>
 
-                <!-- Final Buttons -->
-
-                
-                <!-- Quantity -->
-                <div class="row">
-                    <div class="col">
+                    <div class="col-md-3 col-sm-6">
+                        <!-- Size -->
                         <div class="form-group">
-                            <label for="qty">Quantity</label>
-                            <input type="number" value="1" min="-999" max="999" step="1" name="qty" id="qty">
+                            <h6>Size</h6>
+                            <!-- <label for="size">Size</label> -->
+                            {% for size in templates.sizes %}
+                            <div class="custom-control custom-radio">
+                                <input class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.sku }}">
+                                <label for="{{ size.longname }}">{{ size.longname }}</label>
+                            </div>
+                            {% endfor %}
                         </div>
+                            <!-- Quantity -->
+                        <div class="form-group">
+                            <!-- <h6>Quantity</h6> -->
+                            <label for="qty">Quantity</label>
+                            <input class="form-control" type="number" value="1" min="-999" max="999" step="1" name="qty" id="qty">
+                        </div>
+                        <br>
+                        <button type="reset" class="btn btn-sm btn-primary btn-block">Reset</button>
+                        <br>
                     </div>
                 </div>
-
-                <!-- Skip Depletion -->
-                <div class="row">
-                    <div class="col">
+                
+                <!-- Submit -->
+                <div class="row">                    
+                    <div class="col-md-6 col-sm-0">
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        <!-- Skip Depletion -->
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="true" id="deplete" name="deplete" checked>                        
                             <label class="form-check-label" for="deplete">
                                 Deplete parts inventory
                             </label>
                         </div>
+                        <br>
+                        <button type="submit" class="btn btn-lg btn-primary btn-block">Submit</button>                            
+                        <br>
                     </div>
-                </div>
-
-                <br>
-
-                <div class="row">
-                    
-                    <!-- Submit -->
-                    <div class="col-8">
-                        <button type="submit" class="btn btn-primary btn-block">Make Item</button>                            
-                        <small id="" class="form-text text-muted">
-                            Adds Assembled Item to Inventory
-                        </small>
-                    </div>
-
-                    <!-- Reset -->
-                    <div class="col-4">
-                        <button type="reset" class="btn btn-primary">Reset</button>                        
-                    </div>
-
                 </div>                            
-
-                
             </form>
         </div>
-        
-        <hr>
-        
+    </div>
+
+    <hr>
+    <br>
+
+    <div class="row">
         <!-- Items on Hand -->
-        <div class="col-md-6 col-sm-12">
+        <div class="col">
             <h2>Items Inventory</h2>
-            <table class="table table-dark table-hover">
+            <table class="table table-sm table-dark table-hover">
                 <thead>
                     <tr>
                         <td>name</td>

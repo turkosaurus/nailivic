@@ -7,171 +7,209 @@ Projections
 <container class="text-monospace">
     <div class="row">
         <div class="col">
-            <h1>Projections</h1>
-            <h2>{{ current[0].name }} ({{ current[0].id }})</h2>
+            <h1 class="display-2">Projections</h1>
         </div>
     </div>    
+
+    <div class="row justify-content-start">
+        <div class="col-1">
+            <img src='static/calendar-day-solid.svg' width="35em">
+        </div>
+        <div class="col-11">
+            <h1 class="disaplay-3">
+                {{ current[0].name }}
+            </h1>
+        </div>
+    </div>
+
     <hr>
+    <br>
+
     <div class="row">
         <div class="col-md-6 col-sm-12">
             <!-- Cycle Choice -->
             <form action="/admin/cycle" method="post">
                 <div class="form-group">
-                    <h2>Change Event</h2>
-                    <label for="cycle">Event</label>
-                    <select name="cycle" id="cycle">
+                    <h2>Change Active Event</h2>
+                    <!-- <label for="cycle">Event</label> -->
+                    <select class="form-control" name="cycle" id="cycle">
                         <option value="{{ current[0].id }}" title=" Created on: {{ current[0].created_on }}">{{ current[0].name }}</option>
                         {% for cycle in cycles %}
                             <option value="{{ cycle.id }}" title="Created on: {{ cycle.created_on }}" Created on: {{ current[0].created_on }}">{{ cycle.name }}</option>
                         {% endfor %}
                     </select>
-                    <button type="submit" class="btn btn-primary btn-sm">Update Event</button>
                     <small id="cycle" class="form-text text-muted">
-                        Changes cycle and rebuilds laser queue
-                    </small>    
+                        Changes active event and rebuilds laser queue. <small>(<a href="/admin#events">settings</a>)</small>
+                    </small>
+                    <small id="cycle" class="form-text text-muted">
+                        Processing may take some time.
+                    </small>
                 </div>
+                <br>
+                <button type="submit" class="btn btn-primary btn-block btn-lg" onclick="return confirm('Recompute production?')">Load Event Production</button>
             </form>
 
             <br>
 
-            <div class="form-group">
+            <!-- <div class="form-group">
                 <h2>Upload Projections</h2>
                 <form method="POST" action="/file" enctype="multipart/form-data">
-                    <input type="file" name="inputfile" id="inputfile">
+                    <div class="form-group">
+                        <input class="form-control" type="file" name="inputfile" id="inputfile">
+                        <small id="inputfile" class="form-text text-muted">
+                            Uploads projections template
+                        </small> 
+                    </div>
                     <button type="submit" class="btn btn-primary btn-sm">Upload File</button>
-                    <small id="inputfile" class="form-text text-muted">
-                        Uploads projections template
-                    </small>    
                 </form>
-            </div>
+            </div> -->
 
 
             <br>
         </div>
         <div class="col-md-6 col-sm-12">
-            <h2>The Magic Black Box</h2>
-            <p>After items are added to the event's target production, the laser queue is built with the following steps:</p>
+            <h2>How It Works</h2>
+            <p>Build the parts laser queue from projections:</p>
             <ol>
                 <li>Total a given event's target production</li>
-                <li>Subtract items in inventory</li>
+                <li>Subtract matching items already in inventory</li>
                 <li>Determine parts needed for remaining total</li>
-                <li>Subtract parts in inventory</li>
-                <li>Storing remaining totals into laser queue</li>
+                <li>Subtract parts already in inventory</li>
+                <li>Store remaining totals into laser queue</li>
                 <li>Also add corresponding backs and boxes</li>
             </ol>
+            <p>Producing parts and making items and boxes updates the laser production queue in real time.</p>
         </div>
     </div>
+
     <hr>
+
     <!-- Add Item to Projections -->
     <div class="row">
-        <div class="col-lg-6 col-md-12">
-            <div class="row">
-                <div class="col">
-                    <h4>Add Item to {{ current[0].name }}</h4>
-                </div>
-            </div>
+        <div class="col">
+            
             <form action="/projections" method="post">
                 <div class="row">
+                    <div class="col">
+                        <br>
+                        <h2>Add Item to {{ current[0].name }} Projections</h2>
+                    </div>
+                </div>
 
+                <div class="row">
                     <!-- Item -->
-                    <div class="col-6">
+                    <div class="col-md-6 col-sm-12">
                         <div class="form-group">
                             <label for="item">Item</label>
-                            <select name="item" id="item">
-                                {% for loteria in loterias %}                                    
-                                    <option value="{{ loteria['nombre'] }}" title="{{ loteria['a'] }}, {{ loteria['b'] }}{% if not loteria['c'] %}{% else %}, {{ loteria['c']}}{% endif %}">{{ loteria['nombre'] }}</option>
-                                {% endfor %}
+                            <select class="form-control" name="item" id="item">
+                                <optgroup label="2 colors">
+                                    {% for loteria in templates.loterias %}
+                                        {% if not loteria.c %}
+                                            <option value="{{ loteria['nombre'] }}" title="{{ loteria['a'] }}, {{ loteria['b'] }}{% if not loteria['c'] %}{% else %}, {{ loteria['c']}}{% endif %}">{{ loteria['nombre'] }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </optgroup>
+
+                                <optgroup label="3 colors">
+                                    {% for loteria in templates.loterias %}
+                                        {% if loteria.c %}
+                                            <option value="{{ loteria['nombre'] }}" title="{{ loteria['a'] }}, {{ loteria['b'] }}{% if not loteria['c'] %}{% else %}, {{ loteria['c']}}{% endif %}">{{ loteria['nombre'] }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </optgroup>
                             </select>
                         </div>    
                     </div>
-
-                    <!-- Size -->
-                    <div class="col-6">
-                        <div class="form-group">
-                        <label for="size">Size</label>
-                        {% for size in sizes %}
-                            <input type="radio" id="{{ size }}" name="size" value="{{ size }}">
-                            <label for="{{ size }}">{{ size }}</label>
-                        {% endfor %}
-                        </div>
-                    </div>
-
                 </div>
 
                 <!-- Colors -->
                 <div class="row">
 
                     <!-- Color A -->
-                    <div class="col-md-4 col-sm-6">
-                        <h6>Color A</h6>
+                    <div class="col-md-3 col-sm-6">
                         <div class="form-group">
-                            {% for color in colors %}
-                                <div class=" justify-content-center">
-                                    <input type="radio" id="{{ color }}a" name="Color A" value="{{ color }}">
-                                    <label for="{{ color }}a">{{ color }}</label>    
-                                </div>
+                            <h6>Color A</h6>
+                            {% for color in templates.colors %}
+                            <div class="custom-control custom-radio">
+                                <input class="form-check-input" type="radio" id="{{ color.name }}a" name="color_a" value="{{ color.sku }}">
+                                <label for="{{ color.name }}a">{{ color.emoji }} {{ color.name }}</label>
+                            </div>
                             {% endfor %}
                         </div>
                     </div>
 
                     <!-- Color B -->
-                    <div class="col-md-4 col-sm-6">
-                        <h6>Color B</h6>
+                    <div class="col-md-3 col-sm-6">
                         <div class="form-group">
-                            {% for color in colors %}
-                                <div class=" justify-content-center">
-                                    <input type="radio" id="{{ color }}b" name="Color B" value="{{ color }}">
-                                    <label for="{{ color }}b">{{ color }}</label>    
-                                </div>
+                            <h6>Color B</h6>
+                            {% for color in templates.colors %}
+                            <div class="custom-control custom-radio">
+                                <input class="form-check-input" type="radio" id="{{ color.name }}b" name="color_b" value="{{ color.sku }}">
+                                <label for="{{ color.name }}b">{{ color.emoji }} {{ color.name }}</label>
+                            </div>
                             {% endfor %}
                         </div>
                     </div>
 
                     <!-- Color C -->
-                    <div class="col-md-4 col-sm-6">
-                        <h6>Color C</h6>
+                    <div class="col-md-3 col-sm-6">
                         <div class="form-group">
-                            {% for color in colors %}
-                                <div class=" justify-content-center">
-                                    <input type="radio" id="{{ color }}c" name="Color C" value="{{ color }}">
-                                    <label for="{{ color }}c">{{ color }}</label>    
-                                </div>
+                            <h6>Color C</h6>
+                            {% for color in templates.colors %}
+                            <div class="custom-control custom-radio">
+                                <input class="form-check-input" type="radio" id="{{ color.name }}c" name="color_c" value="{{ color.sku }}">
+                                <label for="{{ color.name }}c">{{ color.emoji }} {{ color.name }}</label>
+                            </div>
                             {% endfor %}
                         </div>
                     </div>
+
+                    <div class="col-md-3 col-sm-6">
+                        <!-- Size -->
+                        <div class="form-group">
+                            <h6>Size</h6>
+                            <!-- <label for="size">Size</label> -->
+                            {% for size in templates.sizes %}
+                            <div class="custom-control custom-radio">
+                                <input class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.sku }}">
+                                <label for="{{ size.longname }}">{{ size.longname }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                            <!-- Quantity -->
+                        <div class="form-group">
+                            <!-- <h6>Quantity</h6> -->
+                            <label for="qty">Quantity</label>
+                            <input class="form-control" type="number" value="1" min="-999" max="999" step="1" name="qty" id="qty">
+                        </div>
+                        
+                        <button type="reset" class="btn btn-sm btn-primary btn-block">Reset</button>
+                    </div>
+                    <br>
                 </div>
 
-                <!-- Final Buttons -->
-                <div class="row">
-
-                    <!-- Quantity -->
-                    <div clas="col">
-                        <div class="form-group">
-                            <label for="qty">Quantity</label>
-                            <input type="number" value="1" min="-999" max="999" step="1" name="qty" id="qty">
-                        </div>
+                <!-- Submit -->
+                <div class="row">                    
+                    <div class="col-md-6 col-sm-0">
                     </div>
-
-                    <!-- Reset -->
-                    <div class="col">
-                        <button type="reset" class="btn btn-primary">Reset</button>                        
+                    <div class="col-md-6 col-sm-12">
+                        <br>
+                        <button type="submit" class="btn btn-lg btn-primary btn-block">Submit</button>                            
+                        <br>
                     </div>
-
-                    <!-- Submit -->
-                    <div class="col">
-                        <button type="submit" class="btn btn-primary">Submit</button>                            
-                    </div>
-
                 </div>                            
-
             </form>
         </div>
-        <hr>
+    </div>
+    
+    <hr>
 
+    <div class="row">
         <!-- View Current Projections -->
-        <div class="col-md-6 col-sm-12">
+        <div class="col">
+            <br>
             <h4>{{ current[0].name }} Target Production</h4>
-            <table class="table table-dark table-hover">
+            <table class="table table-sm table-dark table-hover">
                 <thead>
                     <tr>
                         <td>nombre</td>
