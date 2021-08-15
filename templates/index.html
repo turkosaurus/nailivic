@@ -7,374 +7,121 @@ Dashboard
 
 
 <container>
+
     <div class="row justify-content-center">
-        <div class="col-md-5 col-sm-12">
-            <div class="row justify-content-center">
-                <img src="/static/bsl.png" class="img-fluid" alt="big scary laser">
-            </div>
-            <div class="row justify-content-center">
-                <h2>Hi, {{ user[0]['username'] }}</h2>
-            </div>
-            <div class="row justify-content-center">
-                <h1 class=display-1>{{ grand_total }}</h1>
-            </div>
-            <div class="row justify-content-center">
-                <small>items in the queue</small>
-            </div>
+        <img src="/static/bsl.png" class="img-fluid" alt="big scary laser">
+        <br>
+    </div>
+    <div class="row justify-content-center">
+        <h1>Hi, {{ user[0]['username'] }}</h1>
+        <br>
+    </div>
+
+    <br>
+    <hr>
+    <br>
+
+
+    <div class="row">
+        <div class="col">
+            <h1 class="display-4">Laser Queue</h1>
         </div>
-        <div class="col-md-1">
-            <br>
+        <br>
+    </div>
+        
+    <div class="row">
+        <div class="col">
+            <h2>{{ cycle.0.name }}</h2>                
         </div>
-        <div class="col-md-6 col-sm-12">
-            <div class="row justify-content-center">
-                <h4>{{ cycle.0.name }}</h4>
-            </div>
-            <div class="row justify-content-center">
-                <h2>Laser Queue Totals</h2>
-            </div>
+        <br>
+    </div>
+    
+
+    <div class="row justify-content-center">
+        <div class="col">
             <table class="table-responsive-sm table-bordered table-hover table-dark text-right">
-                <caption>cycle #{{ cycle.0.id }} | rendered at {{ time }}</caption>
+                <caption>⚠<small> TODO (make iterative) | cycle #{{ cycle.0.id }} | rendered at {{ time }}</small></caption>
                 <thead>
                     <tr>
                         <small>
-                            <th scope="col" style="width: 10vw"></th>
-                            {% for color in colors %}
-                                <th scope="col" style="width: 10vw">{{ color[0] }}{{ color[1] }}</th>
+                            <th scope="col" style="width: 10vw">ttl:{{ grand_total }}</th>
+                            {% for color in templates.colors %}
+                                <th scope="col" style="width: 10vw"><a href="/parts/{{ color.name }}">{{ color.emoji }}</a></th>
                             {% endfor %}
-                            <th scope="col" style="width: 10vw">🍑</th>
-                            <th scope="col" style="width: 10vw">📦</th>
+                            <th scope="col" style="width: 10vw"><a href="/parts/backs">🍑</a></th>
+                            <th scope="col" style="width: 10vw"><a href="/parts/boxes">📦</a></th>
                         </small>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <th scope="row">{{ sizes.0 }}</th>
-                        <td>{{ totals.0.0 }}</td>
-                        <td>{{ totals.0.1 }}</td>
-                        <td>{{ totals.0.2 }}</td>
-                        <td>{{ totals.0.3 }}</td>
-                        <td>{{ totals.0.4 }}</td>
-                        <td>{{ totals.0.5 }}</td>
-                        <td>{{ totals.0.6 }}</td>
+                        <th scope="row">{{ templates.sizes.0.longname }}</th>
+                        {% for total in totals.0 %}
+                            {% if total != 0 %}
+                                <td>{{ total }}</td>
+                            {% else %}
+                                <td></td>
+                            {% endif %}
+                        {% endfor %}
                         <td>{{ box_prod_total }}</td>
                     </tr>
                     <tr>
-                        <th scope="row">{{ sizes.1 }}</th>
-                        <td>{{ totals.1.0 }}</td>
-                        <td>{{ totals.1.1 }}</td>
-                        <td>{{ totals.1.2 }}</td>
-                        <td>{{ totals.1.3 }}</td>
-                        <td>{{ totals.1.4 }}</td>
-                        <td>{{ totals.1.5 }}</td>
-                        <td>{{ totals.1.6 }}</td>
+                        <th scope="row">{{ templates.sizes.1.longname }}</th>
+                        {% for total in totals.1 %}
+                            {% if total != 0 %}
+                                <td>{{ total }}</td>
+                            {% else %}
+                                <td></td>
+                            {% endif %}
+                        {% endfor %}
+                        <!-- <td></td> -->
                     </tr>
                     <tr>
-                        <th scope="row">{{ sizes.2 }}</th>
-                        <td>{{ totals.2.0 }}</td>
-                        <td>{{ totals.2.1 }}</td>
-                        <td>{{ totals.2.2 }}</td>
-                        <td>{{ totals.2.3 }}</td>
-                        <td>{{ totals.2.4 }}</td>
-                        <td>{{ totals.2.5 }}</td>
-                        <td>{{ totals.2.6 }}</td>
+                        <th scope="row">{{ templates.sizes.2.longname }}</th>
+                        {% for total in totals.2 %}
+                            {% if total != 0 %}
+                                <td>{{ total }}</td>
+                            {% else %}
+                                <td></td>
+                            {% endif %}
+                        {% endfor %}
+                        <!-- <td></td> -->
                     </tr>
                 </tbody>
             </table>
-        </div>
-    </div>
-    <hr>
-
-
-
-
-
-    <!-- Headings -->
-    <div class="row justify-content-center">
-        <h2></h2>
-    </div>
-
-    <!-- Forms -->
-    <div class="row">
-        <div class="col-md col-sm-12">
-            <!-- Make Part -->
-            <form action="/" method="post">
-                <div class="row">
-                    <div class="col">
-                        <div class="form-group">
-                            <h3>Make Part</h3>
-                            <label for="part">Part</label>
-                            <select name="part" id="part">
-                                {% for loteria in loterias %}
-                                    <option value="{{ loteria.a }}">{{ loteria.a }}</option>
-                                    <option value="{{ loteria.b }}">{{ loteria.b }}</option>
-                                    {% if loteria.c != '' %}
-                                        <option value="{{ loteria.c }}">{{ loteria.c }}</option>
-                                    {% endif %}
-                                    <option value="{{ loteria.backs }}">{{ loteria.backs }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <!-- Color -->
-                <div class="row">
-                    <div class="col-7">
-                        <div class="form-group">
-                            <!-- <h4>Color</h4> -->
-                            <label for="color">Color</label>
-                            {% for color in colors %}
-                                <div class="custom-control custom-radio">
-                                    <input type="radio" id="{{ color }}" name="color" value="{{ color }}">
-                                    <label for="{{ color }}">{{ color }}</label>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <div class="col-5">
-                        <div class="row justify-content-start">
-                            <!-- Size -->
-                            <div class="form-group">
-                                <!-- <h4>Size</h4> -->
-                                <label for="size">Size</label>
-                                {% for size in sizes %}
-                                <div class="custom-control custom-radio">
-                                    <input type="radio" id="{{ size }}" name="size" value="{{ size }}">
-                                    <label for="{{ size }}">{{ size }}</label>        
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <div class="row justify-content-end">
-                            <!-- Quantity -->
-                            <div class="form-group">
-                                <!-- <h4>Quantity</h4> -->
-                                <label for="qty">#</label>
-                                <input type="number" value="1" min="-999" max="999" step="1" name="qty" id="qty">
-                                <!-- Submit -->
-                                <button type="reset" class="btn btn-primary">Reset</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <div class="row">
-                            <button type="submit" class="btn btn-primary btn-block">Make Part</button>
-                            <small id="" class="form-text text-muted">
-                                Moves Part from Laser Queue to Parts Inventory
-                            </small>    
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <br>
-                </div>
-            </form>
-        </div>
-    
-        <div class="col-md-1 col-sm-0">
+            <br> 
         </div>
         <br>
-
-        <!-- Make Box -->
-        <div class="col-md col-sm-12">
-            <form action="/box" method="post">
-                <div class="row align-items-end">
-                    <div class="col">
-                        <div class="row">
-                            <div class="form-group">
-                                <h3>Make Box</h3>
-                                <label for="box">Box</label>
-                                <select name="box" id="box">
-                                    {% for loteria in loterias %}
-                                        <option value="{{ loteria.nombre }}">{{ loteria.nombre }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Quantity -->
-                    <div class="col">
-                        <div class="row justify-content-end">
-                            <div class="form-group">
-                                <!-- <h4>Quantity</h4> -->
-                                <label for="boxqty">#</label>
-                                <input type="number" value="1" min="-999" max="999" step="1" name="boxqty" id="boxqty">
-                                <!-- Submit -->
-                                <input type="hidden" value="make" name="action" id="action">
-                                <button type="reset" class="btn btn-primary">Reset</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <row class="row">
-                            <button type="submit" class="btn btn-primary btn-block">Make Box</button>
-                            <small id="" class="form-text text-muted">
-                                Moves box(es) from laser queue to Made Box Inventory
-                            </small>
-                        </row>
-                    </div>
-                </div>
-            </form>
-
-            <br>
-            <br>
-
-            <!-- Use Box -->
-            <form action="/box" method="post">
-                <div class="row align-items-end">
-                    <div class="col">
-                        <div class="row">
-                            <div class="form-group">
-                                <h3>Use Box</h3>
-                                <label for="box">Box</label>
-                                <select name="box" id="box">
-                                    {% for loteria in loterias %}
-                                        <option value="{{ loteria.nombre }}">{{ loteria.nombre }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-        
-                    <!-- Quantity -->
-                    <div class="col">
-                        <div class="row justify-content-end">
-                            <div class="form-group">
-                                <label for="boxqty">#</label>
-                                <input type="number" value="1" min="-999" max="999" step="1" name="boxqty" id="boxqty">
-                                <!-- Submit -->
-                                <input type="hidden" value="use" name="action" id="action">
-                                <button type="reset" class="btn btn-primary">Reset</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
-                        <div class="row">
-                            <button type="submit" class="btn btn-primary btn-block">Use Box</button>
-                            <small id="" class="form-text text-muted">
-                                Moves box(es) from Made Box inventory to Used Box Inventory
-                            </small>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
     </div>
-
+    <br>
     <hr>
+    <br>
 
-    <!-- Queue -->
+    
+    <!-- Subnavigation -->
     <div class="row">
+        <div class="col">
+            <ul class="list-inline">
+                <!-- <li class="list-inline-item">
+                    <a class="dropdown-item" href="/parts/black">Black</a>
+                </li> -->
 
-        <!-- Parts -->
-        <div class="col-md-6 col-sm-12">
-            <h3>Parts Laser Queue</h3>
-            <table class="table table-dark table-hover">
-                {% for part in production %}
-                {% if part.color is not none %}
-                <tr>
-                    <td>{{ part.name }}</td>
-                    <td>{{ part.size }}</td>
-                    <td>{{ part.color }}</td>
-                    <td>{{ part.qty }}</td>                
-                <tr>
-                {% endif %}
+                {% for color in templates.colors %}
+                    <li class="list-inline-item">
+                        <a style="text-transform: capitalize" class="" href="/parts/{{ color.name }}">{{ color.emoji }} {{ color.name }}</a>
+                    </li>
                 {% endfor %}
-                {% for part in production %}
-                {% if part.color is none %}
-                <tr>
-                    <td>{{ part.name }}</td>
-                    <td>{{ part.size }}</td>
-                    <td>🍑</td>
-                    <td>{{ part.qty }}</td>                
-                <tr>
-                {% endif %}
-                {% endfor %}
-            </table>
-        </div>
-
-        <!-- Boxes -->
-        <div class="col-md-6 col-sm-12">
-            <h3>Box Laser Queue</h3>
-            <table class="table table-dark table-hover">
-                {% for box in boxprod %}
-                    {% if box.qty is not none %}
-                    <tr>
-                        <td>{{ box.name }}</td>
-                        <td>{{ box.qty }}</td>
-                    </tr>
-                    {% endif %}
-                {% endfor %}
-            </table>
+                <li>
+                    
+                </li>
+                <li class="list-inline-item">
+                    <a class="" href="/parts/boxes">📦 Boxes</a>
+                </li>
+                <li class="list-inline-item">
+                    <a class="" href="/parts/backs">🍑 Backs</a>
+                </li>
+            </ul>
         </div>
     </div>
-
-    <hr>
-
-    <!-- Parts on Hand -->
-    <div class="row">
-        <div class="col-md-6 col-sm-12">
-            <h3>Parts Inventory</h3>
-            <table class="table table-dark table-hover">
-                {% for part in parts %}
-                    <tr>
-                        <td>{{ part.name }}</td>
-                        <td>{{ part.size }}</td>
-                        {% if part.color is not none %}
-                            <td>{{ part.color }}</td>
-                        {% else %}
-                            <td>🍑</td>
-                        {% endif %}
-                        <td>{{ part.qty }}</td>
-                    </tr>
-                {% endfor %}
-            </table>
-        </div>
-
-        <!-- Boxes on Hand -->
-        <div class="col-md-6 col-sm-12">
-            <h3>Made Box Inventory</h3>
-            <table class="table table-dark table-hover">
-                {% for box in boxes %}
-                    {% if box.qty is not none %}
-                        <tr>
-                            <td>{{ box.name }}</td>
-                            <td>{{ box.qty }}</td>
-                        </tr>
-                    {% endif %}                            
-                {% endfor %}
-            </table>
-        </div>
-    </div>
-
-    <hr>
-
-    <div class="row">
-        <!--  -->
-        <div class="col-md-6 col-sm-12">
-        </div>
-
-        <!-- Used Boxes on Hand -->
-        <div class="col-md-6 col-sm-12">
-            <h3>Used Box Inventory</h3>
-            <table class="table table-dark table-hover">
-                {% for box in boxused %}
-                    {% if box.qty is not none %}
-                        <tr>
-                            <td>{{ box.name }}</td>
-                            <td>{{ box.qty }}</td>
-                        </tr>
-                    {% endif %}                            
-                {% endfor %}
-            </table>
-        </div>
-    </div>
-
 </container>
 {% endblock %}

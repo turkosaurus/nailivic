@@ -480,21 +480,12 @@ def dashboard():
 
         print(f"totals:{totals}")
 
-        # Box Production Total
-        box_prod_total = db.execute("SELECT SUM(qty) FROM boxprod")
-        box_prod_total = box_prod_total[0]['sum']
-        grand_total += box_prod_total
-
-        # Box Inventory & Production
-        boxes = db.execute("SELECT * FROM boxes")
-        boxprod = db.execute("SELECT * FROM boxprod")
-        boxused = db.execute("SELECT * FROM boxused")
-
         time = datetime.datetime.utcnow().isoformat()
         loterias = templates['loterias']
+        templates = gather_templates()
 
-        return render_template('index.html', production=production, boxes=boxes, boxprod=boxprod, box_prod_total=box_prod_total, boxused=boxused, loterias=loterias, sizes=sizes, \
-            colors=colors, user=user, items=items, parts=parts, totals=totals, cycle=cycle, time=time, grand_total=grand_total)
+        return render_template('index.html', templates=templates, production=production, \
+            user=user, items=items, parts=parts, totals=totals, cycle=cycle, time=time, grand_total=grand_total)
 
     # Upon POSTing form submission
     else:
@@ -613,30 +604,58 @@ def parts(part):
 
     if request.method == 'GET':
 
-        if part in ['black', 'red', 'TQ', 'yellow', 'green', 'purple']:
+        templates = gather_templates()
 
-            loterias = db.execute("SELECT * FROM loterias")
-            colors = db.execute("SELECT * FROM colors")
-            sizes = db.execute("SELECT * FROM sizes")
+        # Determine if color
+        is_color = False
+        for color in templates['colors']:
+            if color['name'] == part:
+                cur_color = color
+                is_color = True
 
+        if is_color == True:
 
             #TODO v1.0 update, eliminate like
+            part_like = cur_color['name']
             part_like = '%' + part
             # part_like = part
             productions = db.execute("SELECT * FROM production WHERE color LIKE :name \
                 ORDER BY qty DESC", name=part_like)
 
-            cur_color = db.execute("SELECT * FROM colors WHERE name LIKE :name", name=part_like)            
+            print(cur_color)
+    
+            return render_template('parts.html', cur_color=cur_color, tempslates=templates, part=part, productions=productions)
 
+        if part == 'backs':
+            cur_color = {
+                'name': 'backs'
+            }
 
-            # for row in production:
-            #     if 
-            #     size = 0
+            # TODO and name contains
+            productions = db.execute("SELECT * FROM production WHERE color=NULL")
 
-            return render_template('parts.html', cur_color=cur_color[0], part=part, loterias=loterias, colors=colors, sizes=sizes, productions=productions)
+            return render_template('parts.html', cur_color=cur_color, templates=templates, part=part, productions=productions)
+
+        if part == 'boxes':
+
+            # Box Production Total
+            box_prod_total = db.execute("SELECT SUM(qty) FROM boxprod")
+            box_prod_total = box_prod_total[0]['sum']
+
+            # Box Inventory & Production
+            boxes = db.execute("SELECT * FROM boxes")
+            boxprod = db.execute("SELECT * FROM boxprod")
+            boxused = db.execute("SELECT * FROM boxused")
+
+            cur_color = {
+                'name': 'boxes'
+            }
+
+            return render_template('boxes.html', cur_color=cur_color, templates=templates, boxes=boxes, boxprod=boxprod, boxused=boxused, box_prod_total=box_prod_total)
 
         else:
-            return "boxes and backs coming soon"
+            flash("Invalid part descriptor")
+            return redirect("/")
 
 
 @app.route('/items', methods=['GET', 'POST'])
@@ -1041,7 +1060,7 @@ def box():
             else:
                 db.execute("DELETE FROM boxprod WHERE name=:name", name=name)
 
-    flash("Box made.")
+        flash("Box made.")
 
     # Use a box
     if action == 'use':
@@ -1071,15 +1090,14 @@ def box():
         else:
             db.execute("INSERT INTO boxused (name, qty) VALUES (:name, :qty)", name=name, qty=qty)
     
-    flash("Box used.")
-    return redirect('/')
+        flash("Box used.")
+    return redirect('/parts/boxes')
 
 
 @app.route('/shipping')
 @login_required
 def shipping():
     return render_template('shipping.html')
-
 
 
 ###### ADMINISTRATION ######
@@ -1511,7 +1529,6 @@ def config(path):
                     flash(f"""Processed "{filename_user}" into database for event "{cycle_name[0]['name']}." {skipped}/{total} failed (no SKU).""")
 
                 return redirect('/admin')
-
 
 
             if type == 'parts':

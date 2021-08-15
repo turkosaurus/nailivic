@@ -7,7 +7,7 @@ Items
 <container class="text-monospace">
     <div class="row">
         <div class="col">
-            <h1 style="text-transform: capitalize">{{ cur_color.name }}</h1>
+            <h1 class="display-2" style="text-transform: capitalize">{{ cur_color.name }}</h1>
         </div>
     </div>
 
@@ -19,7 +19,7 @@ Items
                     <a class="dropdown-item" href="/parts/black">Black</a>
                 </li> -->
 
-                {% for color in colors %}
+                {% for color in templates.colors %}
                     <li class="list-inline-item">
                         <a style="text-transform: capitalize" class="" href="/parts/{{ color.name }}">{{ color.emoji }} {{ color.name }}</a>
                     </li>
@@ -50,7 +50,6 @@ Items
 
             <br>
 
-            <!-- No Color -->
             <form action="/" method="post">
                 <div class="row">
                     <div class="col">
@@ -62,16 +61,23 @@ Items
                     <div class="col">
                         <div class="form-group">
                             <label for="part">Part</label>
-                            <select class="form-control" name="part" id="part">
-                                {% for loteria in loterias %}
-                                    <option value="{{ loteria.a }}">{{ loteria.a }}</option>
-                                    <option value="{{ loteria.b }}">{{ loteria.b }}</option>
-                                    {% if loteria.c != '' %}
+                            {% if cur_color.name == 'backs' %}
+                                <select class="form-control" name="part" id="part">
+                                    {% for loteria in templates.loterias %}
+                                        <option value="{{ loteria.backs }}">{{ loteria.backs }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                <select class="form-control" name="part" id="part">
+                                    {% for loteria in templates.loterias %}
+                                        <option value="{{ loteria.a }}">{{ loteria.a }}</option>
+                                        <option value="{{ loteria.b }}">{{ loteria.b }}</option>
+                                        {% if loteria.c != '' %}
                                         <option value="{{ loteria.c }}">{{ loteria.c }}</option>
-                                    {% endif %}
-                                    <option value="{{ loteria.backs }}">{{ loteria.backs }}</option>
-                                {% endfor %}
-                            </select>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
                         </div>
                     </div>
                 </div>                    
@@ -86,7 +92,7 @@ Items
                         <div class="form-group">
                             <!-- <h4>Size</h4> -->
                             <label for="size">Size</label>
-                            {% for size in sizes %}
+                            {% for size in templates.sizes %}
                             <div class="custom-control custom-radio">
                                 <input class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.sku }}">
                                 <label for="{{ size.longname }}">{{ size.longname }}</label>
@@ -135,7 +141,7 @@ Items
 
 
 
-            {% for size in sizes %}
+            {% for size in templates.sizes %}
             <br>
             <table class="table table-sm table-hover table-dark">
                     <thead>

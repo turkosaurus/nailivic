@@ -339,7 +339,7 @@ Admin
         <div class="col-lg-4 col-md-6 col-sm-12">
             <h5>Test SKU parser</h5>
             <form action="/admin/parse-sku" method="post">
-                <input class="form-control" type="number" value="270102030003" id="sku" name="sku" autocomplete="on">
+                <input class="form-control" type="number" value="270102030003" min="010000000000" max="999999999999" id="sku" name="sku" autocomplete="on">
                 <!-- <label for="sku">Parse number into SKU object</label> -->
                 <div class="form-group">
                     <small>returns parsed object from SKU string</small>
