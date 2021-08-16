@@ -146,40 +146,97 @@ Items
 
     <div class="row">
         <div class="col-md-6 col-sm-12">
-            Box Queue
-            <ul>
-                {% for box in boxprod %}
-                    <li>
-                        {{ box }}
-                    </li>
-                {% endfor %}
-            </ul>
+            <h4>
+                Box Queue
+            </h4>
+            <table class="table table-sm table-hover table-dark">
+                <thead>
+                    <tr>
+                        <th>
+                            name
+                        </th>
+                        <th>
+                            qty
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for box in boxprod %}
+                        <tr>
+                            <td>
+                                {{ box.name }}
+                            </td>
+                            <td>
+                                {{ box.qty }}
+                            </td>
+                        </tr>
+                    {% endfor %}                        
+                </tbody>
+            </table>
         </div>
+
         <div class="col-md-6 col-sm-12">
-            Made Boxes
-            <ul>
-                {% for box in boxes %}
-                    <li>
-                        {{ box }}
-                    </li>
-                {% endfor %}
-            </ul>
+            <h4>
+                Made Boxes
+            </h4>
+            <table class="table table-sm table-hover table-dark">
+                <thead>
+                    <row>
+                        <th>
+                            name
+                        </th>
+                        <th>
+                            qty
+                        </th>
+                    </row>
+                </thead>
+                <tbody>
+                    {% for box in boxes %}
+                        <row>
+                            <td>
+                                {{ box.name }}
+                            </td>
+                            <td>
+                                {{ box.qty }}
+                            </td>
+                        </row>
+                    {% endfor %}                        
+                </tbody>
+            </table>
         </div>
     </div>
 
     <hr>
 
     <div class="row">
-        <div class="col">
-            Assembled Boxes
-            <ul>
-                {% for box in boxused %}
-                    <li>
-                        {{ box }}
-                    </li>
-                {% endfor %}
-            </ul>
-
+        <div class="col-md-6 col-sm-12">
+            <h4>
+                Assembled Boxes
+            </h4>
+            <table class="table table-sm table-hover table-dark">
+                <thead>
+                    <tr>
+                        <th>
+                            name
+                        </th>
+                        <th>
+                            qty
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for box in boxused %}
+                        <tr>
+                            <td>
+                                {{ box.name }}
+                            </td>
+                            <td>
+                                {{ box.qty }}
+                            </td>
+                        </tr>
+                    {% endfor %}                        
+                </tbody>
+            </table>
         </div>
     </div>
 

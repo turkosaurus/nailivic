@@ -1695,44 +1695,42 @@ def config(path):
             usedboxes = request.form.get("wipe-usedboxes")
             projections = request.form.get("wipe-projections")
 
-            print(items)
+            message = ''
 
             if items == 'true':
                 # Wipe items
-                deleted = db.execute("DELETE FROM items")
-                flash(f"Success, {deleted} items wiped.")
-                return redirect("/admin")
+                removed = db.execute("DELETE FROM items")
+                message = str(removed) + " items deleted from inventory. "
 
             if parts == 'true':
                 # Wipe parts
                 removed = db.execute("DELETE FROM parts")
-                flash(f"Sucess, {removed} parts deleted from inventory.")
-                return redirect('/parts/backs')
+                message = message + str(removed) + " items deleted from inventory. "
 
             if boxes == 'true':
                 # Wipe used boxes
-                db.execute("DELETE FROM boxused")
-                return render_template('message.html', message="Success, used boxes wiped.")
+                removed = db.execute("DELETE FROM boxused")
+                message = message + str(removed) + " used boxes deleted from inventory. "
 
             if usedboxes == 'true':
                 # Wipe boxes
                 db.execute("DELETE FROM boxes")
-                return render_template('message.html', message="Success, boxes wiped.")
+                message = message + str(removed) + " boxes deleted from inventory. "
 
             if projections == 'true':
                 # Wipe projections
+
                 # Identify current cycle
                 active = db.execute("SELECT id, name, created_on FROM cycles WHERE current='TRUE'")
-                print(f"active cycle:{active}")
                 cycle = active[0]['id']
 
-                db.execute("DELETE FROM projections where cycle=:cycle", cycle=cycle)
+                removed = db.execute("DELETE FROM projections where cycle=:cycle", cycle=cycle)
+                message = message + str(removed) + " items removed from current event projections. "
 
-                flash("Success, current event's projections wiped.")
-                return redirect('/admin')
+                removed = db.execute("DELETE FROM production")
+                message = message + str(removed) + " parts removed from current event laser queue."
 
-            #TODO create counter and return number of sucessful rows per action
-            flash("Setup changes complete.")
+            flash(message)
             return redirect("/admin")
 
 
