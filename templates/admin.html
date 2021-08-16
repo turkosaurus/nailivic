@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-Admin
+Admin -
 {% endblock %}
 {% block main %}
 <container class="text-monospace">
@@ -49,7 +49,7 @@ Admin
 
     <div class="row">
         <div class="col-lg-3 col-md-6 col-sm-12">
-            <h5>Create New</h5>
+            <h4>Create New</h4>
             <div class="form-group">
                 <form action="/admin/new-event" method="post">            
                     <!-- Name -->
@@ -70,10 +70,8 @@ Admin
 
         
         <div class="col-lg-3 col-md-6 col-sm-12">
-            <h5>Import Projections<h5>
-
-                <form method="POST" action="/admin/import-event" enctype="multipart/form-data">
-                
+            <h4>Import Projections<h4>
+                <form method="POST" action="/admin/import-event" enctype="multipart/form-data">                
                 <div class="form-group">
                     <!-- <label for="event"></label> -->
                     <select class="form-control" name="event" id="event">
@@ -82,12 +80,18 @@ Admin
                         <option title="Created on: {{ cycle.created_on }}" value="{{ cycle.id }}">{{ cycle.name }}</option>
                         {% endfor %}    
                     </select>
-                </div>    
+                    <small class="form-text text-muted">
+                        <small class="form-text text-muted">
+                            <small class="form-text text-muted">
+                                Adds .csv export to Event's projections using column C SKUs
+
+                            </small>
+                        </small>
+                    </small>
+                </div>
                 
                 <div class="form-group">
                     <input class="form-control" type="file" name="inputfile" id="inputfile" accept=".csv">
-                    <small class="form-text text-muted">Adds .csv export to Event's projections</small>
-                    <small class="form-text text-muted">Utilizes SKUs in column C</small>
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Add projections to event?')">
@@ -101,7 +105,7 @@ Admin
 
 
         <div class="col-lg-3 col-md-6 col-sm-12">
-            <h5>Backup Projections</h5>
+            <h4>Backup Projections</h4>
             <form action="/admin/backup-projections" method="post">
                 <div class="form-group">
                     <!-- <label for="backup-projections"></label> -->
@@ -121,7 +125,7 @@ Admin
         </div>
         
         <div class="col-lg-3 col-md-6 col-sm-12">
-            <h5>Delete Event</h5>
+            <h4>Delete Event</h4>
             <form action="/admin/delete-event" method="post">
                 <!-- Name -->
                 <div class="form-group">
@@ -156,9 +160,9 @@ Admin
     
     <div class="row">        
         <div class="col-lg-6 col-md-12 col-sm-12">
-            <h5>
+            <h4>
                 Import Inventory
-            </h5>
+            </h4>
 
             <form method="POST" action="/admin/import-inventory" enctype="multipart/form-data">
                 
@@ -180,21 +184,15 @@ Admin
                 
                 <button type="submit" class="btn btn-primary btn-sm">Import File ⚠</button>
                 <br>
-                
             </form>
-
             <br>
-
-
-
-            
-
         </div>
+        <br>
 
         <div class="col-lg-3 col-md-6 col-sm-12">
-            <h5>
+            <h4>
                 Backup Inventory
-            </h5>
+            </h4>
             
             <form method="POST" action="/admin/backup-inventory">
                 <div class="form-group">
@@ -216,16 +214,16 @@ Admin
         </div>
         
         <!-- <div class="col-lg-3 col-md-6 col-sm-12">
-            <h5>
+            <h4>
                 -
-            </h5>
+            </h4>
         </div> -->
 
         <div class="col-lg-3 col-md-6 col-sm-12">
             <form action="/admin/wipe" method="post">
-                <h5>
+                <h4>
                     Wipe Inventory
-                </h5>
+                </h4>
                 <div class="form-group form-check">
                     <input type="checkbox" class="form-check-input" name="wipe-items" id="wipe-items" value="true">
                     <label class="form-check-label" for="wipe-items">Items</label>
@@ -277,9 +275,9 @@ Admin
     <div class="row">        
         
         <div class="col-lg-6 col-md-12 col-sm-12">
-            <h5>
+            <h4>
                 Loterias
-            </h5>
+            </h4>
 
             <br>
 
@@ -311,9 +309,9 @@ Admin
         </div>
         
         <!-- <div class="col-lg-3 col-md-6 col-sm-12">
-            <h5>
+            <h4>
                 -
-            </h5>
+            </h4>
         </div> -->
 
         <div class="col-lg-3 col-md-6 col-sm-12">            
@@ -335,44 +333,10 @@ Admin
         </div>
     </div>
     
-    <div class="row">        
-        <div class="col-lg-4 col-md-6 col-sm-12">
-            <h5>Test SKU parser</h5>
-            <form action="/admin/parse-sku" method="post">
-                <input class="form-control" type="number" value="270102030003" min="010000000000" max="999999999999" id="sku" name="sku" autocomplete="on">
-                <!-- <label for="sku">Parse number into SKU object</label> -->
-                <div class="form-group">
-                    <small>returns parsed object from SKU string</small>
-                </div>
-                <button type="submit" class="btn btn-primary btn-sm">Test</button>
-            </form>
-        </div>
-        
-        <div class="col-lg-8 col-md-6 col-sm-12">
-            <h5>SKU instructions</h5>
-            <p>12 digit SKU comprised of 6 pairs</p>
-            <ul>
-                <li>
-                    XX __ __ __ __ __ = item
-                </li>
-                <li>
-                    __ XX XX XX __ __ = colors
-                </li>
-                <li>
-                    __ __ __ __ XX __ = unused (default to 0)
-                </li>
-                <li>
-                    __ __ __ __ __ XX = size
-                </li>
-            </ul>
-        </div>
-    </div>
-    
-    <br>
-    
-    <div class="row justify-content-around">
-        <div class="col-lg-4 col-md-6 col-sm-12">
-            <h5>Make SKU</h5>
+    <div class="row">
+
+        <div class="col-md-6 col-sm-12">
+            <h4>Make SKU</h4>
             
             <form class="form-group" action="/admin/make-sku" method="post">
                 
@@ -380,8 +344,8 @@ Admin
                     <label class="col-4" for="nombre">Nombre</label>
                     <select class="col-8 form-control" name="nombre" id="nombre">
                         <!-- <option title="">Select Event</option> -->
-                        {% for loteria in loterias %}
-                        <option title="" value="{{ loteria.sku }}">{{ loteria.nombre }}</option>
+                        {% for loteria in templates.loterias %}
+                        <option title="" value="{{ loteria.sku }}">{{ loteria.sku }} - {{ loteria.nombre }}</option>
                         {% endfor %}    
                     </select>
                 </div>    
@@ -391,9 +355,8 @@ Admin
                 <div class="form-row">
                     <label class="col-4" for="a">Color A</label>
                     <select class="col-8 form-control" name="a" id="a">
-                        <option selected title="Defaults to 00" value="00">none</option>
-                        {% for color in colors %}
-                            <option title="" value="{{ color.sku }}">{{ color.emoji }} {{ color.name }}</option>
+                        {% for color in templates.colors %}
+                            <option title="" value="{{ color.sku }}">{{ color.sku }} - {{ color.emoji }} {{ color.name }}</option>
                         {% endfor %}    
                     </select>
                 </div>    
@@ -403,9 +366,8 @@ Admin
                 <div class="form-row">
                     <label class="col-4" for="b">Color B</label>
                     <select class="col-8 form-control" name="b" id="b">
-                        <option selected title="Defaults to 00" value="00">none</option>
-                        {% for color in colors %}
-                            <option title="" value="{{ color.sku }}">{{ color.emoji }} {{ color.name }}</option>
+                        {% for color in templates.colors %}
+                            <option title="" value="{{ color.sku }}">{{ color.sku }} - {{ color.emoji }} {{ color.name }}</option>
                         {% endfor %}    
                     </select>
                 </div>    
@@ -416,8 +378,8 @@ Admin
                     <label class="col-4" for="c">Color C</label>
                     <select class="col-8 form-control" name="c" id="c">
                         <option selected title="Defaults to 00" value="00">none</option>
-                        {% for color in colors %}
-                            <option title="" value="{{ color.sku }}">{{ color.emoji }} {{ color.name }}</option>
+                        {% for color in templates.colors %}
+                        <option title="" value="{{ color.sku }}">{{ color.sku }} - {{ color.emoji }} {{ color.name }}</option>
                         {% endfor %}    
                     </select>
                 </div>    
@@ -439,46 +401,64 @@ Admin
                 <div class="form-row">
                     <label class="col-4" for="size">Size</label>
                     <select class="col-8 form-control" name="size" id="size">
-                        {% for size in sizes %}
-                        <option title="" value="{{ size.sku }}">{{ size.longname }}</option>
+                        {% for size in templates.sizes %}
+                        <option title="" value="{{ size.sku }}">{{ size.sku }} - {{ size.longname }}</option>
                         {% endfor %}    
                     </select>
                 </div>
 
                 <br>
 
-                <button type="submit" class="btn btn-primary btn-sm btn-block">Generate SKU</button>
+                <button type="submit" class="btn btn-primary btn-block">Generate SKU</button>
 
             </form>
         </div>
 
-        <div class="col-lg-8 col-md-6 col-sm-12">
-            <h5>SKU example</h5>
+        <div class="col-md-6 col-sm-12">
+            <h4>SKU Interpreter</h4>
+            <form action="/admin/parse-sku" method="post">
+                <input class="form-control" type="number" value="" min="010000000000" max="999999999999" id="sku" name="sku" autocomplete="on">
+                <!-- <label for="sku">Parse number into SKU object</label> -->
+                <div class="form-group">
+                    <small>Describes item using SKU input</small>
+                </div>
+                <button type="submit" class="btn btn-block btn-primary">Return Description</button>
+            </form>
+
+            <br>
+
+            <p>12 digits, comprised of 6 pairs</p>
+            <ul>
+                <li>
+                    XX __ __ __ __ __ = item
+                </li>
+                <li>
+                    __ XX XX XX __ __ = colors
+                </li>
+                <li>
+                    __ __ __ __ 00 __ = unused
+                </li>
+                <li>
+                    __ __ __ __ __ XX = size
+                </li>
+            </ul>
+
+        </div>
+        <br>
+    </div>
+    <br>
+    
+    
+    <div class="row justify-content-around">
+
+        <div class="col">
+            <h4>SKU example</h4>
             <img class="img-fluid text-center" alt="SKU setup explained"  src="/static/skuexample.png">
         </div>
 
     </div>
 
-
-
-    <div class="row">
-        <div class="col-md-6 col-sm-12">
-            <br>
-        </div>
-        
-    </div>
-
-
     <hr>
-    <br>
- 
-    <div class="row">
-        <div class="col">
-            <a href="/admin/convert"><button class="btn btn-primary">convert hearts</button></a>
-            <small>testing, Mark don't touch</small>
-        </div>
-    </div>
-
 
     <!-- 
     <div class="row">
@@ -501,6 +481,6 @@ Admin
 
     document.querySelector("#copy").addEventListener("click", copy);
 
-</script>                        
+</script>
 
 {% endblock %}

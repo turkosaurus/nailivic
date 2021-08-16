@@ -21,7 +21,7 @@ Projections
             </h1>
         </div>
     </div>
-
+    <a href="#additem"><img src='static/arrow-circle-down-solid.svg' width="25em"></a> Jump to <a href="#additem">Add Item</a>
     <hr>
     <br>
 
@@ -30,7 +30,7 @@ Projections
             <!-- Cycle Choice -->
             <form action="/admin/cycle" method="post">
                 <div class="form-group">
-                    <h2>Change Active Event</h2>
+                    <h2>Change Event</h2>
                     <!-- <label for="cycle">Event</label> -->
                     <select class="form-control" name="cycle" id="cycle">
                         <option value="{{ current[0].id }}" title=" Created on: {{ current[0].created_on }}">{{ current[0].name }}</option>
@@ -41,12 +41,12 @@ Projections
                     <small id="cycle" class="form-text text-muted">
                         Changes active event and rebuilds laser queue <small>(<a href="/admin#events">settings</a>)</small>
                     </small>
-                    <small id="cycle" class="form-text text-muted">
-                        Processing may take some time.
-                    </small>
                 </div>
                 <br>
                 <button type="submit" class="btn btn-primary btn-block btn-lg" onclick="return confirm('Recompute production?')">Load Event Production</button>
+                <small id="cycle" class="form-text text-muted">
+                    Processing may take some time.
+                </small>
             </form>
 
             <br>
@@ -92,7 +92,7 @@ Projections
                 <div class="row">
                     <div class="col">
                         <br>
-                        <h2>Add Item to {{ current[0].name }} Projections</h2>
+                        <h2 id="additem">Add Item to {{ current[0].name }} Projections</h2>
                     </div>
                 </div>
 
@@ -131,7 +131,7 @@ Projections
                             <h6>Color A</h6>
                             {% for color in templates.colors %}
                             <div class="custom-control custom-radio">
-                                <input class="form-check-input" type="radio" id="{{ color.name }}a" name="color_a" value="{{ color.sku }}">
+                                <input class="form-check-input" type="radio" id="{{ color.name }}a" name="color_a" value="{{ color.name }}">
                                 <label for="{{ color.name }}a">{{ color.emoji }} {{ color.name }}</label>
                             </div>
                             {% endfor %}
@@ -144,7 +144,7 @@ Projections
                             <h6>Color B</h6>
                             {% for color in templates.colors %}
                             <div class="custom-control custom-radio">
-                                <input class="form-check-input" type="radio" id="{{ color.name }}b" name="color_b" value="{{ color.sku }}">
+                                <input class="form-check-input" type="radio" id="{{ color.name }}b" name="color_b" value="{{ color.name }}">
                                 <label for="{{ color.name }}b">{{ color.emoji }} {{ color.name }}</label>
                             </div>
                             {% endfor %}
@@ -157,10 +157,14 @@ Projections
                             <h6>Color C</h6>
                             {% for color in templates.colors %}
                             <div class="custom-control custom-radio">
-                                <input class="form-check-input" type="radio" id="{{ color.name }}c" name="color_c" value="{{ color.sku }}">
+                                <input class="form-check-input" type="radio" id="{{ color.name }}c" name="color_c" value="{{ color.name }}">
                                 <label for="{{ color.name }}c">{{ color.emoji }} {{ color.name }}</label>
                             </div>
                             {% endfor %}
+                            <div class="custom-control custom-radio">
+                                <input class="form-check-input" type="radio" id="nocolor" name="color_c" value="">
+                                <label for="nocolor">🟫 none</label>
+                            </div>
                         </div>
                     </div>
 
@@ -171,7 +175,7 @@ Projections
                             <!-- <label for="size">Size</label> -->
                             {% for size in templates.sizes %}
                             <div class="custom-control custom-radio">
-                                <input class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.sku }}">
+                                <input class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.shortname }}">
                                 <label for="{{ size.longname }}">{{ size.longname }}</label>
                             </div>
                             {% endfor %}

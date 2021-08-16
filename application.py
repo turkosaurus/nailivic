@@ -496,7 +496,9 @@ def dashboard():
         print(part, size, color, qty)
 
         if not size:
-            return render_template('error.html', errcode='403', errmsg='Size must be specified for part')
+            
+            flash('Size must be specified for part')
+            return redirect(f'/part/{color}')
 
         # Determine if part with color, or backs
         backs_onhand = db.execute("SELECT backs FROM loterias WHERE backs=:part", part=part)
@@ -595,7 +597,8 @@ def dashboard():
                     db.execute("UPDATE production SET qty=:new_partsprod WHERE \
                             name=:name AND size=:size AND color=:color", name=part, size=size, color=color, new_partsprod=new_partsprod)
 
-        return redirect('/')
+        flash(f"Sucessfully created {qty} {size} {color} {part}")
+        return redirect(f'/parts/{color}')
 
 
 @app.route('/parts/<part>', methods=['GET', 'POST'])
@@ -623,8 +626,10 @@ def parts(part):
                 ORDER BY qty DESC", name=part_like)
 
             print(cur_color)
+            inventory = db.execute("SELECT * FROM parts WHERE color LIKe :name \
+                ORDER BY QTY DESC", name=part_like)
     
-            return render_template('parts.html', cur_color=cur_color, tempslates=templates, part=part, productions=productions)
+            return render_template('parts.html', cur_color=cur_color, templates=templates, productions=productions, inventory=inventory)
 
         if part == 'backs':
             cur_color = {
@@ -664,31 +669,31 @@ def items():
     if request.method == 'GET':
 
         items = db.execute("SELECT * FROM items ORDER BY qty DESC, size ASC, name DESC")
-        newloterias = db.execute("SELECT * FROM loterias")
         templates = gather_templates()
 
-        return render_template('items.html', templates=templates, items=items, loterias=newloterias, sizes=sizes, colors=colors)
+        return render_template('items.html', templates=templates, items=items, sizes=sizes, colors=colors)
 
     # Upon POSTing form submission
     else:
         item = request.form.get("item")
         size = request.form.get("size")
-        a = request.form.get("Color A")
-        b = request.form.get("Color B")
-        c = request.form.get("Color C")
+        a = request.form.get("color_a")
+        b = request.form.get("color_b")
+        c = request.form.get("color_c")
         qty = int(request.form.get("qty"))
         deplete = request.form.get("deplete")
 
         print(f"deplete:{deplete}")
 
         print("POST form with values:")
-        print(qty, item, size, a, b, c)
+        print(qty, item, size, a, b, c, deplete)
 
         ## Validation ##
 
         # Return error if missing basic entries
         if (size is None) or (a is None) or (b is None):
-            return render_template('error.html', errcode='403', errmsg='Invalid entry. All Items must have a size and at least 2 colors.')
+            flash("Invalid entry. All Items must have a size and at least 2 colors.")
+            return redirect("/items")
 
         # Test for appropriateness of c_color presence
         ctest = db.execute("SELECT c FROM loterias WHERE nombre=:name", name=item)
@@ -696,14 +701,15 @@ def items():
         # No c is given
         if not c:
             # But there should be a c
-            if ctest[0]['c'] != '':
-                return render_template('error.html', errcode='403', errmsg='Invalid entry. Required color missing.')
+            if ctest[0]['c'] != '':                
+                flash('Invalid entry. Required color missing.')
+                return redirect('/items')
 
         # Superfulous c value is given
         else:
             if ctest[0]['c'] == '':
-                return render_template('error.html', errcode='403', errmsg='Invalid entry. Too many colors selected.')
-
+                flash('Invalid entry. Too many colors selected.')
+                return redirect('/items')
         # Validation complete. Now remove from parts and add to items.
 
         if deplete == "true":
@@ -867,15 +873,20 @@ def projections():
     else:
         item = request.form.get("item")
         size = request.form.get("size")
-        a = request.form.get("Color A")
-        b = request.form.get("Color B")
-        c = request.form.get("Color C")
+        a = request.form.get("color_a")
+        b = request.form.get("color_b")
+        c = request.form.get("color_c")
         qty = int(request.form.get("qty"))
+
+        print("input")
+        print(item, size, a, b, c, qty)
 
         ## Validation
         # Return error if missing basic entries
         if (size is None) or (a is None) or (b is None):
-            return render_template('error.html', errcode='403', errmsg='Invalid entry. All Items must have a size and at least 2 colors.')
+
+            flash("Invalid entry. All Items must have a size and at least 2 colors.")
+            return redirect('/projections')
 
         # Test for presence of c_color
         ctest = db.execute("SELECT c FROM loterias WHERE nombre=:name", name=item)
@@ -884,12 +895,14 @@ def projections():
         if not c:
             # But there should be a c
             if ctest[0]['c'] != '':
-                return render_template('error.html', errcode='403', errmsg='Invalid entry. Required color missing.')
+                flash("Invalid entry. Required color missing.")
+                return redirect('/projections')
 
         # Superfulous c value is given
         else:
             if ctest[0]['c'] == '':
-                return render_template('error.html', errcode='403', errmsg='Invalid entry. Too many colors selected.')
+                flash("Invalid entry. Too many colors selected.")
+                return redirect('/projections')
             
         # Identify current cycle
         active = db.execute("SELECT id, name, created_on FROM cycles WHERE current='TRUE'")
@@ -916,7 +929,7 @@ def projections():
             db.execute("INSERT INTO projections (name, size, a_color, b_color, c_color, qty, cycle) VALUES \
                         (:name, :size, :a_color, :b_color, :c_color, :qty, :cycle)", \
                         name=item, size=size, a_color=a, b_color=b, c_color=c, qty=qty, cycle=cycle)
-            print("New projection created.")                        
+            flash(f"Added to projections: {qty} {size} {item} ({a}, {b}, {c})")
 
         # Update existing entry's quantity
         else:
@@ -1105,12 +1118,10 @@ def shipping():
 @login_required
 def admin():
 
+    templates = gather_templates()
     cycles = db.execute("SELECT * FROM cycles")
-    loterias = db.execute("SELECT * FROM loterias")
-    sizes = db.execute("SELECT * FROM sizes")
-    colors = db.execute("SELECT * FROM colors")
 
-    return render_template('admin.html', cycles=cycles, loterias=loterias, sizes=sizes, colors=colors)
+    return render_template('admin.html', templates=templates, cycles=cycles)
 
 
 @app.route('/admin/<path>', methods=['GET', 'POST'])
@@ -1688,13 +1699,15 @@ def config(path):
 
             if items == 'true':
                 # Wipe items
-                db.execute("DELETE FROM items")
-                return render_template('message.html', message="Success, items wiped.")
+                deleted = db.execute("DELETE FROM items")
+                flash(f"Success, {deleted} items wiped.")
+                return redirect("/admin")
 
             if parts == 'true':
                 # Wipe parts
-                db.execute("DELETE FROM parts")
-                return render_template('message.html', message="Success, parts wiped.")
+                removed = db.execute("DELETE FROM parts")
+                flash(f"Sucess, {removed} parts deleted from inventory.")
+                return redirect('/parts/backs')
 
             if boxes == 'true':
                 # Wipe used boxes
@@ -1714,7 +1727,9 @@ def config(path):
                 cycle = active[0]['id']
 
                 db.execute("DELETE FROM projections where cycle=:cycle", cycle=cycle)
-                return render_template('message.html', message="Success, current event's projections wiped.")
+
+                flash("Success, current event's projections wiped.")
+                return redirect('/admin')
 
             #TODO create counter and return number of sucessful rows per action
             flash("Setup changes complete.")
@@ -1731,7 +1746,8 @@ def config(path):
                 flash(f"Successfully deleted {name} event cycle.")
                 return redirect("/admin")
             else:
-                return render_template("error.html", errcode="403", errmsg="Test cycle may not be deleted.")
+                flash("Test cycle may not be deleted.")
+                return redirect("/admin") 
 
     # SKU
 

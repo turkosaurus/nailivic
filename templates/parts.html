@@ -37,23 +37,16 @@ Items
             <hr>
         </div>
     </div>
-    <!-- <div class="row">        
-        <div class="col">
-            <ul class="list-inline">
-            </ul>
-        </div>
-    </div> -->
+
 
 
     <div class="row align-items-start">
-        <div class="col-lg-4 col-md-5 col-sm-12">
-
+        <div class="col-md-6 col-sm-12">
             <br>
-
             <form action="/" method="post">
                 <div class="row">
                     <div class="col">
-                        <h3 style="text-transform: capitalize;">Make {{ part }} Part</h3>
+                        <h3 style="text-transform: capitalize;">Make {{ cur_color.name }} Part</h3>
                     </div>
                 </div>
 
@@ -70,12 +63,14 @@ Items
                             {% else %}
                                 <select class="form-control" name="part" id="part">
                                     {% for loteria in templates.loterias %}
+                                    <optgroup label="{{ loteria.nombre }}">
                                         <option value="{{ loteria.a }}">{{ loteria.a }}</option>
                                         <option value="{{ loteria.b }}">{{ loteria.b }}</option>
                                         {% if loteria.c != '' %}
                                         <option value="{{ loteria.c }}">{{ loteria.c }}</option>
                                         {% endif %}
-                                    {% endfor %}
+                                    </optgroup>
+                                {% endfor %}
                                 </select>
                             {% endif %}
                         </div>
@@ -85,7 +80,7 @@ Items
                 <div class="row">
                     
                     <!-- Hidden input for color -->
-                    <input type="hidden" id="color" name="color" value="{{ cur_color }}">
+                    <input type="hidden" id="color" name="color" value="{{ cur_color.name }}">
 
                     <div class="col">
                         <!-- Size -->
@@ -94,7 +89,7 @@ Items
                             <label for="size">Size</label>
                             {% for size in templates.sizes %}
                             <div class="custom-control custom-radio">
-                                <input class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.sku }}">
+                                <input class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.shortname }}">
                                 <label for="{{ size.longname }}">{{ size.longname }}</label>
                             </div>
                             {% endfor %}
@@ -126,20 +121,52 @@ Items
 
             <br>
             <hr>
-        </div>
 
-        <div class="col-lg-1 col-md-1 col-sm-0">
-        </div>
-
-        <div class="col-lg-7 col-md-6 col-sm-12">
             <br>
-            <!-- <div class="row">
-                <div class="col"> -->
-                    <h3 style="text-transform: capitalize;">{{ part }} Part Queue</h3>
-                <!-- </div>
-            </div> -->
+            <h4 style="text-transform: capitalize">{{ cur_color.name }} Parts Inventory</h4>
+            <table class="table table-sm table-hover table-dark">
+                <thead>
+                    <tr>
+                        <th scope="col">
+                            name
+                        </th>
+                        <th scope="col">
+                            size
+                        </th>
+                        <th scope="col">
+                            on hand
+                        </th>
+                    </tr>
+                </thead>
 
+                <tbody>
+                    {% for part in inventory %}
+                        <tr>
+                            <form>
+                                <div class="">
+                                    <td>
+                                        {{ part.name }}
+                                    </td>
+                                    <td>
+                                        {{ part.size }}
+                                    </td>
+                                    <td>
+                                        {{ part.qty}}
+                                    </td>
+                                </div>
+                            </form>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>    
+        </div>
+<!-- 
+        <div class="col-lg-1 col-md-1 col-sm-0">
+        </div> -->
 
+        <div class="col-md-6 col-sm-12">
+            <br>
+            <h3 style="text-transform: capitalize;">{{ cur_color.name }} Part Queue</h3>
 
             {% for size in templates.sizes %}
             <br>
@@ -192,6 +219,10 @@ Items
         </div>    
     </div>
 
-    
+    <br>
+    <hr>
+
+    <div class="row">
+    </div>
 </container>
 {% endblock %}
