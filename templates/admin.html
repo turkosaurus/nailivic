@@ -83,7 +83,7 @@ Admin -
                     <small class="form-text text-muted">
                         <small class="form-text text-muted">
                             <small class="form-text text-muted">
-                                Adds .csv export to Event's projections using column C SKUs. Production table will not be built until Event Production is loaded from the Projections page.
+                                Adds .csv export to Event's projections using column C SKUs.
                             </small>
                         </small>
                     </small>
@@ -91,10 +91,17 @@ Admin -
                 
                 <div class="form-group">
                     <input class="form-control" type="file" name="inputfile" id="inputfile" accept=".csv">
+                    <small class="form-text text-muted">
+                        <small class="form-text text-muted">
+                            <small class="form-text text-muted">
+                                Production table will not be built until Load Event Production is loaded from the <a href="/projections">Projections</a> page.
+                            </small>
+                        </small>
+                    </small>
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Add projections to event?')">
-                    Import File ⚠
+                    Import File
                 </button>
                 <br>
                 
