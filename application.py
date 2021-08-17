@@ -939,6 +939,7 @@ def projections():
                 db.execute("UPDATE projections SET qty=:updated WHERE \
                         name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND cycle=:cycle", \
                         updated=updated, name=item, size=size, a_color=a, b_color=b, cycle=cycle)
+                queuepart()
                 flash(f"Added to projections: {qty} {size} {item} ({a}, {b})")
 
             else:
@@ -1362,6 +1363,8 @@ def config(path):
             # Calculate production values
             makequeue()
 
+            
+
             return redirect('/admin')
 
 
@@ -1429,7 +1432,7 @@ def config(path):
                         else:
                             skipped += 1
 
-                        print(item['item'], item['size'], item['a'], item['b'], item['c'], event, row[7], sku['sku'])
+                        # print(item['item'], item['size'], item['a'], item['b'], item['c'], event, row[7], sku['sku'])
 
                         # db.execute("INSERT INTO test (name, size, a, b, c, qty, cycle, sku) VALUES (:name, :size, :a, :b, :c, :qty, :cycle,:sku)", \
                         #                 name=item['item'],
