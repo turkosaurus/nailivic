@@ -33,9 +33,9 @@ Projections
                     <h2>Change Event</h2>
                     <!-- <label for="cycle">Event</label> -->
                     <select class="form-control" name="cycle" id="cycle">
-                        <option value="{{ current[0].id }}" title=" Created on: {{ current[0].created_on }}">{{ current[0].name }}</option>
+                        <option value="{{ current[0].id }}" title="Created on: {{ current[0].created_on }}">{{ current[0].name }} ({{ current[0].total }})</span></option>
                         {% for cycle in cycles %}
-                            <option value="{{ cycle.id }}" title="Created on: {{ cycle.created_on }}" Created on: {{ current[0].created_on }}">{{ cycle.name }}</option>
+                            <option value="{{ cycle.id }}" title="Created on: {{ cycle.created_on }}">{{ cycle.name }} ({{ cycle.total }})</option>
                         {% endfor %}
                     </select>
                     <small id="cycle" class="form-text text-muted">

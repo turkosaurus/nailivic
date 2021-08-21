@@ -57,12 +57,6 @@ authusers.append(os.getenv('USERB'))
 authusers.append(os.getenv('USERC'))
 
 
-###### TEMPLATES ######
-
-# colors = ['🖤 black', '❤️ red', '💙 TQ', '💛 yellow', '💚 green', '💜 purple']
-# # colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
-# sizes = ['S', 'M', 'L']
-
 
 ###### DECORATORS & HELPERS ######
 
@@ -671,7 +665,7 @@ def items():
         items = db.execute("SELECT * FROM items ORDER BY qty DESC, size ASC, name DESC")
         templates = gather_templates()
 
-        return render_template('items.html', templates=templates)
+        return render_template('items.html', templates=templates, items=items)
 
     # Upon POSTing form submission
     else:
@@ -858,6 +852,22 @@ def projections():
 
         # List all available non-current cycles
         cycles = db.execute("SELECT id, name, created_on FROM cycles WHERE current='FALSE'")
+
+        all_projections = db.execute("SELECT * FROM projections")
+
+        # Sum total for inactive cycles
+        for cycle in cycles:
+            cycle['total'] = 0
+            for projection in all_projections:
+                if projection['cycle'] == cycle['id']:
+                    cycle['total'] += projection['qty']
+
+        # TODO fix active cycle summation above
+        # # Sum total for active cycle
+        # for projection in all_projections:
+        #     if projection['cycle'] == current[0]['id']:
+        #         current[0]['total'] += projection['qty']
+        
         print(f"cycles:{cycles}")
 
         total = db.execute("SELECT sum(qty) FROM projections where cycle=:active", active=active)
