@@ -8,8 +8,7 @@ Dashboard
 
 <container>
 
-    <div class="row justify-content-center">
-        <img src="/static/bsl.png" class="img-fluid" alt="big scary laser">
+    <!-- <div class="row justify-content-center">
         <br>
     </div>
     <div class="row justify-content-center">
@@ -18,20 +17,30 @@ Dashboard
     </div>
 
     <br>
-    <hr>
-    <br>
-
+ -->
 
     <div class="row">
-        <div class="col">
-            <h1 class="display-4">Laser Queue</h1>
+        <div class="col-md-3 col-sm-12 justify-content-center">
+            <img src="/static/bsl.png" class="img-fluid" alt="big scary laser">
         </div>
-        <br>
+        <div class="col-md-9 col-sm-12">
+            <h1 class="display-3">{{ cycle.0.name }}</h1>
+            <div class="row">
+                <div class="col">
+                    <h5>{{ user[0]['username'] }}</h5>                
+                </div>
+            </div>
+        </div>
     </div>
-        
-    <div class="row">
+
+    <br>
+    <!-- <hr> -->
+
+    <div class="row justify content end">
         <div class="col">
-            <h2>{{ cycle.0.name }}</h2>                
+        </div>
+        <div class="col">
+            <h2>Production Queue</h2>                
         </div>
         <br>
     </div>

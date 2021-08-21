@@ -59,9 +59,9 @@ authusers.append(os.getenv('USERC'))
 
 ###### TEMPLATES ######
 
-colors = ['🖤 black', '❤️ red', '💙 TQ', '💛 yellow', '💚 green', '💜 purple']
-# colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
-sizes = ['S', 'M', 'L']
+# colors = ['🖤 black', '❤️ red', '💙 TQ', '💛 yellow', '💚 green', '💜 purple']
+# # colors = ['black', 'red', 'turquoise', 'yellow', 'green', 'purple']
+# sizes = ['S', 'M', 'L']
 
 
 ###### DECORATORS & HELPERS ######
@@ -671,7 +671,7 @@ def items():
         items = db.execute("SELECT * FROM items ORDER BY qty DESC, size ASC, name DESC")
         templates = gather_templates()
 
-        return render_template('items.html', templates=templates, items=items, sizes=sizes, colors=colors)
+        return render_template('items.html', templates=templates)
 
     # Upon POSTing form submission
     else:
@@ -860,14 +860,13 @@ def projections():
         cycles = db.execute("SELECT id, name, created_on FROM cycles WHERE current='FALSE'")
         print(f"cycles:{cycles}")
 
-        newloterias = db.execute("SELECT * FROM loterias")
-        print(newloterias)
+        total = db.execute("SELECT sum(qty) FROM projections where cycle=:active", active=active)
 
         templates = gather_templates()
 
         # Select projections from current cycle only
         projections = db.execute("SELECT * FROM projections WHERE cycle=:active ORDER BY size ASC, name DESC, qty DESC", active=active)
-        return render_template('projections.html', templates=templates, projections=projections, current=current, cycles=cycles, loterias=newloterias, sizes=sizes, colors=colors)
+        return render_template('projections.html', templates=templates, projections=projections, current=current, cycles=cycles, total=total)
 
     # Upon POSTing form submission
     else:
@@ -883,9 +882,17 @@ def projections():
 
         ## Validation
         # Return error if missing basic entries
-        if (size is None) or (a is None) or (b is None):
+        if (size is None):
+            flash("Invalid entry. Size required.")
+            return redirect('/projections')
 
-            flash("Invalid entry. All Items must have a size and at least 2 colors.")
+        if (a is None):
+            flash("Invalid entry. A color required.")
+            return redirect('/projections')
+
+
+        if (b is None):
+            flash("Invalid entry. B color required.")
             return redirect('/projections')
 
         # Test for presence of c_color
@@ -895,13 +902,13 @@ def projections():
         if not c:
             # But there should be a c
             if ctest[0]['c'] != '':
-                flash("Invalid entry. Required color missing.")
+                flash("Invalid entry. C color required.")
                 return redirect('/projections')
 
         # Superfulous c value is given
         else:
             if ctest[0]['c'] == '':
-                flash("Invalid entry. Too many colors selected.")
+                flash("Invalid entry. No C color for this item.")
                 return redirect('/projections')
             
         # Identify current cycle
