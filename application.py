@@ -956,7 +956,7 @@ def projections():
                 db.execute("UPDATE projections SET qty=:updated WHERE \
                         name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND cycle=:cycle", \
                         updated=updated, name=item, size=size, a_color=a, b_color=b, cycle=cycle)
-                queuepart()
+                # queuepart()
                 flash(f"Added to projections: {qty} {size} {item} ({a}, {b})")
 
             else:
@@ -964,6 +964,8 @@ def projections():
                         name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color \
                         AND cycle=:cycle", \
                         updated=updated, name=item, size=size, a_color=a, b_color=b, c_color=c, cycle=cycle)
+                # TODO actually queue thes parts
+                # queuepart()
                 flash(f"Added to projections: {qty} {size} {item} ({a}, {b}, {c})")
 
             print("Existing projection updated.")
