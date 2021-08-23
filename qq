@@ -1,0 +1,76 @@
+    name     | size | a_color | b_color | c_color | qty | cycle |     sku      
+-------------+------+---------+---------+---------+-----+-------+--------------
+ El Pulpo    | L    | yellow  | green   | purple  |   3 |    19 | 360405060003
+ El Corazon  | S    | black   | red     |         |   5 |    19 | 270102000001
+ El Musico   | M    | TQ      | white   |         |   2 |    19 | 320307000002
+ El Pulpo    | L    | yellow  | green   | purple  |   3 |     1 |             
+ La Calavera | S    | black   | TQ      | TQ      |   5 |    18 | 520103030001
+ La Calavera | S    | black   | green   | green   |   5 |    18 | 520105050001
+ La Estrella | S    | black   | red     |         |   3 |    18 | 350102000001
+ La Estrella | S    | black   | TQ      |         |   3 |    18 | 350103000001
+ La Estrella | S    | red     | TQ      |         |   3 |    18 | 350203000001
+ El Pulpo    | S    | black   | red     | red     |  15 |    18 | 360102020001
+ El Pulpo    | S    | black   | TQ      | TQ      |  15 |    18 | 360103030001
+ El Pulpo    | S    | red     | TQ      | TQ      |  15 |    18 | 360203030001
+ El Pulpo    | S    | TQ      | red     | red     |  15 |    18 | 360302020001
+ La Dama     | M    | black   | red     |         |   5 |    18 |  30102000002
+ La Dama     | M    | black   | TQ      |         |   3 |    18 |  30103000002
+ La Dama     | M    | red     | TQ      |         |   3 |    18 |  30203000002
+ El Musico   | M    | black   | red     |         |   2 |    18 | 320102000002
+ La Dama     | S    | black   | red     |         |  10 |    18 |  30102000001
+ La Dama     | S    | black   | TQ      |         |   5 |    18 |  30103000001
+ La Dama     | S    | red     | TQ      |         |   5 |    18 |  30203000001
+ El Musico   | S    | black   | red     |         |   4 |    18 | 320102000001
+ El Musico   | S    | black   | TQ      |         |   4 |    18 | 320103000001
+ El Musico   | S    | red     | TQ      |         |   4 |    18 | 320203000001
+ El Corazon  | S    | black   | TQ      |         |   5 |    18 | 270103000001
+ El Corazon  | S    | TQ      | red     |         |  12 |    18 | 270302000001
+ El Corazon  | S    | red     | TQ      |         |  25 |    18 | 270203000001
+ La Sirena   | S    | black   | red     | red     |   5 |    18 |  60102020001
+ La Sirena   | S    | black   | red     | green   |  15 |    18 |  60102050001
+ La Sirena   | S    | black   | TQ      | TQ      |  10 |    18 |  60103030001
+ La Sirena   | S    | black   | yellow  | green   |  10 |    18 |  60104050001
+ La Sirena   | S    | red     | yellow  | TQ      |  10 |    18 |  60204030001
+ La Calavera | S    | black   | red     | red     |   5 |    18 | 520102020001
+ El Musico   | M    | black   | TQ      |         |   2 |    18 | 320103000002
+ El Musico   | M    | red     | TQ      |         |   2 |    18 | 320203000002
+ El Musico   | M    | TQ      | red     |         |   2 |    18 | 320302000002
+ La Mano     | M    | black   | red     |         |   3 |    18 | 210102000002
+ La Mano     | M    | black   | TQ      |         |   3 |    18 | 210103000002
+ La Mano     | M    | red     | TQ      |         |   3 |    18 | 210203000002
+ El Corazon  | M    | black   | red     |         |   5 |    18 | 270102000002
+ El Corazon  | M    | red     | TQ      |         |   5 |    18 | 270203000002
+ El Corazon  | M    | black   | TQ      |         |   2 |    18 | 270103000002
+ El Corazon  | M    | TQ      | red     |         |   2 |    18 | 270302000002
+ La Sirena   | M    | black   | red     | green   |   7 |    18 |  60102050002
+ La Sirena   | M    | black   | red     | red     |   3 |    18 |  60102020002
+ La Sirena   | M    | black   | TQ      | TQ      |   5 |    18 |  60103030002
+ La Sirena   | M    | black   | yellow  | green   |   3 |    18 |  60104050002
+ La Sirena   | M    | red     | yellow  | TQ      |   3 |    18 |  60204030002
+ La Calavera | M    | black   | red     | red     |   3 |    18 | 520102020002
+ La Calavera | M    | black   | TQ      | TQ      |   3 |    18 | 520103030002
+ La Calavera | M    | black   | green   | green   |   3 |    18 | 520105050002
+ El Pulpo    | M    | black   | red     | red     |   5 |    18 | 360102020002
+ El Pulpo    | M    | black   | TQ      | TQ      |   5 |    18 | 360103030002
+ El Pulpo    | M    | red     | TQ      | TQ      |   5 |    18 | 360203030002
+ El Pulpo    | M    | TQ      | red     | red     |   5 |    18 | 360302020002
+ La Bota     | M    | black   | red     | red     |   3 |    18 | 220102020002
+ La Bota     | M    | black   | TQ      | TQ      |   3 |    18 | 220103030002
+ La Dama     | L    | black   | red     |         |   2 |    18 |  30102000003
+ La Dama     | L    | black   | TQ      |         |   2 |    18 |  30103000003
+ El Corazon  | L    | black   | red     |         |   3 |    18 | 270102000003
+ El Corazon  | L    | red     | TQ      |         |   3 |    18 | 270203000003
+ El Corazon  | L    | TQ      | red     |         |   2 |    18 | 270302000003
+ El Corazon  | L    | black   | TQ      |         |   2 |    18 | 270103000003
+ El Musico   | L    | black   | red     |         |   2 |    18 | 320102000003
+ El Musico   | L    | black   | TQ      |         |   2 |    18 | 320103000003
+ La Sirena   | L    | black   | red     | green   |   3 |    18 |  60102050003
+ La Sirena   | L    | black   | red     | red     |   1 |    18 |  60102020003
+ La Sirena   | L    | black   | TQ      | TQ      |   2 |    18 |  60103030003
+ El Pulpo    | L    | black   | red     | red     |   3 |    18 | 360102020003
+ El Pulpo    | L    | red     | TQ      | TQ      |   3 |    18 | 360203030003
+ El Pulpo    | L    | black   | TQ      | TQ      |   3 |    18 | 360103030003
+ El Pulpo    | L    | TQ      | red     | red     |   3 |    18 | 360302020003
+ El Corazon  | S    | black   | red     |         |  21 |    18 | 270102000001
+(72 rows)
+

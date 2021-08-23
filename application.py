@@ -205,7 +205,6 @@ def generate_sku(templates, item):
 
 def queuepart(name, size, color, qty):
     # Queue part(s) of specified color for production by 
-
     print("queuepart()")
 
     # Identify how many parts of that type are already on hand
@@ -312,6 +311,9 @@ def queueboxes(name, qty):
 def makequeue():
     # (RE)BUILDS PRODUCTION TABLE
     # Uses of queuepart(), queuebacks(), and queueboxes()
+    print("makequeue()")
+
+    templates = gather_templates()
 
     # Identify current cycle
     cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
@@ -334,7 +336,7 @@ def makequeue():
         print(f"{qty} {size} {nombre} {a} {b} {c} produces...")
 
         # Queue box for production of small items
-        if size == sizes[0]:
+        if size == 'S':
             queueboxes(nombre, qty)
         
         # Identify how many items of that type, size, colors exist in inventory
@@ -397,11 +399,21 @@ def dashboard():
     if request.method == 'GET':
         print("--- / ---")
 
-        # Query for relevant data
+        # Identify current cycle
         cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
         if not cycle:
-            db.execute("UPDATE cycles SET current='TRUE' WHERE name='test cycle'")
-            cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
+
+            data = db.execute("SELECT * FROM cycles")
+            if not data:
+                # Seed table with Default Event
+                time = datetime.datetime.utcnow().isoformat()
+                db.execute("INSERT INTO cycles (id, name, created_on, current) VALUES ('1', 'Default Event', :time, 'TRUE')", time=time)            
+
+            else:
+                db.execute("UPDATE cycles SET current='TRUE' WHERE id=1")
+
+        # Query for relevant data
+        cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
         user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
         items = db.execute("SELECT * FROM items ORDER BY qty DESC, size ASC, name DESC")
         parts = db.execute("SELECT * FROM parts ORDER BY size ASC, name DESC, color ASC, qty DESC")
@@ -472,10 +484,19 @@ def dashboard():
                         totals[i][len(templates['colors'])] += row['qty']
                         grand_total += row['qty']
 
+        boxprod = db.execute("SELECT sum(qty) FROM boxprod")
+
+        if boxprod[0]['sum'] is not None:
+            grand_total += boxprod[0]['sum']
+            totals[0].append(boxprod[0]['sum'])
+
+        else:
+            # Append zero when none
+            totals[0].append(0)
+
         print(f"totals:{totals}")
 
         time = datetime.datetime.utcnow().isoformat()
-        loterias = templates['loterias']
         templates = gather_templates()
 
         return render_template('index.html', templates=templates, production=production, \
@@ -620,7 +641,7 @@ def parts(part):
                 ORDER BY qty DESC", name=part_like)
 
             print(cur_color)
-            inventory = db.execute("SELECT * FROM parts WHERE color LIKe :name \
+            inventory = db.execute("SELECT * FROM parts WHERE color LIKE :name \
                 ORDER BY QTY DESC", name=part_like)
     
             return render_template('parts.html', cur_color=cur_color, templates=templates, productions=productions, inventory=inventory)
@@ -630,10 +651,13 @@ def parts(part):
                 'name': 'backs'
             }
 
-            # TODO and name contains
-            productions = db.execute("SELECT * FROM production WHERE color=NULL")
+            productions = db.execute("SELECT * FROM production WHERE name LIKE '%Backs'")
+            inventory = db.execute("SELECT * FROM PARTS WHERE name LIKE '%Backs'")
 
-            return render_template('parts.html', cur_color=cur_color, templates=templates, part=part, productions=productions)
+            print("part is a back...")
+            print(f"productions:{productions}")
+
+            return render_template('parts.html', cur_color=cur_color, templates=templates, part=part, productions=productions, inventory=inventory)
 
         if part == 'boxes':
 
@@ -1007,11 +1031,15 @@ def production():
 
         total_items += qty
 
+        smallname = db.execute("SELECT shortname FROM sizes WHERE sku=1")
+
         # Queue box for production of small items
-        if size == sizes[0]:
+        print(f"size:{size}, smallname:{smallname}")
+
+        if size == smallname[0]['shortname']:
+            # print(f"adding qty:{qty} to total_parts{total_parts}")
             total_parts += qty
             queueboxes(nombre, qty)
-
 
         # Identify how many items exist in inventory
         items_onhand = db.execute("SELECT qty FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
@@ -1029,23 +1057,35 @@ def production():
         if qty > 0:
 
             # Translate nombre to name
-            name = db.execute("SELECT a FROM loterias WHERE nombre=:nombre", nombre=nombre)
-            name = name[0]['a']
+            name = db.execute("SELECT * FROM loterias WHERE nombre=:nombre", nombre=nombre)
+            name = name[0]
 
             # Update parts production queue
+
             # a_color
+            # print(f"adding qty:{qty} to total_parts{total_parts}")
             total_parts += qty
-            queuepart(name, size, a, qty)
+            queuepart(name['a'], size, a, qty)
+
             # b_color
+            # print(f"adding qty:{qty} to total_parts{total_parts}")
             total_parts += qty
-            queuepart(name, size, b, qty)
+            queuepart(name['b'], size, b, qty)
+
             # c_color
+            print("C COLOR")
+            print(c)
+
             if c is not None:
+                print(f"{c} is not None")
+                # print(f"adding qty:{qty} to total_parts{total_parts}")
                 total_parts += qty
-                queuepart(name, size, c, qty)
+                queuepart(name['c'], size, c, qty)
+
             # backs
+            # print(f"adding qty:{qty} to total_parts{total_parts}")
             total_parts += qty
-            queuebacks(name, size, qty)
+            queuebacks(name['backs'], size, qty)
 
     flash(f"Projections (re)calculated: {total_items} items require {total_parts} parts and boxes.")
     return redirect("/projections")
@@ -1274,9 +1314,9 @@ def config(path):
             # If empty cycles table
             data = db.execute("SELECT * FROM cycles")
             if not data:
-                # Seed table with test cycle
+                # Seed table with Default Event
                 time = datetime.datetime.utcnow().isoformat()
-                db.execute("INSERT INTO cycles (name, created_on, current) VALUES ('test cycle', :time, 'TRUE')", time=time)
+                db.execute("INSERT INTO cycles (id, name, created_on, current) VALUES ('1', 'Default Event', :time, 'TRUE')", time=time)
 
 
             # EXPERIMENTAL
@@ -1758,15 +1798,22 @@ def config(path):
 
         if path == 'delete-event':
 
-            name = request.form.get("delname")
-            print(name)
-            if name != 'test cycle':
-                db.execute("DELETE from CYCLES where name=:name", name=name)
+            id = request.form.get("cycle-id")
+            name = request.form.get("cycle-name")
+
+            print(id, name)
+
+            if int(id) != 1:
+                deleted = db.execute("SELECT * FROM cycles WHERE id=:id", id=id)
+                db.execute("DELETE from CYCLES where id=:id", id=id)
                 db.execute("UPDATE cycles SET current='TRUE' WHERE id=1")
-                flash(f"Successfully deleted {name} event cycle.")
+                projections = db.execute("DELETE FROM projections WHERE cycle=:id", id=id)
+
+                flash(f"""Event cycle "{deleted[0]['name']}" and {projections} associated projections deleted.""")
                 return redirect("/admin")
+
             else:
-                flash("Test cycle may not be deleted.")
+                flash("Default Event may not be deleted.")
                 return redirect("/admin") 
 
     # SKU

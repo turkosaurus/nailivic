@@ -19,17 +19,26 @@ Dashboard
     <br>
  -->
 
-    <div class="row">
-        <div class="col-md-3 col-sm-12 justify-content-center">
-            <img src="/static/bsl.png" class="img-fluid" alt="big scary laser">
-        </div>
-        <div class="col-md-9 col-sm-12">
-            <h1 class="display-3">{{ cycle.0.name }}</h1>
+ 
+ 
+ <div class="row justify-content-center">
+        <!-- https://stackoverflow.com/questions/14207109/hiding-elements-in-responsive-layout -->
+        <div class="col-md-2 d-none d-md-block">
             <div class="row">
                 <div class="col">
-                    <h5>{{ user[0]['username'] }}</h5>                
+                    <img src="/static/bsl.png" class="img-fluid" alt="big scary laser">
                 </div>
             </div>
+            <div class="row">
+                <div class="col">
+                    <small>
+                        {{ user[0]['username'] }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-10 col-sm-12">
+            <h1 class="display-4">{{ cycle.0.name }}</h1>
         </div>
     </div>
 
@@ -37,8 +46,6 @@ Dashboard
     <!-- <hr> -->
 
     <div class="row justify content end">
-        <div class="col">
-        </div>
         <div class="col">
             <h2>Production Queue</h2>                
         </div>
@@ -72,7 +79,6 @@ Dashboard
                                 <td></td>
                             {% endif %}
                         {% endfor %}
-                        <td>{{ box_prod_total }}</td>
                     </tr>
                     <tr>
                         <th scope="row">{{ templates.sizes.1.longname }}</th>

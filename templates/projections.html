@@ -11,14 +11,12 @@ Projections
         </div>
     </div>    
 
-    <div class="row justify-content-start">
+    <div class="row">
         <div class="col-1">
             <img src='static/calendar-day-solid.svg' width="35em">
         </div>
         <div class="col-11">
-            <h1>
-                {{ current[0].name }} <span class="badge badge-secondary">{{ total.0.sum }}</span>
-            </h1>
+            <h1>{{ current[0].name }} <span class="badge badge-secondary">{{ total.0.sum }}</span></h1>
         </div>
     </div>
     <a href="#additem"><img src='static/arrow-circle-down-solid.svg' width="25em"></a> Jump to <a href="#additem">Add Item</a>
@@ -33,7 +31,7 @@ Projections
                     <h2>Change Event</h2>
                     <!-- <label for="cycle">Event</label> -->
                     <select class="form-control" name="cycle" id="cycle">
-                        <option value="{{ current[0].id }}" title="Created on: {{ current[0].created_on }}">{{ current[0].name }} ({{ current[0].total }})</span></option>
+                        <option value="{{ current[0].id }}" title="Created on: {{ current[0].created_on }}">{{ current[0].name }} ({{ total.0.sum }})</span></option>
                         {% for cycle in cycles %}
                             <option value="{{ cycle.id }}" title="Created on: {{ cycle.created_on }}">{{ cycle.name }} ({{ cycle.total }})</option>
                         {% endfor %}
@@ -85,14 +83,14 @@ Projections
     <hr>
 
     <!-- Add Item to Projections -->
-    <div class="row">
+    <div class="row" id="additem">
         <div class="col">
             
             <form action="/projections" method="post">
                 <div class="row">
                     <div class="col">
                         <br>
-                        <h2 id="additem">Add Item to {{ current[0].name }} Projections</h2>
+                        <h2>Add Item to {{ current[0].name }} Projections</h2>
                     </div>
                 </div>
 

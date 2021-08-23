@@ -135,14 +135,14 @@ Admin -
             <form action="/admin/delete-event" method="post">
                 <!-- Name -->
                 <div class="form-group">
-                    <!-- <label for="delname"></label> -->
-                    <select class="form-control" name="delname" id="delname">
+                    <!-- <label for="cycle-id"></label> -->
+                    <select class="form-control" name="cycle-id" id="cycle-id">
                         {% for cycle in cycles %}
-                        <option title="Created on: {{ cycle.created_on }}">{{ cycle.name }}</option>
+                        <option title="Created on: {{ cycle.created_on }}" value="{{ cycle.id }}">#{{ cycle.id }} {{ cycle.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete event and all contents?')">Delete</button>
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete event and all associated projections?')">Delete</button>
             </form>
             <br>
         </div>
@@ -467,12 +467,12 @@ Admin -
 
     <hr>
 
-    <!-- 
+    
     <div class="row">
         <div class="col">
             <a href="/admin/setup-tables"><button class="btn btn-primary">Setup Tables ☢</button></a>
         </div>
-    </div> -->
+    </div>
 
 </container>
 

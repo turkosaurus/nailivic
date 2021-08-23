@@ -1,11 +1,12 @@
 :root {
   --gray: rgba(211, 211, 211, 0.953);
   --dark: rgb(7, 8, 9);
+  --xtdark: rgb(2, 2, 2);
 }
 
 .navbar, .navbar-expand-md, .navbar-dark, .bg-dark {
     color: rgb(163, 33, 33);
-    background-color: var(--dark);
+    background-color: var(--xtdark);
     border-bottom: .7rem solid var(--gray);
 
     /* border-color: rgba(0, 0, 0, 0.46); */
