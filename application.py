@@ -248,7 +248,12 @@ def sql_cat(lists):
 # Negative values can dequeue items
 
 
-def build_production(templates, items, parts, boxes, projections):
+def build_production(templates, projections):
+
+    items = db.execute("SELECT * FROM items")
+    parts = db.execute("SELECT * FROM parts")
+    boxes = db.execute("SELECT * FROM boxes UNION SELECT * FROM boxused")
+
 
     # Initiate queue list and counter
     queue = []
@@ -257,11 +262,16 @@ def build_production(templates, items, parts, boxes, projections):
     box_queue = []
     j = 0
 
-    print(f"queue:{queue}")
+    total_projections = 0
+
+    print(f"projections:{projections}")
+
     # Each projected item type
     for projection in projections:
 
         print(f"projection:{projection}")
+
+        # total_projections += projection['qty']
 
         # Size match
         for size in templates['sizes']:
@@ -289,7 +299,6 @@ def build_production(templates, items, parts, boxes, projections):
                     j += 1
 
                 print(f"Make boxes {box_queue}.")
-
 
 
         # Subtract Items in Inventory
@@ -391,7 +400,7 @@ def build_production(templates, items, parts, boxes, projections):
                         i += 1
 
                     # Add C
-                    if qtys['c'] > 0:
+                    if qtys['c'] > 0 and loteria['c'] is not '':
 
                         # Add a new list for the part to be made
                         queue.append([])
@@ -441,6 +450,8 @@ def build_production(templates, items, parts, boxes, projections):
 
     print(f"String:{queue}")
 
+    box_added = 0
+    part_added = 0
 
     # Wipe Box Produciton
     db.execute("DELETE FROM boxprod")
@@ -449,17 +460,18 @@ def build_production(templates, items, parts, boxes, projections):
     if box_queue:
         box_added = db.execute(f"INSERT INTO boxprod (name, qty) VALUES {box_queue}")
 
+    
 
     # Wipe production
     db.execute("DELETE FROM production")
-
     # New Part Production
     if queue:
         part_added = db.execute(f"INSERT INTO production (name, size, color, qty) VALUES {queue}")
 
     tmp = {
-        'parts': part_added,
-        'boxes': box_added
+        'projections': total_projections,
+        'boxes': box_added,
+        'parts': part_added
     }
 
     return tmp
@@ -684,22 +696,15 @@ def dashboard():
 
             else:
                 db.execute("UPDATE cycles SET current='TRUE' WHERE id=1")
+            cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
 
         # Query for relevant data
-        cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
         user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
-        items = db.execute("SELECT * FROM items ORDER BY qty DESC, size ASC, name DESC")
-        parts = db.execute("SELECT * FROM parts ORDER BY size ASC, name DESC, color ASC, qty DESC")
-
 
         templates = gather_templates()
 
-        projections = db.execute("SELECT * FROM projections")
-
-        boxes = db.execute("SELECT * FROM boxes UNION SELECT * FROM boxused")
-        boxprod = db.execute("SELECT * FROM boxprod")
-
-        build_production(templates, items, parts, boxes, projections)
+        projections = db.execute("SELECT * FROM projections WHERE cycle=:cycle", cycle=cycle[0]['id'])
+        build_production(templates, projections)
 
         production = db.execute("SELECT * FROM production ORDER BY size DESC, name DESC, color DESC")
 
@@ -779,6 +784,7 @@ def dashboard():
 
         return render_template('index.html', templates=templates, production=production, \
             user=user, items=items, parts=parts, totals=totals, cycle=cycle, time=time, grand_total=grand_total)
+
 
     # Upon POSTing form submission
     else:
@@ -1298,83 +1304,10 @@ def production():
 
     # Query for current cycle's projections
     projections = db.execute("SELECT * FROM projections WHERE cycle=:cycle", cycle=cycle[0]['id'])
-
-    # Clear all production data
-    db.execute("DELETE FROM production")
-    db.execute("UPDATE boxprod SET qty=0")
-
-    total_items = 0
-    total_parts = 0
-
-    # Ensure that every item in projections is added to the production queue (less inventory on hand)
-    for item in projections:
-        nombre = item['name']
-        size = item['size']
-        qty = item['qty']
-        a = item['a_color']
-        b = item['b_color']
-        c = item['c_color']
-        print(f"One {nombre} produces...")
-
-        total_items += qty
-
-        smallname = db.execute("SELECT shortname FROM sizes WHERE sku=1")
-
-        # Queue box for production of small items
-        print(f"size:{size}, smallname:{smallname}")
-
-        if size == smallname[0]['shortname']:
-            # print(f"adding qty:{qty} to total_parts{total_parts}")
-            total_parts += qty
-            queueboxes(nombre, qty)
-
-        # Identify how many items exist in inventory
-        items_onhand = db.execute("SELECT qty FROM items WHERE name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color",
-                        name=nombre, size=size, a_color=a, b_color=b, c_color=c)
-        print(items_onhand)
-        if items_onhand:
-            items_onhand = items_onhand[0]['qty']
-        else:
-            items_onhand = 0
-
-        # Subtract inventory items from projections['qty']
-        qty = qty - items_onhand
-
-       # Check for need to add parts to production queue
-        if qty > 0:
-
-            # Translate nombre to name
-            name = db.execute("SELECT * FROM loterias WHERE nombre=:nombre", nombre=nombre)
-            name = name[0]
-
-            # Update parts production queue
-
-            # a_color
-            # print(f"adding qty:{qty} to total_parts{total_parts}")
-            total_parts += qty
-            queuepart(name['a'], size, a, qty)
-
-            # b_color
-            # print(f"adding qty:{qty} to total_parts{total_parts}")
-            total_parts += qty
-            queuepart(name['b'], size, b, qty)
-
-            # c_color
-            print("C COLOR")
-            print(c)
-
-            if c is not None:
-                print(f"{c} is not None")
-                # print(f"adding qty:{qty} to total_parts{total_parts}")
-                total_parts += qty
-                queuepart(name['c'], size, c, qty)
-
-            # backs
-            # print(f"adding qty:{qty} to total_parts{total_parts}")
-            total_parts += qty
-            queuebacks(name['backs'], size, qty)
-
-    flash(f"Projections (re)calculated: {total_items} items require {total_parts} parts and boxes.")
+    templates = gather_templates()
+    build_production(templates, projections)
+    
+    flash(f"Projections (re)calculated.")
     return redirect("/projections")
 
 
@@ -1707,10 +1640,11 @@ def config(path):
                 db.execute("INSERT INTO cycles (name, created_on, current) VALUES (:name, :time, 'TRUE')", name=name, time=time)
 
             # Calculate production values
+            # TODO replace this
             makequeue()
 
             
-
+            flash(f'Created new event "{name}"')
             return redirect('/admin')
 
 
@@ -1767,11 +1701,11 @@ def config(path):
                             skipped += 1
 
                         values.append([])
-                        values[total].append({item['item']})
-                        values[total].append({item['size']})
-                        values[total].append({item['a']})
-                        values[total].append({item['b']})
-                        values[total].append({item['c']})
+                        values[total].append(item['item'])
+                        values[total].append(item['size'])
+                        values[total].append(item['a'])
+                        values[total].append(item['b'])
+                        values[total].append(item['c'])
                         values[total].append(row[7]) # quantity
                         values[total].append(event) # event cycle number
                         values[total].append(sku['sku'])
@@ -2061,6 +1995,9 @@ def config(path):
 
                 removed = db.execute("DELETE FROM production")
                 message = message + str(removed) + " parts removed from current event laser queue."
+
+                removed = db.execute("DELETE FROM boxprod")
+                message = message + str(removed) + " boxes removed from current event laser queue."
 
             flash(message)
             return redirect("/admin")
