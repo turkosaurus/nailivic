@@ -229,8 +229,8 @@ def sql_cat(lists):
         string += '('
 
         for value in list:
-            string += value
-            string += ', '
+            string += f"'{value}', "
+            # string += ', '
 
         # Remove the last 2 chars
         string = string[:-2]
@@ -248,32 +248,18 @@ def sql_cat(lists):
 # Negative values can dequeue items
 
 
-def queue_part(templates, pt, parts):
-    print(f"Queueing Part")
-    
-
-    errors = 0
-
-
-    print(errors)
-    return 'return'
-
-
-
-def build_production(templates, items, parts, projections):
-
-    errors = 0
+def build_production(templates, items, parts, boxes, projections):
 
     # Initiate queue list and counter
-    queue = list([])
-    print(f"queue:{queue}")
-
-    box_queue = []
+    queue = []
     i = 0
 
+    box_queue = []
+    j = 0
+
+    print(f"queue:{queue}")
     # Each projected item type
     for projection in projections:
-        i += 1
 
         print(f"projection:{projection}")
 
@@ -284,13 +270,31 @@ def build_production(templates, items, parts, projections):
             if size['sku'] == 1 and size['shortname'] == projection['size']:
 
                 # make a box
-                print(f"Make a {projection['name']} box.")
+                qty = projection['qty']
+
+                # Subtract existing box inventory
+                for box in boxes:
+                    if box['name'] == projection['name']:
+                        qty -= box['qty']
+
+                if qty > 0:
+
+                    box_queue.append([])
+
+                    # name
+                    box_queue[j].append(projection['name'])
+                    # qty
+                    box_queue[j].append(qty)
+
+                    j += 1
+
+                print(f"Make boxes {box_queue}.")
+
 
 
         # Subtract Items in Inventory
         for item in items:
             print(f"item:{item}")
-
 
             # Matching item in inventory
             if item['name'] == projection['name'] and \
@@ -298,69 +302,167 @@ def build_production(templates, items, parts, projections):
                 item['a_color'] == projection['a_color'] and \
                 item['b_color'] == projection['b_color'] and \
                 item['c_color'] == projection['c_color']:
-                print (f"{item['name']} {item['size']} {item['a_color']}/{item['b_color']}/{item['c_color']} already in inventory")
-
-                queue.append(foo)
-                print(f"queue:{queue}")
+                print (f"{item['qty']} {item['size']} {item['name']} {item['a_color']}/{item['b_color']}/{item['c_color']} already in inventory")
 
                 # Subtract assembled items qty from projections qty
                 projection['qty'] -= item['qty']
 
-                # Add to production
-                if projection['qty'] > 0:
+        # Add to production if existing items inventory does not satisfy
+        if projection['qty'] > 0:
 
-                    # Append new list for that production line
-                    print(f"projections.qty > 0 and queue:{queue}")
+            print(f"projections.qty > 0 and queue:{queue}")
+
+            # Find names
+            for loteria in templates['loterias']:
+                if loteria['nombre'] == projection['name']:
+
+                    qtys = {
+                        'a': projection['qty'],
+                        'b': projection['qty'],
+                        'c': projection['qty'],
+                        'backs': projection['qty']
+                    }
+
+                    # Subtract existing parts
+                    for part in parts:
+
+                        # Adjust A Quantities
+                        if part['name'] == loteria['a'] and \
+                            part['size'] == projection['size'] and \
+                            part['color'] == projection['a_color']:
+
+                            # Subtract parts on hand from projections
+                            qtys['a'] -= part['qty']
+
+                        # Adjust B Quantities
+                        if part['name'] == loteria['b'] and \
+                            part['size'] == projection['size'] and \
+                            part['color'] == projection['b_color']:
+
+                            # Subtract parts on hand from projections
+                            qtys['b'] -= part['qty']
+
+                        # Adjust C Quantities
+                        if part['name'] == loteria['c'] and \
+                            part['size'] == projection['size'] and \
+                            part['color'] == projection['c_color']:
+
+                            # Subtract parts on hand from projections
+                            qtys['c'] -= part['qty']
+
+                        # Adjust Backs Quantities
+                        if part['name'] == loteria['backs'] and \
+                            part['size'] == projection['size']:
+
+                            # Subtract parts on hand from projections
+                            qtys['backs'] -= part['qty']
 
 
-                    # Item Nombre > Part Name
-                    for loteria in templates['loterias']:
-                        if loteria['nombre'] == projection['name']:
+                    # Add A
+                    if qtys['a'] > 0:
 
-                        # production:(name,size,color,qty)
-
-                        # TODO make new queue part
-                        # queue_part(templates, part, parts)
-
-                        # A Color
-                            # name
-                            queue[i].append(loteria['a'])
-                            # size
-                            queue[i].append(projection['size'])
-                            # color
-                            queue[i].append(projection['a_color'])
-                            # qty
-                            queue[i].append(projection['qty'])
-
-            # None exist in inventory yet
-            else:
-                errors += 1
-                # Create new entry
-                print(f"Unable to match {item['name']}")
-
-        print(f"Production complete.")
-
-        # Convert list to string
-        print(f"queue:{queue}")
-        queue = sql_cat(queue)
-        print(f"queue:{queue}")
-
-        # Catch errors before wiping
-        # TODO
-
-        # Wipe production
-        # wiped = db.execute("DELETE FROM production")
-
-        # Insert new production
-        # db.execute(f"INSERT INTO production {queue}")
-
-    message = f"""
-        {items} projected items 
+                        # Add a new list for the part to be made
+                        queue.append([])
+                        # name
+                        queue[i].append(loteria['a'])
+                        # size
+                        queue[i].append(projection['size'])
+                        # color
+                        queue[i].append(projection['a_color'])
+                        # qty
+                        queue[i].append(f'{qtys["a"]}')
         
-        """
-    print(message)
+                        i += 1
 
-    return errors
+                    # Add B
+                    if qtys['b'] > 0:
+
+                        # Add a new list for the part to be made
+                        queue.append([])
+                        # name
+                        queue[i].append(loteria['b'])
+                        # size
+                        queue[i].append(projection['size'])
+                        # color
+                        queue[i].append(projection['b_color'])
+                        # qty
+                        queue[i].append(f'{qtys["b"]}')
+        
+                        i += 1
+
+                    # Add C
+                    if qtys['c'] > 0:
+
+                        # Add a new list for the part to be made
+                        queue.append([])
+                        # name
+                        queue[i].append(loteria['c'])
+                        # size
+                        queue[i].append(projection['size'])
+                        # color
+                        queue[i].append(projection['c_color'])
+                        # qty
+                        queue[i].append(f'{qtys["c"]}')
+        
+                        i += 1
+
+                    # Add Backs
+                    if qtys['backs'] > 0:
+
+                        # Add a new list for the part to be made
+                        queue.append([])
+                        # name
+                        queue[i].append(loteria['backs'])
+                        # size
+                        queue[i].append(projection['size'])
+                        # qty
+                        queue[i].append('')
+                        # qty
+                        queue[i].append(f'{qtys["a"]}')
+        
+                        i += 1
+
+    # Convert list to string
+    # boxes
+    print("Box List:")
+    for row in box_queue:
+        print(row)
+
+    box_queue = sql_cat(box_queue)
+
+    print(f"String:{box_queue}")
+
+    # parts
+    print("Parts List:")
+    for row in queue:
+        print(row)
+
+    queue = sql_cat(queue)
+
+    print(f"String:{queue}")
+
+
+    # Wipe Box Produciton
+    db.execute("DELETE FROM boxprod")
+
+    # New Box Production
+    if box_queue:
+        box_added = db.execute(f"INSERT INTO boxprod (name, qty) VALUES {box_queue}")
+
+
+    # Wipe production
+    db.execute("DELETE FROM production")
+
+    # New Part Production
+    if queue:
+        part_added = db.execute(f"INSERT INTO production (name, size, color, qty) VALUES {queue}")
+
+    tmp = {
+        'parts': part_added,
+        'boxes': box_added
+    }
+
+    return tmp
         
 
 
@@ -591,11 +693,15 @@ def dashboard():
 
 
         templates = gather_templates()
-        production = db.execute("SELECT * FROM production ORDER BY size DESC, name DESC, color DESC")
 
         projections = db.execute("SELECT * FROM projections")
 
-        build_production(templates, items, parts, projections)
+        boxes = db.execute("SELECT * FROM boxes UNION SELECT * FROM boxused")
+        boxprod = db.execute("SELECT * FROM boxprod")
+
+        build_production(templates, items, parts, boxes, projections)
+
+        production = db.execute("SELECT * FROM production ORDER BY size DESC, name DESC, color DESC")
 
         # Build totals arrays
         totals = []
@@ -1661,11 +1767,11 @@ def config(path):
                             skipped += 1
 
                         values.append([])
-                        values[total].append(f"'{item['item']}'")
-                        values[total].append(f"'{item['size']}'")
-                        values[total].append(f"'{item['a']}'")
-                        values[total].append(f"'{item['b']}'")
-                        values[total].append(f"'{item['c']}'")
+                        values[total].append({item['item']})
+                        values[total].append({item['size']})
+                        values[total].append({item['a']})
+                        values[total].append({item['b']})
+                        values[total].append({item['c']})
                         values[total].append(row[7]) # quantity
                         values[total].append(event) # event cycle number
                         values[total].append(sku['sku'])
