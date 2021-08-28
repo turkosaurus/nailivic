@@ -468,11 +468,11 @@ def build_production(templates, projections):
     if queue:
         part_added = db.execute(f"INSERT INTO production (name, size, color, qty) VALUES {queue}")
 
-    tmp = {
-        'projections': total_projections,
-        'boxes': box_added,
-        'parts': part_added
-    }
+    # tmp = {
+    #     'projections': total_projections,
+    #     'boxes': box_added,
+    #     'parts': part_added
+    # }
 
     return tmp
         
