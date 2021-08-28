@@ -9,6 +9,7 @@ from flask import Flask, redirect, render_template, request, session, url_for, f
 from flask_session import Session
 from tempfile import mkdtemp
 from functools import wraps
+from termcolor import colored
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
@@ -100,9 +101,7 @@ def parse_sku(sku):
         sku = sku.zfill(12)
 
     if len(sku) != 12:
-
-        flash(f"Invalid SKU length. ({len(sku)}/12 characters)")
-        return redirect("/admin")
+        return 'err_len'
 
     parsed = {
         'item': (int(sku[0]) * 10) + int(sku[1]),
@@ -118,62 +117,76 @@ def parse_sku(sku):
 
 
 def generate_item(templates, sku):
-    # Intakes a dictionary object sku, outputs word dictionary
+    # Intakes a dictionary object with parts sku, replaces number skus with words
 
-    # Loteria name > SKU
+    named = {}
+
+    # SKU > Loteria name
     for loteria in templates['loterias']:
         if loteria['sku'] == sku['item']:
-            sku['item'] = loteria['nombre'] 
+            named['item'] = loteria['nombre']
 
-    # A color name > SKU
+    # SKU > A color name
     for color in templates['colors']:
         if color['sku'] == sku['a']:
-            sku['a'] = color['name']
+            named['a'] = color['name']
 
-    # B color name > SKU
+    # SKU > B color name
     for color in templates['colors']:
         if color['sku'] == sku['b']:
-            sku['b'] = color['name']
+            named['b'] = color['name']
 
-    # C color name > SKU
+    # SKU > C color name
     for color in templates['colors']:
         if color['sku'] == sku['c']:
-            sku['c'] = color['name']
+            named['c'] = color['name']
 
     if sku['c'] == 0:
-        sku['c'] = ''
+        named['c'] = ''
 
     # Unused placeholder
-    sku['d'] = ''
+    named['d'] = ''
 
-    # Size name > SKU
+    # SKU > size name
     for size in templates['sizes']:
         if size['sku'] == sku['size']:
-            sku['size'] = size['shortname'] 
-
-    return sku
-
+            named['size'] = size['shortname']
+        
+    return named
 
 # from names
 def generate_sku(templates, item):
+
+    # TODO use this for error checking
+    valid = {
+        'name': False,
+        'a': False,
+        'b': False,
+        'c': False,
+        'size': False
+    }
+    print(f"valid:{valid}")
 
     # Loteria name > SKU
     for loteria in templates['loterias']:
         if loteria['nombre'] in item['name']:
             sku = str(loteria['sku']).zfill(2)
             print(f"matched {loteria['nombre']} to {item['name']}. SKU:{sku}")
+            valid['name'] = True
 
     # A color name > SKU
     for color in templates['colors']:
         if color['name'] in item['a_color']:
             sku = sku + str(color['sku']).zfill(2)
             print(f"matched {color['name']} to {item['a_color']}. SKU:{sku}")
+            valid['a'] = True
 
     # B color name > SKU
     for color in templates['colors']:
         if color['name'] in item['b_color']:
             sku = sku + str(color['sku']).zfill(2)
             print(f"matched {color['name']} to {item['b_color']}. SKU:{sku}")
+            valid['b'] = True
 
     # C color name > SKU
     if item['c_color']:
@@ -181,10 +194,12 @@ def generate_sku(templates, item):
             if color['name'] in item['c_color']:
                 sku = sku + str(color['sku']).zfill(2)
                 print(f"matched {color['name']} to {item['c_color']}. SKU:{sku}")
+                valid['c'] = True
 
     else:
-        print("no c_color found")
+        print("no c_color given")
         sku = sku + str(00).zfill(2)
+        valid['c'] = True
 
     # Unused placeholder
     sku = sku + str(00).zfill(2)
@@ -194,14 +209,163 @@ def generate_sku(templates, item):
         if size['shortname'] in item['size']:
             sku = sku + str(size['sku']).zfill(2)
             print(f"matched {size['longname']} to {item['size']}. SKU:{sku}")
+            valid['size'] = True
+
+    print(f"valid:{valid}")
 
     return sku
+
+
+# Takes list of lists and converts them into SQL compatible string concatenations
+def sql_cat(lists):
+    # Converts arrays:
+    # [[foo, bar], [baz, bat]]
+    # into strings:
+    # (foo, bar), (baz, bat) 
+
+    string = ''
+
+    for list in lists:
+        string += '('
+
+        for value in list:
+            string += value
+            string += ', '
+
+        # Remove the last 2 chars
+        string = string[:-2]
+        string = string + '), '
+
+    # Remove the last 2 chars
+    string = string[:-2]
+
+    return string
 
 
 ###### QUEUE ######
 
 # These functions produce production table, calculating projecitons less inventory
 # Negative values can dequeue items
+
+
+def queue_part(templates, pt, parts):
+    print(f"Queueing Part")
+    
+
+    errors = 0
+
+
+    print(errors)
+    return 'return'
+
+
+
+def build_production(templates, items, parts, projections):
+
+    errors = 0
+
+    # Initiate queue list and counter
+    queue = list([])
+    print(f"queue:{queue}")
+
+    box_queue = []
+    i = 0
+
+    # Each projected item type
+    for projection in projections:
+        i += 1
+
+        print(f"projection:{projection}")
+
+        # Size match
+        for size in templates['sizes']:
+
+            # Small found
+            if size['sku'] == 1 and size['shortname'] == projection['size']:
+
+                # make a box
+                print(f"Make a {projection['name']} box.")
+
+
+        # Subtract Items in Inventory
+        for item in items:
+            print(f"item:{item}")
+
+
+            # Matching item in inventory
+            if item['name'] == projection['name'] and \
+                item['size'] == projection['size'] and \
+                item['a_color'] == projection['a_color'] and \
+                item['b_color'] == projection['b_color'] and \
+                item['c_color'] == projection['c_color']:
+                print (f"{item['name']} {item['size']} {item['a_color']}/{item['b_color']}/{item['c_color']} already in inventory")
+
+                queue.append(foo)
+                print(f"queue:{queue}")
+
+                # Subtract assembled items qty from projections qty
+                projection['qty'] -= item['qty']
+
+                # Add to production
+                if projection['qty'] > 0:
+
+                    # Append new list for that production line
+                    print(f"projections.qty > 0 and queue:{queue}")
+
+
+                    # Item Nombre > Part Name
+                    for loteria in templates['loterias']:
+                        if loteria['nombre'] == projection['name']:
+
+                        # production:(name,size,color,qty)
+
+                        # TODO make new queue part
+                        # queue_part(templates, part, parts)
+
+                        # A Color
+                            # name
+                            queue[i].append(loteria['a'])
+                            # size
+                            queue[i].append(projection['size'])
+                            # color
+                            queue[i].append(projection['a_color'])
+                            # qty
+                            queue[i].append(projection['qty'])
+
+            # None exist in inventory yet
+            else:
+                errors += 1
+                # Create new entry
+                print(f"Unable to match {item['name']}")
+
+        print(f"Production complete.")
+
+        # Convert list to string
+        print(f"queue:{queue}")
+        queue = sql_cat(queue)
+        print(f"queue:{queue}")
+
+        # Catch errors before wiping
+        # TODO
+
+        # Wipe production
+        # wiped = db.execute("DELETE FROM production")
+
+        # Insert new production
+        # db.execute(f"INSERT INTO production {queue}")
+
+    message = f"""
+        {items} projected items 
+        
+        """
+    print(message)
+
+    return errors
+        
+
+
+
+
 
 def queuepart(name, size, color, qty):
     # Queue part(s) of specified color for production by 
@@ -239,6 +403,7 @@ def queuepart(name, size, color, qty):
                         name=name, size=size, color=color, qty=qty)
             print(f"{qty} {size} {color} {name} inserted into production queue")
 
+
 def queuebacks(name, size, qty):
     # Queue backs for production            
     print("queuebacks()")
@@ -274,7 +439,8 @@ def queuebacks(name, size, qty):
         db.execute("INSERT INTO production (name, size, qty) VALUES (:name, :size, :qty)", 
                     name=name, size=size, qty=qty)
         print(f"{qty} {size} {name} inserted into production queue")
-      
+
+
 def queueboxes(name, qty):
     # Queue boxes for production
     print("queueboxes()")
@@ -307,6 +473,7 @@ def queueboxes(name, qty):
     else:
         db.execute("INSERT INTO boxprod (name, qty) VALUES (:name, :qty)", name=name, qty=qty)
         print(f"{qty} {name} boxes in production queue")
+
 
 def makequeue():
     # (RE)BUILDS PRODUCTION TABLE
@@ -385,6 +552,10 @@ def makequeue():
             queuebacks(name, size, qty)
 
 
+
+
+
+
 # TODO
 # @app.context_processor
 # def colors():
@@ -418,12 +589,13 @@ def dashboard():
         items = db.execute("SELECT * FROM items ORDER BY qty DESC, size ASC, name DESC")
         parts = db.execute("SELECT * FROM parts ORDER BY size ASC, name DESC, color ASC, qty DESC")
 
-        #####################
-
-        # Version 2
 
         templates = gather_templates()
         production = db.execute("SELECT * FROM production ORDER BY size DESC, name DESC, color DESC")
+
+        projections = db.execute("SELECT * FROM projections")
+
+        build_production(templates, items, parts, projections)
 
         # Build totals arrays
         totals = []
@@ -709,8 +881,16 @@ def items():
         ## Validation ##
 
         # Return error if missing basic entries
-        if (size is None) or (a is None) or (b is None):
-            flash("Invalid entry. All Items must have a size and at least 2 colors.")
+        if (size is None):
+            flash("Invalid entry. Size required.")
+            return redirect("/items")
+
+        if (a is None):
+            flash("Invalid entry. A color required.")
+            return redirect("/items")
+
+        if (b is None):
+            flash("Invalid entry. B color required.")
             return redirect("/items")
 
         # Test for appropriateness of c_color presence
@@ -720,14 +900,16 @@ def items():
         if not c:
             # But there should be a c
             if ctest[0]['c'] != '':                
-                flash('Invalid entry. Required color missing.')
+                flash('Invalid entry. Color C required for this item.')
                 return redirect('/items')
 
         # Superfulous c value is given
         else:
             if ctest[0]['c'] == '':
-                flash('Invalid entry. Too many colors selected.')
+                flash('Invalid entry. Color C not required for this item.')
                 return redirect('/items')
+
+
         # Validation complete. Now remove from parts and add to items.
 
         if deplete == "true":
@@ -846,7 +1028,7 @@ def items():
                     db.execute("UPDATE items SET qty=:qty WHERE name=:item AND size=:size AND a_color=:a AND b_color=:b AND c_color=:c", \
                             item=item, size=size, a=a, b=b, c=c, qty=new_qty)
 
-        # TODO: was this just superfluous?
+        # TODO: remove production need for that item?
         # makequeue()
 
         flash(f"Added to items inventory: {qty} {size} {item} ({a}, {b}, {c})")
@@ -921,12 +1103,11 @@ def projections():
             return redirect('/projections')
 
         if (a is None):
-            flash("Invalid entry. A color required.")
+            flash("Invalid entry. Color A required.")
             return redirect('/projections')
 
-
         if (b is None):
-            flash("Invalid entry. B color required.")
+            flash("Invalid entry. Color B required.")
             return redirect('/projections')
 
         # Test for presence of c_color
@@ -936,7 +1117,7 @@ def projections():
         if not c:
             # But there should be a c
             if ctest[0]['c'] != '':
-                flash("Invalid entry. C color required.")
+                flash("Invalid entry. Color C required.")
                 return redirect('/projections')
 
         # Superfulous c value is given
@@ -1460,27 +1641,15 @@ def config(path):
                 with open('static/uploads/temp.csv', 'r') as csvfile:
 
                     csv_reader = csv.reader(csvfile)
-
-                    db.execute("CREATE TABLE IF NOT EXISTS test ( \
-                        name VARCHAR (255), \
-                        size VARCHAR (255), \
-                        a VARCHAR (255), \
-                        b VARCHAR (255), \
-                        c VARCHAR (255), \
-                        qty INTEGER, \
-                        cycle INTEGER, \
-                        sku VARCHAR (255) \
-                        )")
-
-                    # # print("    name    |    colors    |    sku    |    catgory    |    qty   ")
     
                     total = 0
                     skipped = 0
 
+                    values = []
+
                     next(csv_reader)
                     for row in csv_reader:
 
-                        total += 1
 
                         if row[2]:
                             sku = parse_sku(row[2])
@@ -1491,33 +1660,27 @@ def config(path):
                         else:
                             skipped += 1
 
-                        # print(item['item'], item['size'], item['a'], item['b'], item['c'], event, row[7], sku['sku'])
+                        values.append([])
+                        values[total].append(f"'{item['item']}'")
+                        values[total].append(f"'{item['size']}'")
+                        values[total].append(f"'{item['a']}'")
+                        values[total].append(f"'{item['b']}'")
+                        values[total].append(f"'{item['c']}'")
+                        values[total].append(row[7]) # quantity
+                        values[total].append(event) # event cycle number
+                        values[total].append(sku['sku'])
+                        print(f"values:{values}")
 
-                        # db.execute("INSERT INTO test (name, size, a, b, c, qty, cycle, sku) VALUES (:name, :size, :a, :b, :c, :qty, :cycle,:sku)", \
-                        #                 name=item['item'],
-                        #                 size=item['size'],
-                        #                 a=item['a'],
-                        #                 b=item['b'],
-                        #                 c=item['c'],
-                        #                 cycle=event,
-                        #                 qty=row[7],
-                        #                 sku=sku['sku'])
+                        total += 1
 
-                        # TODO ensure no duplicate SKUs
-                        db.execute("INSERT INTO projections (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES (:name, :size, :a, :b, :c, :qty, :cycle,:sku)", \
-                                        name=item['item'],
-                                        size=item['size'],
-                                        a=item['a'],
-                                        b=item['b'],
-                                        c=item['c'],
-                                        cycle=event,
-                                        qty=row[7],
-                                        sku=sku['sku'])
+                    values = sql_cat(values)
 
+                    # TODO ensure no duplicate SKUs
+                    db.execute(f"INSERT INTO projections (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES {values}")
 
                 cycle_name = db.execute("SELECT name FROM cycles WHERE id=:event", event=event)
 
-                flash(f"""Processed "{filename_user}" into database for event "{cycle_name[0]['name']}." {skipped}/{total} failed (no SKU).""")
+                flash(f"""Processed "{filename_user}" into database for event "{cycle_name[0]['name']}." {skipped} failures out of {total} imports.""")
 
             return redirect('/admin')
 
@@ -1593,6 +1756,7 @@ def config(path):
 
                             print(f"{row[0]} | {row[1]} | {row[2]} | {row[3]} | {row[4]}")
 
+                            # TODO update to iterative value
                             db.execute("INSERT INTO test (name, sku, a, b, qty) VALUES (:name, :sku, :a, :b, :qty)", \
                                             name=row[0], a=row[1], sku=row[2], b=row[3], qty=row[4])
 
@@ -1826,11 +1990,16 @@ def config(path):
             
             # Convert string into dict object with integers
             sku = parse_sku(sku)
+            print(sku)
+
+            if sku == 'err_len':
+                flash(f"Invalid SKU length. ({len(sku)}/12 characters)")
+                return redirect("/admin")
 
             templates = gather_templates()
             item = generate_item(templates, sku)
 
-            flash(f"{sku['sku']}: {sku['item']} - {sku['a']}/{sku['b']}/{sku['c']} ({sku['size']})")
+            flash(f"{sku['sku']}: {item['item']} - {item['a']}/{item['b']}/{item['c']} ({item['size']})")
             return redirect('/admin')
 
 

@@ -18,6 +18,7 @@ main, body, .card, .list-group-item {
 }
 
 .form-control {
+  color: var(--dark);
   background-color: hsla(0, 0%, 95%, 0.816);
 }
 

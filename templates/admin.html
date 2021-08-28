@@ -48,7 +48,9 @@ Admin -
     </div>
 
     <div class="row">
+
         <div class="col-lg-3 col-md-6 col-sm-12">
+            
             <h4>Create New</h4>
             <div class="form-group">
                 <form action="/admin/new-event" method="post">            
@@ -62,20 +64,33 @@ Admin -
                     </div>
                     <button type="submit" class="btn btn-primary btn-sm">Make Event</button>
                     <br>
-                    <br>
+                </form>
+            </div>
+            <br>
+
+            <h4>Delete Event</h4>
+            <form action="/admin/delete-event" method="post">
+                <!-- Name -->
+                <div class="form-group">
+                    <!-- <label for="cycle-id"></label> -->
+                    <select class="form-control" name="cycle-id" id="cycle-id">
+                        {% for cycle in cycles %}
+                        <option title="Created on: {{ cycle.created_on }}" value="{{ cycle.id }}">#{{ cycle.id }} {{ cycle.name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete event and all associated projections?')">Delete</button>
             </form>
             <br>
         </div>
 
-        
-        <div class="col-lg-3 col-md-6 col-sm-12">
+
+        <div class="col-lg-5 col-md-12 col-sm-12">
             <h4>Import Projections<h4>
                 <form method="POST" action="/admin/import-event" enctype="multipart/form-data">                
                 <div class="form-group">
                     <!-- <label for="event"></label> -->
                     <select class="form-control" name="event" id="event">
-                        <option title="Overrides all event data with import file">Select Event</option>
                         {% for cycle in cycles %}
                         <option title="Created on: {{ cycle.created_on }}" value="{{ cycle.id }}">{{ cycle.name }}</option>
                         {% endfor %}    
@@ -110,7 +125,7 @@ Admin -
         </div>
 
 
-        <div class="col-lg-3 col-md-6 col-sm-12">
+        <div class="col-lg-4 col-md-12 col-sm-12">
             <h4>Backup Projections</h4>
             <form action="/admin/backup-projections" method="post">
                 <div class="form-group">
@@ -130,22 +145,6 @@ Admin -
             <br>
         </div>
         
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <h4>Delete Event</h4>
-            <form action="/admin/delete-event" method="post">
-                <!-- Name -->
-                <div class="form-group">
-                    <!-- <label for="cycle-id"></label> -->
-                    <select class="form-control" name="cycle-id" id="cycle-id">
-                        {% for cycle in cycles %}
-                        <option title="Created on: {{ cycle.created_on }}" value="{{ cycle.id }}">#{{ cycle.id }} {{ cycle.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete event and all associated projections?')">Delete</button>
-            </form>
-            <br>
-        </div>
         <br>
     </div>
         
@@ -165,7 +164,7 @@ Admin -
     </div>
     
     <div class="row">        
-        <div class="col-lg-6 col-md-12 col-sm-12">
+        <div class="col-lg-5 col-md-12 col-sm-12">
             <h4>
                 Import Inventory
             </h4>
@@ -195,7 +194,7 @@ Admin -
         </div>
         <br>
 
-        <div class="col-lg-3 col-md-6 col-sm-12">
+        <div class="col-lg-4 col-md-6 col-sm-12">
             <h4>
                 Backup Inventory
             </h4>
