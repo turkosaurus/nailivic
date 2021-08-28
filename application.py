@@ -400,7 +400,7 @@ def build_production(templates, projections):
                         i += 1
 
                     # Add C
-                    if qtys['c'] > 0 and loteria['c'] is not '':
+                    if qtys['c'] > 0 and loteria['c'] != '':
 
                         # Add a new list for the part to be made
                         queue.append([])
@@ -474,7 +474,7 @@ def build_production(templates, projections):
     #     'parts': part_added
     # }
 
-    return tmp
+    return 0
         
 
 
