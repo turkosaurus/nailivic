@@ -7,7 +7,7 @@ Items
 <container class="text-monospace">
     <div class="row">
         <div class="col">
-            <h1 class="display-2" style="text-transform: capitalize">{{ cur_color.name }}</h1>
+            <h1 class="display-2" style="text-transform: capitalize">{{ cur_color.emoji }} {{ cur_color.name }}</h1>
         </div>
     </div>
 
@@ -28,10 +28,10 @@ Items
                     
                 </li>
                 <li class="list-inline-item">
-                    <a class="" href="/parts/boxes">📦 Boxes</a>
+                    <a class="" href="/parts/backs">🍑 Backs</a>
                 </li>
                 <li class="list-inline-item">
-                    <a class="" href="/parts/backs">🍑 Backs</a>
+                    <a class="" href="/parts/boxes">📦 Boxes</a>
                 </li>
             </ul>
             <hr>
@@ -46,7 +46,7 @@ Items
             <form action="/" method="post">
                 <div class="row">
                     <div class="col">
-                        <h3 style="text-transform: capitalize;">Make {{ cur_color.name }} Part</h3>
+                        <h3 style="text-transform: capitalize;">Make {{ cur_color.emoji }} {{ cur_color.name }} Part</h3>
                     </div>
                 </div>
 
@@ -166,7 +166,7 @@ Items
 
         <div class="col-md-6 col-sm-12">
             <br>
-            <h3 style="text-transform: capitalize;">{{ cur_color.name }} Part Queue</h3>
+            <h3 style="text-transform: capitalize;">{{ cur_color.emoji }} {{ cur_color.name }} Part Queue</h3>
 
             {% for size in templates.sizes %}
             <br>
@@ -175,7 +175,7 @@ Items
                         <tr>
                             <th scope="col">
                                 <h4>
-                                    {{ size.longname }}
+                                    {{ cur_color.emoji }} {{ size.longname }}
                                 </h4>
                             </th>
                             <th scope="col">

@@ -117,9 +117,17 @@ Items
                             <label for="qty">Quantity</label>
                             <input class="form-control" type="number" value="1" min="-999" max="999" step="1" name="qty" id="qty">
                         </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="true" id="deplete" name="deplete" checked>                        
+                            <label class="form-check-label" for="deplete">
+                                <small>
+                                    Deplete parts inventory
+                                </small>
+                            </label>
+                        </div>
                         <br>
                         <button type="reset" class="btn btn-sm btn-primary btn-block">Reset</button>
-                        <br>
+                        <!-- <br> -->
                     </div>
                 </div>
                 
@@ -129,12 +137,6 @@ Items
                     </div>
                     <div class="col-md-6 col-sm-12">
                         <!-- Skip Depletion -->
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="true" id="deplete" name="deplete" checked>                        
-                            <label class="form-check-label" for="deplete">
-                                Deplete parts inventory
-                            </label>
-                        </div>
                         <br>
                         <button type="submit" class="btn btn-lg btn-primary btn-block">Submit</button>                            
                         <br>
