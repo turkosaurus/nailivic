@@ -103,6 +103,7 @@ def parse_sku(sku):
     if len(sku) != 12:
         return 'err_len'
 
+    print(sku)
     parsed = {
         'item': (int(sku[0]) * 10) + int(sku[1]),
         'a': (int(sku[2]) * 10) + int(sku[3]),
@@ -233,8 +234,9 @@ def sql_cat(lists):
             # All the words coming in should be
             # only from the database, this is 
             # a precautionary step
-            value = value.replace('-', '')
-            value = value.replace("'", '')
+            if isinstance(value, str):
+                value = value.replace('-', '')
+                value = value.replace("'", '')
             string += f"'{value}', "
             # string += ', '
 
