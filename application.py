@@ -669,7 +669,6 @@ def dashboard():
         print(f"totals:{totals}")
 
         time = datetime.datetime.utcnow().isoformat()
-        templates = gather_templates()
 
         return render_template('index.html', templates=templates, production=production, \
             user=user, items=items, parts=parts, totals=totals, cycle=cycle, time=time, grand_total=grand_total)
@@ -681,7 +680,7 @@ def dashboard():
         size = request.form.get("size")
         color = request.form.get("color")
         qty = int(request.form.get("qty"))
-        print(part, size, color, qty)
+        print(f"POST TO '/' with: {part}, {size}, {color}, {qty}")
 
         if not size:
             
@@ -854,6 +853,10 @@ def parts(part):
         else:
             flash("Invalid part descriptor")
             return redirect("/")
+
+    # Upon POST
+    else:
+        return redirect("/")        
 
 
 @app.route('/items', methods=['GET', 'POST'])
@@ -1299,6 +1302,11 @@ def config(path):
 
     if request.method == 'GET':
 
+        # Not a valid admin route
+        return redirect('/')
+
+    # On POST
+    else:
 
         # Setup tables
         if path == 'setup-tables':
@@ -1311,7 +1319,6 @@ def config(path):
                 created_on TIMESTAMP, \
                 last_login TIMESTAMP \
                 )")
-
 
             # Create table: colors
             db.execute("CREATE TABLE IF NOT EXISTS colors ( \
@@ -1437,12 +1444,8 @@ def config(path):
             return redirect("/admin")
 
 
-        # Not a valid admin route
-        else:
-            return redirect('/')
 
-    # On POST
-    else:
+
 
         # Setup loterias
         if path == 'setup-loterias':
