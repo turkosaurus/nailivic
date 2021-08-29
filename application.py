@@ -229,6 +229,12 @@ def sql_cat(lists):
         string += '('
 
         for value in list:
+            # TODO test this sanitation
+            # All the words coming in should be
+            # only from the database, this is 
+            # a precautionary step
+            value = value.replace('-', '')
+            value = value.replace("'", '')
             string += f"'{value}', "
             # string += ', '
 
@@ -602,7 +608,6 @@ def dashboard():
         grand_total = 0
 
         # print(f"totals:{totals}")
-
         # Build empty table
         for i in range(len(templates['sizes'])):
 
