@@ -39,14 +39,13 @@ Items
     </div>
 
 
-
     <div class="row align-items-start">
-        <div class="col-md-6 col-sm-12">
+        <div class="col-md-5 col-sm-12">
             <br>
             <form action="/" method="post">
                 <div class="row">
                     <div class="col">
-                        <h3 style="text-transform: capitalize;">Make {{ cur_color.emoji }} {{ cur_color.name }} Part</h3>
+                        <h3 style="text-transform: capitalize;">Make {{ cur_color.emoji }} {{ cur_color.name }}</h3>
                     </div>
                 </div>
 
@@ -134,7 +133,7 @@ Items
                             size
                         </th>
                         <th scope="col">
-                            on hand
+                            #
                         </th>
                     </tr>
                 </thead>
@@ -164,7 +163,7 @@ Items
         <div class="col-lg-1 col-md-1 col-sm-0">
         </div> -->
 
-        <div class="col-md-6 col-sm-12">
+        <div class="col-md-7 col-sm-12">
             <br>
             <h3 style="text-transform: capitalize;">{{ cur_color.emoji }} {{ cur_color.name }} Part Queue</h3>
 
@@ -173,20 +172,9 @@ Items
             <table class="table table-sm table-hover table-dark">
                     <thead>
                         <tr>
-                            <th scope="col">
-                                <h5>
-                                    {{ cur_color.emoji }} {{ size.longname }}
-                                </h5>
-                            </th>
-                            <th scope="col">
-                                queue
-                            </th>
-                            <th scope="col">
-                                made
-                            </th>
-                            <th scope="col">
-                                #
-                            </th>
+                            <h4>
+                                {{ cur_color.emoji }} {{ size.longname }}
+                            </h4>
                         </tr>
                     </thead>
 
@@ -205,11 +193,11 @@ Items
                                             <input type="hidden" name="part" id="part" value="{{ production.name }}">
                                             <input type="hidden" name="color" id="color" value="{{ cur_color.name }}">
                                             <input type="hidden" name="size" id="size" value="{{ size.shortname }}">
-                                            <td>
+                                            <td style="width:20%">
                                                 <input class="form-control form-control-sm" type="number" step="1" name="qty" id="qty">                                    
                                             </td>
                                             <td>
-                                                <button type="submit" class="btn btn-sm btn-primary">Make</button>
+                                                <button type="submit" class="btn btn-sm btn-block btn-primary">Make</button>
                                             </td>
                                         </div>
                                     </form>

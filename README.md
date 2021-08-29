@@ -41,11 +41,20 @@ To capture, calculate, and display all data pertaining to producing laser cut wo
 - alerts and logging
 - test backups and alerts
 
-## Maybe
-- route to produce csv of backup data
-- csv or google forms inventory caputure
 
 # Released Versions
+
+## v0.9
+- dedicated parts routes by color
+- make button directly from part size/name table
+
+## v0.8
+- csv projection exports & imports
+- parts and items inventory export
+
+## v0.7
+- SKU number system
+
 ## v0.6
 - used box inventory routes added
 - title tips for option menus
