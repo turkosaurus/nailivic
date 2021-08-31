@@ -874,7 +874,11 @@ def items():
         items = db.execute("SELECT * FROM items ORDER BY qty DESC, size ASC, name DESC")
         templates = gather_templates()
 
-        return render_template('items.html', templates=templates, items=items)
+        if not 'recent_item' in session :
+            session['recent_item'] = 'None'
+            print("not recent item")
+        print(f"loading items{session}")
+        return render_template('items.html', templates=templates, items=items, recent=session['recent_item'])
 
     # Upon POSTing form submission
     else:
@@ -885,6 +889,21 @@ def items():
         c = request.form.get("color_c")
         qty = int(request.form.get("qty"))
         deplete = request.form.get("deplete")
+
+        if deplete != 'true':
+            deplete = 'false'
+
+        session['recent_item'] = {
+            'item': item,
+            'size': size,
+            'a': a,
+            'b': b,
+            'c': c,
+            'qty': qty,
+            'deplete': deplete
+        }
+
+        print(f"SESSION:{session}")
 
         print(f"deplete:{deplete}")
 
