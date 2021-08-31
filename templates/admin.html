@@ -480,19 +480,4 @@ Admin -
     <hr>
 
 </container>
-
-<!-- TODO relocate this script -->
-<script>
-
-    function copy() {
-        var copyText = document.querySelector("#sku");
-        copyText.select();
-        document.execCommand("copy");
-        // alert("SKU copied to clipboard: " + copyText.value);
-        }
-
-    document.querySelector("#copy").addEventListener("click", copy);
-
-</script>
-
 {% endblock %}
