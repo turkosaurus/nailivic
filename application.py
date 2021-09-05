@@ -270,9 +270,13 @@ def sql_cat(lists):
     return string
 
 # TODO 
-def tuplefy(lists):
+def tuplefy(list):
+    print(list)
+    tmp = ()
 
-    return tuple(list)
+
+
+    return tuple(i for i in list)
 
 
 ###### QUEUE ######
@@ -307,7 +311,7 @@ def build_production(templates):
 
         # total_projections += projection['qty']
 
-        # Size match
+        # Box creation for every small
         for size in templates['sizes']:
 
             # Small found
@@ -328,7 +332,6 @@ def build_production(templates):
                     j += 1
 
                 print(f"Make boxes {box_queue}.")
-
 
         # Subtract Items in Inventory
         for item in items:
@@ -528,7 +531,6 @@ def build_production(templates):
         # Consolidate all box entries
         # TODO check this change. box_queue[0] > box_queue['name']
         for box in box_queue:
-            print(f"{box_queue[0]} vs {loteria['nombre']}")
             if box[0] == loteria['nombre']:
                 total += int(box[1])
                 print(f"found {loteria['nombre']} in queue, total up to {total}")
@@ -563,8 +565,10 @@ def build_production(templates):
         print(row)
 
     queue = sql_cat(queue)
-
     print(f"String:{queue}")
+
+    # queue = tuplefy(queue)
+    # print(f"Tuples:{queue}")
 
     box_added = 0
     part_added = 0
@@ -582,6 +586,8 @@ def build_production(templates):
     db.execute("DELETE FROM production")
     # New Part Production
     if queue:
+        # part_added = db.execute(f"INSERT INTO production (name, size, color, qty) VALUES {queue}")
+
         part_added = db.execute(f"INSERT INTO production (name, size, color, qty) VALUES {queue}")
 
     # tmp = {
