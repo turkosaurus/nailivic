@@ -116,6 +116,26 @@ def parse_sku(sku):
 
     return parsed
 
+def parse_skulet(sku):
+    # turns SKU into object with integers
+
+    # Add leading zero, if needed
+    if len(sku) == 6:
+        sku = sku.zfill(7)
+
+    if len(sku) != 7:
+        return 'err_len'
+
+    print(sku)
+    parsed = {
+        'item': (int(sku[0]) * 10) + int(sku[1]),
+        'part': sku[2],
+        'color': (int(sku[3]) * 10) + int(sku[4]),
+        'size': (int(sku[5]) * 10) + int(sku[6]),
+        'sku': sku
+        }
+
+    return parsed
 
 def generate_item(templates, sku):
     # Intakes a dictionary object with parts sku, replaces number skus with words
@@ -155,8 +175,8 @@ def generate_item(templates, sku):
         
     return named
 
-# from names
 def generate_sku(templates, item):
+    # from names
 
     # TODO use this for error checking
     valid = {
@@ -216,9 +236,9 @@ def generate_sku(templates, item):
 
     return sku
 
-
-# Takes list of lists and converts them into SQL compatible string concatenations
 def sql_cat(lists):
+    # Takes list of lists and converts them into SQL compatible string concatenations
+    
     # Converts arrays:
     # [[foo, bar], [baz, bat]]
     # into strings:
@@ -1710,7 +1730,7 @@ def config(path):
                                 sku = parse_sku(row[0])
                                 print(f"Found:{sku}")
     
-                                # TODO update to iterative value
+                                # TODO update to use SKU, not spreadsheet values
                                 db.execute("INSERT INTO items (name, size, a_color, b_color, c_color, qty) VALUES (:name, :size, :a_color, :b_color, :c_color, :qty)",
                                                 name=row[1],
                                                 size=row[2],
@@ -1765,10 +1785,10 @@ def config(path):
 
                             if row[0]:
 
-                                sku = parse_sku(row[0])
+                                sku = parse_skulet(row[0])
                                 print(f"Found:{sku}")
-    
-                                # TODO update to iterative value
+
+                                # TODO update to use SKU not spreadsheet values
                                 db.execute("INSERT INTO parts (name, size, color, qty) VALUES (:name, :size, :color, :qty)",
                                                 name=row[1],
                                                 size=row[2],
@@ -1780,11 +1800,12 @@ def config(path):
                                 skipped += 1
 
 
-                    flash(f"""Deleted {deleted} old inventory items. Processed "{filename_user}" into items inventory. {skipped}/{total} failed (no SKU).""")
-                return 'parts'
+                flash(f"""Deleted {deleted} old inventory items. Processed "{filename_user}" into items inventory. {skipped}/{total} failed (no SKU).""")
+                return redirect('/admin')
 
-            flash("Invalid inventory import type.")
-            return redirect('/admin')
+            else:
+                flash("Invalid inventory import type.")
+                return redirect('/admin')
 
 
     # Backups
