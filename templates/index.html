@@ -109,6 +109,51 @@ Dashboard
         <br>
     </div>
     <br>
+
+    <div class="row justify content end">
+        <div class="col">
+            <h2>Summary</h2>                
+        </div>
+        <br>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col">
+            <table class="table-responsive-sm table-bordered table-hover table-dark text-right">
+                <caption><small></small></caption>
+                <thead>
+                    <tr>
+                        <small>
+                            <th scope="col" style="width: 20vw">{{ cycle.0.name }}</th>
+                            <th scope="col" style="width: 20vw">Projected</th>
+                            <th scope="col" style="width: 20vw">Inventory</th>
+                            <th scope="col" style="width: 20vw">Queue</th>
+                        </small>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>Items</th>
+                        <td>{{ projection_totals.0.sum }}</td>
+                        <td>{{ item_totals.0.sum }}</td>
+                        <td>*</td>
+                    </tr>
+                    <tr>
+                        <th>Parts</th>
+                        <td>*</td>
+                        <td>{{ part_totals.0.sum }}</td>
+                        <td>{{ production_totals.0.sum }}</td>
+                    </tr>
+                    <tr>
+                        <th>Boxes</th>
+                        <td>*</td>
+                        <td>#</td>
+                        <td>#<td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
     <hr>
     <br>
 

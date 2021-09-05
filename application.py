@@ -249,6 +249,11 @@ def sql_cat(lists):
 
     return string
 
+# TODO 
+def tuplefy(lists):
+
+    return tuple(list)
+
 
 ###### QUEUE ######
 
@@ -491,7 +496,6 @@ def build_production(templates):
                             i += 1
 
 
-
     # Consolidate duplicate box_queue entries and subtract existing box inventory
     tmp = []
     i = 0
@@ -499,8 +503,10 @@ def build_production(templates):
     for loteria in templates['loterias']:
 
         total = 0
+        print(f"box_queue:{box_queue}")
 
         # Consolidate all box entries
+        # TODO check this change. box_queue[0] > box_queue['name']
         for box in box_queue:
             print(f"{box_queue[0]} vs {loteria['nombre']}")
             if box[0] == loteria['nombre']:
@@ -675,10 +681,25 @@ def dashboard():
 
         print(f"totals:{totals}")
 
+        projection_totals = db.execute("SELECT sum(qty) FROM projections WHERE cycle=(SELECT id FROM cycles WHERE current='TRUE')")
+        item_totals = db.execute("SELECT sum(qty) FROM items")
+        part_totals = db.execute("SELECT sum(qty) FROM parts")
+        production_totals = db.execute("SELECT sum(qty) FROM production")
+
         time = datetime.datetime.utcnow().isoformat()
 
-        return render_template('index.html', templates=templates, production=production, \
-            user=user, items=items, parts=parts, totals=totals, cycle=cycle, time=time, grand_total=grand_total)
+        return render_template('index.html',
+            templates=templates,
+            production=production,
+            user=user,
+            item_totals=item_totals,
+            part_totals=part_totals,
+            projection_totals = projection_totals,
+            production_totals = production_totals,
+            totals=totals,
+            cycle=cycle,
+            time=time,
+            grand_total=grand_total)
 
 
     # Upon POSTing form submission
@@ -791,6 +812,8 @@ def dashboard():
                     db.execute("UPDATE production SET qty=:new_partsprod WHERE \
                             name=:name AND size=:size AND color=:color", name=part, size=size, color=color, new_partsprod=new_partsprod)
 
+        templates = gather_templates()
+        build_production(templates)
         flash(f"Sucessfully created {qty} {size} {color} {part}")
         return redirect(f'/parts/{color}')
 
@@ -802,6 +825,7 @@ def parts(part):
     if request.method == 'GET':
 
         templates = gather_templates()
+        build_production(templates)
 
         # Determine if color
         is_color = False
@@ -1030,7 +1054,11 @@ def items():
 
         # Update existing item quantity, deleting if new_qty == 0
         else:
-            items_onhand = items_onhand[0]['qty']
+            if items_onhand:
+                items_onhand = items_onhand[0]['qty']
+            else:
+                items_onhand = 0
+
             new_qty = items_onhand + qty
 
             if not c:
@@ -1638,8 +1666,8 @@ def config(path):
             #         #                 nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
 
 
-        # TODO this is copied over and not correct, just an outline
         if path == 'import-inventory':
+
             type = request.form.get('type')
             event = request.form.get('event')
 
@@ -1661,56 +1689,102 @@ def config(path):
 
                 if file and allowed_file(file.filename):
                     filename_user = secure_filename(file.filename) # User supplied filenames kept
-                    filename = 'temp.csv'
+                    filename = 'item-inventory.csv'
                     print(f"filename:{filename}")
                     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-                    with open('static/uploads/temp.csv', 'r') as csvfile:
+                    with open('static/uploads/item-inventory.csv', 'r') as csvfile:
 
                         csv_reader = csv.reader(csvfile)
-
-                        db.execute("CREATE TABLE IF NOT EXISTS test ( \
-                            name VARCHAR (255), \
-                            sku VARCHAR (255), \
-                            size VARCHAR (255), \
-                            a VARCHAR (255), \
-                            b VARCHAR (255), \
-                            c VARCHAR (255), \
-                            qty INTEGER \
-                            )")
-
-                        print("    name    |    colors    |    sku    |    catgory    |    qty   ")
         
                         total = 0
                         skipped = 0
+
+                        deleted = db.execute("DELETE FROM items;")
 
                         next(csv_reader)
                         for row in csv_reader:
                             total += 1
 
-                            if row[2]:
-                                sku = parse_sku(row[2])
+                            if row[0]:
+                                sku = parse_sku(row[0])
                                 print(f"Found:{sku}")
+    
+                                # TODO update to iterative value
+                                db.execute("INSERT INTO items (name, size, a_color, b_color, c_color, qty) VALUES (:name, :size, :a_color, :b_color, :c_color, :qty)",
+                                                name=row[1],
+                                                size=row[2],
+                                                a_color=row[3],
+                                                b_color=row[4],
+                                                c_color=row[5],
+                                                qty=row[7]
+                                                )
 
                             else:
                                 skipped += 1
 
-                            print(f"{row[0]} | {row[1]} | {row[2]} | {row[3]} | {row[4]}")
 
-                            # TODO update to iterative value
-                            db.execute("INSERT INTO test (name, sku, a, b, qty) VALUES (:name, :sku, :a, :b, :qty)", \
-                                            name=row[0], a=row[1], sku=row[2], b=row[3], qty=row[4])
-
-                    total 
-                    cycle_name = db.execute("SELECT name FROM cycles WHERE id=:event", event=event)
-
-                    flash(f"""Processed "{filename_user}" into database for event "{cycle_name[0]['name']}." {skipped}/{total} failed (no SKU).""")
+                    flash(f"""Deleted {deleted} old inventory items. Processed "{filename_user}" into items inventory. {skipped}/{total} failed (no SKU).""")
 
                 return redirect('/admin')
 
 
             if type == 'parts':
+                # https://flask.palletsprojects.com/en/2.0.x/patterns/fileuploads/
+
+                # check if the post request has the file part
+                if 'inputfile' not in request.files:
+                    flash('No file part')
+                    return redirect("/admin")
+
+                file = request.files['inputfile']
+
+                # If the user does not select a file, the browser submits an empty file without a filename.
+                if file.filename == '':
+                    flash('No selected file')
+                    return redirect("/admin")
+
+                if file and allowed_file(file.filename):
+                    filename_user = secure_filename(file.filename) # User supplied filenames kept
+                    filename = 'part-inventory.csv'
+                    print(f"filename:{filename}")
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+                    with open('static/uploads/part-inventory.csv', 'r') as csvfile:
+
+                        csv_reader = csv.reader(csvfile)
+        
+                        total = 0
+                        skipped = 0
+
+                        deleted = db.execute("DELETE FROM parts;")
+
+                        next(csv_reader)
+                        for row in csv_reader:
+                            total += 1
+
+                            if row[0]:
+
+                                sku = parse_sku(row[0])
+                                print(f"Found:{sku}")
+    
+                                # TODO update to iterative value
+                                db.execute("INSERT INTO parts (name, size, color, qty) VALUES (:name, :size, :color, :qty)",
+                                                name=row[1],
+                                                size=row[2],
+                                                color=row[3],
+                                                qty=row[4]
+                                                )
+
+                            else:
+                                skipped += 1
+
+
+                    flash(f"""Deleted {deleted} old inventory items. Processed "{filename_user}" into items inventory. {skipped}/{total} failed (no SKU).""")
                 return 'parts'
+
+            flash("Invalid inventory import type.")
+            return redirect('/admin')
 
 
     # Backups
@@ -1748,7 +1822,6 @@ def config(path):
             return send_from_directory(app.config['BACKUPS'], filename='backup_projections.csv', attachment_filename=attachname, as_attachment=True, mimetype='text/csv')
 
 
-
         if path == 'backup-inventory':
 
             type = request.form.get("type")
@@ -1781,19 +1854,40 @@ def config(path):
                     for part in parts:
 
                         # TODO skulet needs documentation or reference
-                        sku = '00'
+                        sku = ''
+                        print(f"chcking part:{part}")
+                        for loteria in templates['loterias']:
+                            for subpart in loteria.values():
+                                print(f"subpart:{subpart}")
+                                if part['name'] == subpart:
+                                    print(f"matched:{part['name']} to {loteria['nombre']}/{subpart}")
+                                    # Add item number
+                                    sku = sku + str(loteria['sku']).zfill(2)
+
+                                    # Add part number
+                                    if part['name'] == loteria['a']:
+                                        sku = sku + 'a'
+                                    if part['name'] == loteria['b']:
+                                        sku = sku + 'b'
+                                    if part['name'] == loteria['c']:
+                                        sku = sku + 'c'
+                                    if part['name'] == loteria['backs']:
+                                        sku = sku + 'x'
 
                         # Color name > SKU
-                        for color in templates['colors']:
-                            # Check if back
-                            if 'Backs' in part['name']:
-                                sku = sku + str(00).zfill(2)
+                        # Check if back
+                        if 'Backs' in part['name']:
+                            sku = sku + str(00).zfill(2)
+                            print("backs")
 
-                            elif color['name'] in part['color']:
-                                sku = sku + str(color['sku']).zfill(2)
-                                print(f"matched {color['name']} to {part['color']}. SKU:{sku}")
+                        # Identify color
+                        else:
+                            for color in templates['colors']:
+                                print(f"partname{part['name']}")
 
-                        sku = sku + '000000'
+                                if color['name'] in part['color']:
+                                    sku = sku + str(color['sku']).zfill(2)
+                                    print(f"matched {color['name']} to {part['color']}. SKU:{sku}")
 
                         # Size name > SKU
                         for size in templates['sizes']:
@@ -1805,7 +1899,7 @@ def config(path):
                         scribe.writerow([sku, part['name'], part['size'],  part['color'], part['qty']])
 
                 time = datetime.datetime.utcnow().isoformat()
-                attachname = 'parts_inventory' + time + '.csv'
+                attachname = 'parts_inventory_' + time + '.csv'
 
                 return send_from_directory(app.config['BACKUPS'], filename='parts_inventory.csv', as_attachment=True, attachment_filename=attachname, mimetype='text/csv')
 
@@ -1836,10 +1930,9 @@ def config(path):
                         scribe.writerow([sku, row['name'], row['size'], row['a_color'], row['b_color'], row['c_color'], '', row['qty']])
 
                 time = datetime.datetime.utcnow().isoformat()
-                attachname = 'items_inventory' + time + '.csv'
+                attachname = 'items_inventory_' + time + '.csv'
 
                 return send_from_directory(app.config['BACKUPS'], filename='items_inventory.csv', as_attachment=True, attachment_filename=attachname, mimetype='text/csv')
-
 
 
         if path == 'download-loterias':

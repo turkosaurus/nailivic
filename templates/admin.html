@@ -187,7 +187,7 @@ Admin -
                     </small>
                 </div>
                 
-                <button type="submit" class="btn btn-primary btn-sm">Import File ⚠</button>
+                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Overwrite inventory?')">Import File ⚠</button>
                 <br>
             </form>
             <br>
@@ -250,10 +250,15 @@ Admin -
                     <label class="form-check-label" for="wipe-usedboxes">Used Boxes</label>
                 </div>
 
-                <div class="form-group form-check">
-                    <input type="checkbox" class="form-check-input" name="wipe-projections" id="wipe-projections" value="true">
-                    <label class="form-check-label" for="wipe-projections">Projections <small>(current event)</small></label>
-                </div>
+                {% for cycle in cycles %}
+                    {% if cycle.current %}
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" name="wipe-projections" id="wipe-projections" value="true">
+                            <label class="form-check-label" for="wipe-projections">Projections for "{{ cycle.name }}"</label>
+                        </div>
+                    {% else %}
+                    {% endif %}
+                {% endfor %}
                 
                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Wipe</button>
             </form>
@@ -284,8 +289,6 @@ Admin -
             <h4>
                 Loterias
             </h4>
-
-            <br>
 
             <form action="/admin/download-loterias" method="post">
                 <button type="submit" class="btn btn-primary btn-sm">Download Current</button>
