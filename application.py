@@ -739,7 +739,7 @@ def dashboard():
         if not size:
             
             flash('Size must be specified for part')
-            return redirect(f'/part/{color}')
+            return redirect(f'/parts/{color}')
 
         # Determine if part with color, or backs
         backs_onhand = db.execute("SELECT backs FROM loterias WHERE backs=:part", part=part)
