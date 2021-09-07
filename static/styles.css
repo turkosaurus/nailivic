@@ -4,6 +4,10 @@
   --xtdark: rgb(2, 2, 2);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .navbar, .navbar-expand-md, .navbar-dark, .bg-dark {
     color: rgb(163, 33, 33);
     background-color: var(--xtdark);
