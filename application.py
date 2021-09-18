@@ -997,6 +997,10 @@ def items():
         qty = int(request.form.get("qty"))
         deplete = request.form.get("deplete")
 
+        # if c == "None":
+        #     c = ''
+
+        # Force boolean state
         if deplete != 'true':
             deplete = 'false'
 
@@ -1016,6 +1020,10 @@ def items():
 
         print("POST form with values:")
         print(qty, item, size, a, b, c, deplete)
+
+
+        return redirect('/items')
+
 
         ## Validation ##
 
