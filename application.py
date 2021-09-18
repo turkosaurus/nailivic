@@ -978,7 +978,7 @@ def parts(part):
 def items():
     if request.method == 'GET':
 
-        items = db.execute("SELECT * FROM items ORDER BY qty DESC, size ASC, name DESC")
+        items = db.execute("SELECT * FROM items ORDER BY size DESC, name DESC, qty DESC")
         templates = gather_templates()
 
         if not 'recent_item' in session :

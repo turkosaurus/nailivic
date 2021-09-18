@@ -43,7 +43,7 @@ Projections
                 <br>
                 <button type="submit" class="btn btn-primary btn-block btn-lg" onclick="return confirm('Recompute production?')">Load Event Production</button>
                 <small id="cycle" class="form-text text-muted">
-                    Processing may take some time.
+                    Recalculates laser queue using selected event's projections.
                 </small>
             </form>
 
@@ -92,7 +92,7 @@ Projections
                         <br>
                         <h2>Add Item to {{ current[0].name }} Projections</h2>
                         <p>
-                            <a href='/projections#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"></a> <a href='/admin#navbartop'>return to top</a>
+                            <a href='/projections#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"></a> <a href='/projections#navbartop'>return to top</a>
                         </p>
                     </div>
                     <br>
@@ -215,6 +215,9 @@ Projections
         <div class="col">
             <br>
             <h4>{{ current[0].name }} Target Production</h4>
+            <p>
+                <a href='/projections#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"></a> <a href='/projections#navbartop'>return to top</a>
+            </p>
             <table class="table table-sm table-dark table-hover">
                 <thead>
                     <tr>
@@ -243,6 +246,10 @@ Projections
                         {% endfor %}
                     </tbody>
             </table>
+            <p>
+                <a href='/projections#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"></a> <a href='/projections#navbartop'>return to top</a>
+            </p>
+
         </div>
         <hr>
     </div>
