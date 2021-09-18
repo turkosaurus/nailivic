@@ -107,7 +107,11 @@ Projections
                                 <optgroup label="2 colors">
                                     {% for loteria in templates.loterias %}
                                         {% if not loteria.c %}
-                                            <option value="{{ loteria['nombre'] }}" title="{{ loteria['a'] }}, {{ loteria['b'] }}{% if not loteria['c'] %}{% else %}, {{ loteria['c']}}{% endif %}">{{ loteria['nombre'] }}</option>
+                                            {% if recent.item == loteria.nombre %}
+                                                <option selected value="{{ loteria['nombre'] }}" title="{{ loteria['a'] }}, {{ loteria['b'] }}{% if not loteria['c'] %}{% else %}, {{ loteria['c']}}{% endif %}">{{ loteria['nombre'] }}</option>
+                                            {% else %}
+                                                <option value="{{ loteria['nombre'] }}" title="{{ loteria['a'] }}, {{ loteria['b'] }}{% if not loteria['c'] %}{% else %}, {{ loteria['c']}}{% endif %}">{{ loteria['nombre'] }}</option>
+                                            {% endif %}                                        
                                         {% endif %}
                                     {% endfor %}
                                 </optgroup>
@@ -115,7 +119,11 @@ Projections
                                 <optgroup label="3 colors">
                                     {% for loteria in templates.loterias %}
                                         {% if loteria.c %}
-                                            <option value="{{ loteria['nombre'] }}" title="{{ loteria['a'] }}, {{ loteria['b'] }}{% if not loteria['c'] %}{% else %}, {{ loteria['c']}}{% endif %}">{{ loteria['nombre'] }}</option>
+                                            {% if recent.item == loteria.nombre %}
+                                                <option selected value="{{ loteria['nombre'] }}" title="{{ loteria['a'] }}, {{ loteria['b'] }}{% if not loteria['c'] %}{% else %}, {{ loteria['c']}}{% endif %}">{{ loteria['nombre'] }}</option>
+                                            {% else %}
+                                                <option value="{{ loteria['nombre'] }}" title="{{ loteria['a'] }}, {{ loteria['b'] }}{% if not loteria['c'] %}{% else %}, {{ loteria['c']}}{% endif %}">{{ loteria['nombre'] }}</option>
+                                            {% endif %}
                                         {% endif %}
                                     {% endfor %}
                                 </optgroup>
@@ -132,10 +140,19 @@ Projections
                         <div class="form-group">
                             <h6>Color A</h6>
                             {% for color in templates.colors %}
-                            <div class="custom-control custom-radio">
-                                <input class="form-check-input" type="radio" id="{{ color.name }}a" name="color_a" value="{{ color.name }}">
-                                <label for="{{ color.name }}a">{{ color.emoji }} {{ color.name }}</label>
-                            </div>
+                                {% if recent. == color.name %}
+                                    <div class="custom-control custom-radio">
+                                        <input selected class="form-check-input" type="radio" id="{{ color.name }}a" name="color_a" value="{{ color.name }}">
+                                        <label for="{{ color.name }}a">{{ color.emoji }} {{ color.name }}</label>
+                                    </div>
+                                {% else %}
+                                    <div class="custom-control custom-radio">
+                                        <input class="form-check-input" type="radio" id="{{ color.name }}a" name="color_a" value="{{ color.name }}">
+                                        <label for="{{ color.name }}a">{{ color.emoji }} {{ color.name }}</label>
+                                    </div>
+                                {% endif %}
+
+
                             {% endfor %}
                         </div>
                     </div>
@@ -145,10 +162,18 @@ Projections
                         <div class="form-group">
                             <h6>Color B</h6>
                             {% for color in templates.colors %}
-                            <div class="custom-control custom-radio">
-                                <input class="form-check-input" type="radio" id="{{ color.name }}b" name="color_b" value="{{ color.name }}">
-                                <label for="{{ color.name }}b">{{ color.emoji }} {{ color.name }}</label>
-                            </div>
+                                {% if recent.b == color.name %}
+                                    <div class="custom-control custom-radio">
+                                        <input selected class="form-check-input" type="radio" id="{{ color.name }}b" name="color_b" value="{{ color.name }}">
+                                        <label for="{{ color.name }}b">{{ color.emoji }} {{ color.name }}</label>
+                                    </div>
+                                {% else %}
+                                    <div class="custom-control custom-radio">
+                                        <input class="form-check-input" type="radio" id="{{ color.name }}b" name="color_b" value="{{ color.name }}">
+                                        <label for="{{ color.name }}b">{{ color.emoji }} {{ color.name }}</label>
+                                    </div>
+                                {% endif %}
+        
                             {% endfor %}
                         </div>
                     </div>
@@ -158,10 +183,18 @@ Projections
                         <div class="form-group">
                             <h6>Color C</h6>
                             {% for color in templates.colors %}
-                            <div class="custom-control custom-radio">
-                                <input class="form-check-input" type="radio" id="{{ color.name }}c" name="color_c" value="{{ color.name }}">
-                                <label for="{{ color.name }}c">{{ color.emoji }} {{ color.name }}</label>
-                            </div>
+                                {% if recent.c == color.name %}
+                                    <div class="custom-control custom-radio">
+                                        <input selected class="form-check-input" type="radio" id="{{ color.name }}c" name="color_c" value="{{ color.name }}">
+                                        <label for="{{ color.name }}c">{{ color.emoji }} {{ color.name }}</label>
+                                    </div>
+                                {% else %}
+                                    <div class="custom-control custom-radio">
+                                        <input class="form-check-input" type="radio" id="{{ color.name }}c" name="color_c" value="{{ color.name }}">
+                                        <label for="{{ color.name }}c">{{ color.emoji }} {{ color.name }}</label>
+                                    </div>
+                                {% endif %}
+
                             {% endfor %}
                             <div class="custom-control custom-radio">
                                 <input class="form-check-input" type="radio" id="nocolor" name="color_c" value="None">
@@ -176,10 +209,17 @@ Projections
                             <h6>Size</h6>
                             <!-- <label for="size">Size</label> -->
                             {% for size in templates.sizes %}
-                            <div class="custom-control custom-radio">
-                                <input class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.shortname }}">
-                                <label for="{{ size.longname }}">{{ size.longname }}</label>
-                            </div>
+                                {% if recent.size == size.shortname %}
+                                    <div class="custom-control custom-radio">
+                                        <input selected class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.shortname }}">
+                                        <label for="{{ size.longname }}">{{ size.longname }}</label>
+                                    </div>
+                                {% else %}
+                                    <div class="custom-control custom-radio">
+                                        <input class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.shortname }}">
+                                        <label for="{{ size.longname }}">{{ size.longname }}</label>
+                                    </div>
+                                {% endif %}
                             {% endfor %}
                         </div>
                             <!-- Quantity -->

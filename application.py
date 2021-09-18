@@ -1217,9 +1217,15 @@ def projections():
 
         templates = gather_templates()
 
+
+        if not 'recent_item' in session :
+            session['recent_item'] = 'None'
+            print("not recent item")
+        print(f"loading items{session}")
+
         # Select projections from current cycle only
         projections = db.execute("SELECT * FROM projections WHERE cycle=:active ORDER BY size ASC, name DESC, qty DESC", active=active)
-        return render_template('projections.html', templates=templates, projections=projections, current=current, cycles=cycles, total=total)
+        return render_template('projections.html', templates=templates, projections=projections, current=current, cycles=cycles, total=total, recent=session['recent_item'])
 
 
     # Upon POSTing form submission
@@ -1233,6 +1239,16 @@ def projections():
 
         print("input")
         print(item, size, a, b, c, qty)
+
+
+        session['recent_projection'] = {
+            'item': item,
+            'size': size,
+            'a': a,
+            'b': b,
+            'c': c,
+            'qty': qty,
+        }
 
         ## Validation
         # Return error if missing basic entries
