@@ -1022,9 +1022,6 @@ def items():
         print(qty, item, size, a, b, c, deplete)
 
 
-        return redirect('/items')
-
-
         ## Validation ##
 
         # Return error if missing basic entries
