@@ -664,7 +664,7 @@ def build_production(templates):
 
 
 ###### MAIN ROUTES ######
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 @login_required
 def dashboard():
 
@@ -784,6 +784,78 @@ def dashboard():
             time=time,
             grand_total=grand_total)
 
+    else:
+        return redirect("/")
+
+@app.route('/parts/<part>', methods=['GET', 'POST'])
+@login_required
+def parts(part):
+
+    if request.method == 'GET':
+
+        templates = gather_templates()
+        build_production(templates)
+
+        # Determine if color
+        is_color = False
+        for color in templates['colors']:
+            if color['name'] == part:
+                cur_color = color
+                is_color = True
+
+        if is_color == True:
+
+            #TODO v1.0 update, eliminate like
+            part_like = cur_color['name']
+            part_like = '%' + part
+            # part_like = part
+            productions = db.execute("SELECT * FROM production WHERE color LIKE :name \
+                ORDER BY qty DESC", name=part_like)
+
+            print(cur_color)
+            inventory = db.execute("SELECT * FROM parts WHERE color LIKE :name \
+                ORDER BY QTY DESC", name=part_like)
+    
+            if not 'recent_part' in session :
+                session['recent_part'] = 'None'
+
+            return render_template('parts.html', cur_color=cur_color, templates=templates, productions=productions, inventory=inventory, recent=session['recent_part'])
+
+        if part == 'backs':
+            cur_color = {
+                'name': 'backs',
+                'emoji': '🍑'
+            }
+
+            productions = db.execute("SELECT * FROM production WHERE name LIKE '%Backs' ORDER BY qty DESC")
+            inventory = db.execute("SELECT * FROM PARTS WHERE name LIKE '%Backs' ORDER BY qty DESC")
+
+            print("part is a back...")
+            print(f"productions:{productions}")
+
+            return render_template('parts.html', cur_color=cur_color, templates=templates, part=part, productions=productions, inventory=inventory)
+
+        if part == 'boxes':
+
+            # Box Production Total
+            box_prod_total = db.execute("SELECT SUM(qty) FROM boxprod")
+            box_prod_total = box_prod_total[0]['sum']
+
+            # Box Inventory & Production
+            boxes = db.execute("SELECT * FROM boxes")
+            boxprod = db.execute("SELECT * FROM boxprod")
+            boxused = db.execute("SELECT * FROM boxused")
+
+            cur_color = {
+                'name': 'boxes',
+                'emoji': '📦'
+            }
+
+            return render_template('boxes.html', cur_color=cur_color, templates=templates, boxes=boxes, boxprod=boxprod, boxused=boxused, box_prod_total=box_prod_total)
+
+        else:
+            flash("Invalid part descriptor")
+            return redirect("/")
 
     # Upon POSTing form submission
     else:
@@ -792,6 +864,13 @@ def dashboard():
         color = request.form.get("color")
         qty = int(request.form.get("qty"))
         print(f"POST TO '/' with: {part}, {size}, {color}, {qty}")
+
+        session['recent_part'] = {
+            'part': part,
+            'size': size,
+            'color': color,
+            'qty': qty
+        }
 
         if not size:
             
@@ -899,78 +978,6 @@ def dashboard():
         build_production(templates)
         flash(f"Sucessfully created {qty} {size} {color} {part}")
         return redirect(f'/parts/{color}')
-
-
-@app.route('/parts/<part>', methods=['GET', 'POST'])
-@login_required
-def parts(part):
-
-    if request.method == 'GET':
-
-        templates = gather_templates()
-        build_production(templates)
-
-        # Determine if color
-        is_color = False
-        for color in templates['colors']:
-            if color['name'] == part:
-                cur_color = color
-                is_color = True
-
-        if is_color == True:
-
-            #TODO v1.0 update, eliminate like
-            part_like = cur_color['name']
-            part_like = '%' + part
-            # part_like = part
-            productions = db.execute("SELECT * FROM production WHERE color LIKE :name \
-                ORDER BY qty DESC", name=part_like)
-
-            print(cur_color)
-            inventory = db.execute("SELECT * FROM parts WHERE color LIKE :name \
-                ORDER BY QTY DESC", name=part_like)
-    
-            return render_template('parts.html', cur_color=cur_color, templates=templates, productions=productions, inventory=inventory)
-
-        if part == 'backs':
-            cur_color = {
-                'name': 'backs',
-                'emoji': '🍑'
-            }
-
-            productions = db.execute("SELECT * FROM production WHERE name LIKE '%Backs' ORDER BY qty DESC")
-            inventory = db.execute("SELECT * FROM PARTS WHERE name LIKE '%Backs' ORDER BY qty DESC")
-
-            print("part is a back...")
-            print(f"productions:{productions}")
-
-            return render_template('parts.html', cur_color=cur_color, templates=templates, part=part, productions=productions, inventory=inventory)
-
-        if part == 'boxes':
-
-            # Box Production Total
-            box_prod_total = db.execute("SELECT SUM(qty) FROM boxprod")
-            box_prod_total = box_prod_total[0]['sum']
-
-            # Box Inventory & Production
-            boxes = db.execute("SELECT * FROM boxes")
-            boxprod = db.execute("SELECT * FROM boxprod")
-            boxused = db.execute("SELECT * FROM boxused")
-
-            cur_color = {
-                'name': 'boxes',
-                'emoji': '📦'
-            }
-
-            return render_template('boxes.html', cur_color=cur_color, templates=templates, boxes=boxes, boxprod=boxprod, boxused=boxused, box_prod_total=box_prod_total)
-
-        else:
-            flash("Invalid part descriptor")
-            return redirect("/")
-
-    # Upon POST
-    else:
-        return redirect("/")        
 
 
 @app.route('/items', methods=['GET', 'POST'])
@@ -1217,16 +1224,12 @@ def projections():
 
         templates = gather_templates()
 
-
-        if not 'recent_item' in session :
-            session['recent_item'] = 'None'
-            print("not recent item")
-        print(f"loading items{session}")
+        if not 'recent_projection' in session :
+            session['recent_projection'] = 'None'
 
         # Select projections from current cycle only
         projections = db.execute("SELECT * FROM projections WHERE cycle=:active ORDER BY size ASC, name DESC, qty DESC", active=active)
-        return render_template('projections.html', templates=templates, projections=projections, current=current, cycles=cycles, total=total, recent=session['recent_item'])
-
+        return render_template('projections.html', templates=templates, projections=projections, current=current, cycles=cycles, total=total, recent=session['recent_projection'])
 
     # Upon POSTing form submission
     else:

@@ -42,7 +42,7 @@ Items
     <div class="row align-items-start">
         <div class="col-md-5 col-sm-12">
             <br>
-            <form action="/" method="post">
+            <form action="/parts/#" method="post">
                 <div class="row">
                     <div class="col">
                         <h3 style="text-transform: capitalize;">Make {{ cur_color.emoji }} {{ cur_color.name }}</h3>
@@ -182,7 +182,7 @@ Items
                         {% for production in productions %}
                             {% if production.size==size.shortname %}
                                 <tr>
-                                    <form action="/" method="POST">
+                                    <form action="/parts/#" method="POST">
                                         <div class="">
                                             <td>
                                                 {{ production.name }}
