@@ -12,6 +12,19 @@ Inventory management and production tracking webapp
 ## Description
 To capture, calculate, and display all data pertaining to producing laser cut wooden art pieces en mass for Nailivic Studios.
 
+### How It Works
+Build the parts laser queue from projections:
+
+1. Total a given event's target production
+2. Subtract matching items already in inventory
+3. Determine parts needed for remaining total
+4. Subtract parts already in inventory
+5. Store remaining totals into laser queue
+6. Also add corresponding backs and boxes
+
+Producing parts and making items and boxes updates the laser production queue in real time.
+
+
 ### How to Use
 - Parts: Add to, remove from, or view inventory of laser etched parts
 - Items: Add to, remove from, or view inventory of assembled items 

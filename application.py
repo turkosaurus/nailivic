@@ -818,6 +818,7 @@ def parts(part):
     
             if not 'recent_part' in session :
                 session['recent_part'] = 'None'
+            print(session)
 
             return render_template('parts.html', cur_color=cur_color, templates=templates, productions=productions, inventory=inventory, recent=session['recent_part'])
 
@@ -902,8 +903,13 @@ def parts(part):
             # Update existing entry's quantity
             else:
                 new_qty = onhand[0]['qty'] + qty
-                db.execute("UPDATE parts SET qty=:qty WHERE \
-                            name=:name AND size=:size", qty=new_qty, name=part, size=size)
+
+                if new_qty < 1:
+                    db.execute("DELETE FROM parts WHERE \
+                                name=:name AND size=:size", name=part, size=size)
+                else:
+                    db.execute("UPDATE parts SET qty=:qty WHERE \
+                                name=:name AND size=:size", qty=new_qty, name=part, size=size)
                 print(f"Existing {size} {part} inventory quantity updated from {onhand[0]['qty']} to {new_qty}.")                        
 
             # Update production queue
@@ -937,8 +943,6 @@ def parts(part):
             print(f"Fetching onhand parts...")
             print(onhand)
 
-            #TODO replicate this bug
-            #BUG this is creating duplicates for backs
             # None, create new entry
             if not onhand:
                 db.execute("INSERT INTO parts (name, size, color, qty) VALUES \
@@ -949,8 +953,12 @@ def parts(part):
             # Update existing entry's quantity
             else:
                 new_qty = onhand[0]['qty'] + qty
-                db.execute("UPDATE parts SET qty=:qty WHERE \
-                            name=:name AND size=:size AND color=:color", qty=new_qty, name=part, size=size, color=color)
+                if new_qty < 1:
+                    db.execute("DELETE FROM parts WHERE \
+                                name=:name AND size=:size AND color=:color", name=part, size=size, color=color)
+                else:
+                    db.execute("UPDATE parts SET qty=:qty WHERE \
+                                name=:name AND size=:size AND color=:color", qty=new_qty, name=part, size=size, color=color)
                 print(f"Existing {size} {color} {part} inventory quantity updated from {onhand[0]['qty']} to {new_qty}.")                        
 
             # Update production queue
@@ -1243,6 +1251,7 @@ def projections():
         print("input")
         print(item, size, a, b, c, qty)
 
+        templates = gather_templates()
 
         session['recent_projection'] = {
             'item': item,
@@ -1252,6 +1261,18 @@ def projections():
             'c': c,
             'qty': qty,
         }
+
+        itemdata = {
+            'name': item,
+            'size': size,
+            'a_color': a,
+            'b_color': b,
+            'c_color': c,
+            'qty': qty,
+        }
+
+        sku = generate_sku(templates, itemdata)
+        print(f"sku:{sku}")
 
         ## Validation
         # Return error if missing basic entries
@@ -1305,24 +1326,36 @@ def projections():
 
         # None, create new entry
         if not projected:
-            db.execute("INSERT INTO projections (name, size, a_color, b_color, c_color, qty, cycle) VALUES \
-                        (:name, :size, :a_color, :b_color, :c_color, :qty, :cycle)", \
-                        name=item, size=size, a_color=a, b_color=b, c_color=c, qty=qty, cycle=cycle)
-            flash(f"Added to projections: {qty} {size} {item} ({a}, {b}, {c})")
+            db.execute("INSERT INTO projections (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES \
+                        (:name, :size, :a_color, :b_color, :c_color, :qty, :cycle, :sku)", \
+                        name=item, size=size, a_color=a, b_color=b, c_color=c, qty=qty, cycle=cycle, sku=sku)
+            flash(f"Added to projections: {qty} {size} {item} ({a}, {b}, {c}) [{sku}]")
 
         # Update existing entry's quantity
         else:
             updated = projected[0]['qty'] + qty
 
             if not c:
-                db.execute("UPDATE projections SET qty=:updated WHERE \
+                if updated < 1:
+                    db.execute("DELETE FROM projections WHERE \
+                        name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND cycle=:cycle", \
+                        name=item, size=size, a_color=a, b_color=b, cycle=cycle)
+
+                else:
+                    db.execute("UPDATE projections SET qty=:updated WHERE \
                         name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND cycle=:cycle", \
                         updated=updated, name=item, size=size, a_color=a, b_color=b, cycle=cycle)
-                # queuepart()
+    
                 flash(f"Added to projections: {qty} {size} {item} ({a}, {b})")
 
             else:
-                db.execute("UPDATE projections SET qty=:updated WHERE \
+                if updated < 1:
+                    db.execute("DELETE FROM projections WHERE \
+                        name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color \
+                        AND cycle=:cycle", \
+                        name=item, size=size, a_color=a, b_color=b, c_color=c, cycle=cycle)
+                else:
+                    db.execute("UPDATE projections SET qty=:updated WHERE \
                         name=:name AND size=:size AND a_color=:a_color AND b_color=:b_color AND c_color=:c_color \
                         AND cycle=:cycle", \
                         updated=updated, name=item, size=size, a_color=a, b_color=b, c_color=c, cycle=cycle)
@@ -1331,7 +1364,6 @@ def projections():
 
             print("Existing projection updated.")
         
-        templates = gather_templates()
         build_production(templates)
 
         return redirect('/projections')

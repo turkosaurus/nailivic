@@ -42,7 +42,7 @@ Items
     <div class="row align-items-start">
         <div class="col-md-5 col-sm-12">
             <br>
-            <form action="/parts/#" method="post">
+            <form action="/parts/post" method="post">
                 <div class="row">
                     <div class="col">
                         <h3 style="text-transform: capitalize;">Make {{ cur_color.emoji }} {{ cur_color.name }}</h3>
@@ -56,20 +56,38 @@ Items
                             {% if cur_color.name == 'backs' %}
                                 <select class="form-control" name="part" id="part">
                                     {% for loteria in templates.loterias %}
-                                        <option value="{{ loteria.backs }}">{{ loteria.backs }}</option>
+                                        {% if recent.part == loteria.backs %}
+                                            <option value="{{ loteria.backs }}" selected>{{ loteria.backs }}</option>
+                                        {% else %}
+                                            <option value="{{ loteria.backs }}">{{ loteria.backs }}</option>
+                                        {% endif %}
                                     {% endfor %}
                                 </select>
                             {% else %}
                                 <select class="form-control" name="part" id="part">
                                     {% for loteria in templates.loterias %}
-                                    <optgroup label="{{ loteria.nombre }}">
-                                        <option value="{{ loteria.a }}">{{ loteria.a }}</option>
-                                        <option value="{{ loteria.b }}">{{ loteria.b }}</option>
-                                        {% if loteria.c != '' %}
-                                        <option value="{{ loteria.c }}">{{ loteria.c }}</option>
-                                        {% endif %}
-                                    </optgroup>
-                                {% endfor %}
+                                        <optgroup label="{{ loteria.nombre }}">
+                                            {% if recent.part == loteria.a %}
+                                                <option value="{{ loteria.a }}" selected>{{ loteria.a }}</option>
+                                            {% else %}
+                                                <option value="{{ loteria.a }}">{{ loteria.a }}</option>
+                                            {% endif %}
+
+                                            {% if recent.part == loteria.b %}
+                                                <option selected value="{{ loteria.b }}">{{ loteria.b }}</option>
+                                            {% else %}
+                                                <option value="{{ loteria.b }}">{{ loteria.b }}</option>
+                                            {% endif %}
+
+                                            {% if loteria.c != '' %}
+                                                {% if recent.part == loteria.c %}
+                                                    <option selected value="{{ loteria.c }}">{{ loteria.c }}</option>
+                                                {% else %}
+                                                    <option value="{{ loteria.c }}">{{ loteria.c }}</option>
+                                                {% endif %}
+                                            {% endif %}
+                                        </optgroup>
+                                    {% endfor %}
                                 </select>
                             {% endif %}
                         </div>
@@ -87,10 +105,17 @@ Items
                             <!-- <h4>Size</h4> -->
                             <label for="size">Size</label>
                             {% for size in templates.sizes %}
-                            <div class="custom-control custom-radio">
-                                <input class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.shortname }}">
-                                <label for="{{ size.longname }}">{{ size.longname }}</label>
-                            </div>
+                                {% if recent.size == size.shortname %}
+                                    <div class="custom-control custom-radio">
+                                        <input checked="checked" class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.shortname }}">
+                                        <label for="{{ size.longname }}">{{ size.longname }}</label>
+                                    </div>
+                                {% else %}
+                                    <div class="custom-control custom-radio">
+                                        <input class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.shortname }}">
+                                        <label for="{{ size.longname }}">{{ size.longname }}</label>
+                                    </div>
+                                {% endif %}
                             {% endfor %}
                         </div>
                     </div>
@@ -182,7 +207,7 @@ Items
                         {% for production in productions %}
                             {% if production.size==size.shortname %}
                                 <tr>
-                                    <form action="/parts/#" method="POST">
+                                    <form action="/parts/post" method="POST">
                                         <div class="">
                                             <td>
                                                 {{ production.name }}

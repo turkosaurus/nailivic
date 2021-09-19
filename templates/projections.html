@@ -19,12 +19,12 @@ Projections
             <h1>{{ current[0].name }} <span class="badge badge-secondary">{{ total.0.sum }}</span></h1>
         </div>
     </div>
-    <a href="#additem"><img src='static/arrow-circle-down-solid.svg' width="25em"></a> Jump to <a href="#additem">Add Item</a>
+    <a href="#additem"><img src='static/arrow-circle-down-solid.svg' width="25em"></a> Jump to <a href="#additem">Add Projection</a>
     <hr>
     <br>
 
     <div class="row">
-        <div class="col-md-6 col-sm-12">
+        <div class="col-lg-8 col-md-6 col-sm-12">
             <!-- Cycle Choice -->
             <form action="/admin/cycle" method="post">
                 <div class="form-group">
@@ -40,14 +40,11 @@ Projections
                         Changes active event and rebuilds laser queue <small>(<a href="/admin#events">settings</a>)</small>
                     </small>
                 </div>
-                <br>
-                <button type="submit" class="btn btn-primary btn-block btn-lg" onclick="return confirm('Recompute production?')">Load Event Production</button>
+                <button type="submit" class="btn btn-primary btn-block" onclick="return confirm('Recompute production?')">Load Event Production</button>
                 <small id="cycle" class="form-text text-muted">
                     Recalculates laser queue using selected event's projections.
                 </small>
             </form>
-
-            <br>
 
             <!-- <div class="form-group">
                 <h2>Upload Projections</h2>
@@ -65,18 +62,8 @@ Projections
 
             <br>
         </div>
-        <div class="col-md-6 col-sm-12">
-            <h2>How It Works</h2>
-            <p>Build the parts laser queue from projections:</p>
-            <ol>
-                <li>Total a given event's target production</li>
-                <li>Subtract matching items already in inventory</li>
-                <li>Determine parts needed for remaining total</li>
-                <li>Subtract parts already in inventory</li>
-                <li>Store remaining totals into laser queue</li>
-                <li>Also add corresponding backs and boxes</li>
-            </ol>
-            <p>Producing parts and making items and boxes updates the laser production queue in real time.</p>
+        <div class="col-lg-4 col-md-6 col-sm-12">
+
         </div>
     </div>
 
@@ -140,9 +127,9 @@ Projections
                         <div class="form-group">
                             <h6>Color A</h6>
                             {% for color in templates.colors %}
-                                {% if recent. == color.name %}
+                                {% if recent.a == color.name %}
                                     <div class="custom-control custom-radio">
-                                        <input selected class="form-check-input" type="radio" id="{{ color.name }}a" name="color_a" value="{{ color.name }}">
+                                        <input checked="checked" class="form-check-input" type="radio" id="{{ color.name }}a" name="color_a" value="{{ color.name }}">
                                         <label for="{{ color.name }}a">{{ color.emoji }} {{ color.name }}</label>
                                     </div>
                                 {% else %}
@@ -151,8 +138,6 @@ Projections
                                         <label for="{{ color.name }}a">{{ color.emoji }} {{ color.name }}</label>
                                     </div>
                                 {% endif %}
-
-
                             {% endfor %}
                         </div>
                     </div>
@@ -164,7 +149,7 @@ Projections
                             {% for color in templates.colors %}
                                 {% if recent.b == color.name %}
                                     <div class="custom-control custom-radio">
-                                        <input selected class="form-check-input" type="radio" id="{{ color.name }}b" name="color_b" value="{{ color.name }}">
+                                        <input checked="checked" class="form-check-input" type="radio" id="{{ color.name }}b" name="color_b" value="{{ color.name }}">
                                         <label for="{{ color.name }}b">{{ color.emoji }} {{ color.name }}</label>
                                     </div>
                                 {% else %}
@@ -185,7 +170,7 @@ Projections
                             {% for color in templates.colors %}
                                 {% if recent.c == color.name %}
                                     <div class="custom-control custom-radio">
-                                        <input selected class="form-check-input" type="radio" id="{{ color.name }}c" name="color_c" value="{{ color.name }}">
+                                        <input checked="checked" class="form-check-input" type="radio" id="{{ color.name }}c" name="color_c" value="{{ color.name }}">
                                         <label for="{{ color.name }}c">{{ color.emoji }} {{ color.name }}</label>
                                     </div>
                                 {% else %}
@@ -211,7 +196,7 @@ Projections
                             {% for size in templates.sizes %}
                                 {% if recent.size == size.shortname %}
                                     <div class="custom-control custom-radio">
-                                        <input selected class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.shortname }}">
+                                        <input checked="checked" class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.shortname }}">
                                         <label for="{{ size.longname }}">{{ size.longname }}</label>
                                     </div>
                                 {% else %}
