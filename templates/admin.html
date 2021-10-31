@@ -17,6 +17,9 @@ Admin -
         <div class="col">
             <ul class="list-inline">
                 <li class="list-inline-item">
+                    <a href='/admin#users'>Users</a>
+                </li>
+                <li class="list-inline-item">
                     <a href='/admin#events'>Events</a>
                 </li>
                 <li class="list-inline-item">
@@ -34,6 +37,52 @@ Admin -
     </div>
     
     <br>
+
+    <div class="row">
+        <div class="col">
+            <h2 class="display-4" id='users'>
+                Users
+            </h2>
+            <p>
+                <a href='/admin#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"></a> <a href='/admin#navbartop'>return to top</a>
+            </p>
+            <br>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 col-sm-12">
+            <table class="table table-sm table-hover table-dark">
+                <thead>
+                    <tr>
+                        <td>
+                            User
+                        </td>
+                        <td>
+                            Last Login
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td>
+                                {{ user.username }}
+                            </td>
+                            <td>
+                                {{ user.last_login }} UTC
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+
+    <hr>
+    <br>
+
 
     <div class="row">
         <div class="col">

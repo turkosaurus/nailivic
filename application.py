@@ -834,7 +834,10 @@ def parts(part):
             print("part is a back...")
             print(f"productions:{productions}")
 
-            return render_template('parts.html', cur_color=cur_color, templates=templates, part=part, productions=productions, inventory=inventory)
+            if not 'recent_part' in session :
+                session['recent_part'] = 'None'
+
+            return render_template('parts.html', cur_color=cur_color, templates=templates, part=part, productions=productions, inventory=inventory, recent=session['recent_part'])
 
         if part == 'boxes':
 
@@ -1485,8 +1488,9 @@ def admin():
 
     templates = gather_templates()
     cycles = db.execute("SELECT * FROM cycles")
+    users = db.execute("SELECT username, last_login FROM users ORDER BY last_login DESC")
 
-    return render_template('admin.html', templates=templates, cycles=cycles)
+    return render_template('admin.html', templates=templates, cycles=cycles, users=users)
 
 
 @app.route('/admin/<path>', methods=['GET', 'POST'])
