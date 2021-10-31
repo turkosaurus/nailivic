@@ -1788,6 +1788,7 @@ def config(path):
                     values = sql_cat(values)
 
                     # TODO ensure no duplicate SKUs
+                    db.execute("DELETE FROM projections WHERE cycle=:event", event=event)
                     db.execute(f"INSERT INTO projections (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES {values}")
 
                 cycle_name = db.execute("SELECT name FROM cycles WHERE id=:event", event=event)

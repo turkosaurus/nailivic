@@ -1,6 +1,6 @@
 name,size,sku,a_color,b_color,c_color,d_unused,qty,cycle
-La Calavera,S,520103030001,black,TQ,TQ,,5,26
-La Calavera,S,520105050001,black,green,green,,5,26
+La Calavera,S,420103030001,black,TQ,TQ,,5,26
+La Calavera,S,420105050001,black,green,green,,5,26
 La Estrella,S,350102000001,black,red,,,3,26
 La Estrella,S,350103000001,black,TQ,,,3,26
 La Estrella,S,350203000001,red,TQ,,,3,26
@@ -26,7 +26,7 @@ La Sirena,S,060102050001,black,red,green,,15,26
 La Sirena,S,060103030001,black,TQ,TQ,,10,26
 La Sirena,S,060104050001,black,yellow,green,,10,26
 La Sirena,S,060204030001,red,yellow,TQ,,10,26
-La Calavera,S,520102020001,black,red,red,,5,26
+La Calavera,S,420102020001,black,red,red,,5,26
 El Musico,M,320103000002,black,TQ,,,2,26
 El Musico,M,320203000002,red,TQ,,,2,26
 El Musico,M,320302000002,TQ,red,,,2,26
@@ -42,9 +42,9 @@ La Sirena,M,060102020002,black,red,red,,3,26
 La Sirena,M,060103030002,black,TQ,TQ,,5,26
 La Sirena,M,060104050002,black,yellow,green,,3,26
 La Sirena,M,060204030002,red,yellow,TQ,,3,26
-La Calavera,M,520102020002,black,red,red,,3,26
-La Calavera,M,520103030002,black,TQ,TQ,,3,26
-La Calavera,M,520105050002,black,green,green,,3,26
+La Calavera,M,420102020002,black,red,red,,3,26
+La Calavera,M,420103030002,black,TQ,TQ,,3,26
+La Calavera,M,420105050002,black,green,green,,3,26
 El Pulpo,M,360102020002,black,red,red,,5,26
 El Pulpo,M,360103030002,black,TQ,TQ,,5,26
 El Pulpo,M,360203030002,red,TQ,TQ,,5,26
