@@ -416,10 +416,10 @@ Admin -
                     <select class="col-8 form-control" name="nombre" id="nombre">
                         <!-- <option title="">Select Event</option> -->
                         {% for loteria in templates.loterias %}
-                        <option title="" value="{{ loteria.sku }}">{{ loteria.sku }} - {{ loteria.nombre }}</option>
+                            <option title="" value="{{ loteria.sku }}">{{ loteria.sku }} - {{ loteria.nombre }}</option>
                         {% endfor %}    
                     </select>
-                </div>    
+                </div>
 
                 <br>
 
@@ -445,6 +445,7 @@ Admin -
 
                 <br>
 
+                
                 <div class="form-row">
                     <label class="col-4" for="c">Color C</label>
                     <select class="col-8 form-control" name="c" id="c">
@@ -454,20 +455,19 @@ Admin -
                         {% endfor %}    
                     </select>
                 </div>    
-
+                
                 <br>
-
-                <!-- <div class="form-row">
-                    <label class="col-4" for="d">Color D</label>
-                    <select class="col-8 form-control" name="d" id="d">
-                        <option selected title="Defaults to 00" value="00">none</option>
-                        {% for color in colors %}
-                            <option title="" value="{{ color.sku }}">{{ color.emoji }} {{ color.name }}</option>
+                
+                <div class="form-row">
+                    <label class="col-4" for="type">Type</label>
+                    <select class="col-8 form-control" name="type" id="type">
+                        {% for type in templates.types %}
+                        <option title="" value="{{ type.sku }}">{{ type.sku }} - {{ type.name }}</option>
                         {% endfor %}    
                     </select>
-                </div>     -->
+                </div>    
 
-                <!-- <br> -->
+                <br>
 
                 <div class="form-row">
                     <label class="col-4" for="size">Size</label>
@@ -507,7 +507,7 @@ Admin -
                     __ XX XX XX __ __ = colors
                 </li>
                 <li>
-                    __ __ __ __ 00 __ = unused
+                    __ __ __ __ 00 __ = type
                 </li>
                 <li>
                     __ __ __ __ __ XX = size

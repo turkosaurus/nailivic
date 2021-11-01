@@ -81,14 +81,16 @@ def allowed_file(filename):
 def gather_templates():
 
     # Gather template data
-    loterias = db.execute("SELECT * FROM loterias")
+    loterias = db.execute("SELECT * FROM loterias ORDER BY SKU ASC")
     colors = db.execute("SELECT * FROM colors")
     sizes = db.execute("SELECT * FROM sizes")
+    types = db.execute("SELECT * FROM types")
 
     response = {
         'loterias': loterias,
         'colors': colors,
-        'sizes': sizes
+        'sizes': sizes,
+        'types': types
     }
 
     return response
@@ -109,7 +111,7 @@ def parse_sku(sku):
         'a': (int(sku[2]) * 10) + int(sku[3]),
         'b': (int(sku[4]) * 10) + int(sku[5]),
         'c': (int(sku[6]) * 10) + int(sku[7]),
-        'd': (int(sku[8]) * 10) + int(sku[9]),
+        'type': (int(sku[8]) * 10) + int(sku[9]),
         'size': (int(sku[10]) * 10) + int(sku[11]),
         'sku': sku
         }
@@ -165,8 +167,10 @@ def generate_item(templates, sku):
     if sku['c'] == 0:
         named['c'] = ''
 
-    # Unused placeholder
-    named['d'] = ''
+    # Type
+    for type in templates['types']:
+        if type['sku'] == sku['type']:
+            named['type'] = type['name']
 
     # SKU > size name
     for size in templates['sizes']:
@@ -184,7 +188,8 @@ def generate_sku(templates, item):
         'a': False,
         'b': False,
         'c': False,
-        'size': False
+        'size': False,
+        'type': False
     }
     print(f"valid:{valid}")
 
@@ -222,8 +227,20 @@ def generate_sku(templates, item):
         sku = sku + str(00).zfill(2)
         valid['c'] = True
 
-    # Unused placeholder
-    sku = sku + str(00).zfill(2)
+    # TODO replace with simpler if/else?
+    try:
+        print(80 * "X")
+        for type in templates['types']:
+            print(f"{type['name']}{item['type']}")
+            if type['name'] == item['type']:
+                print(type['sku'])
+                type_num = type['sku']
+    
+    except:
+        type_num = 0 # Laser Cuts do not specify their type, default to 0
+
+    finally:
+        sku = sku + str(type_num).zfill(2)
 
     # Size name > SKU
     for size in templates['sizes']:
@@ -2202,11 +2219,10 @@ def config(path):
             a = str(request.form.get("a")).zfill(2)
             b = str(request.form.get("b")).zfill(2)
             c = str(request.form.get("c")).zfill(2)
-            d = str("00")   
-            # d = str(request.form.get("d")).zfill(2)
+            type = str(request.form.get("type")).zfill(2)
             size = str(request.form.get("size")).zfill(2)
 
-            sku = nombre + a + b + c + d + size
+            sku = nombre + a + b + c + type + size
 
             # flash(f"SKU: {sku}")
             message = Markup(f"""
