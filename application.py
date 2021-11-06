@@ -326,20 +326,31 @@ def build_production(templates):
 
     # Initiate queue list and counter
     queue = []
-    # Parts Queue Counter
-    i = 0
+    i = 0 # Parts Queue Counter
 
     box_queue = []
-    # Box Queue Counter
-    j = 0
+    j = 0 # Box Queue Counter
 
-    total_projections = 0
+    progress = {
+        'item_projection': 0,
+        'item_inventory': 0,
+        'item_percent': 0,
+        'parts_projection': 0,
+        'parts_inventory': 0,
+        'parts_percent': 0,
+        'box_projection': 0,
+        'box_inventory': 0,
+        'box_percent': 0
+    }
+
 
     # print(f"projections:{projections}")
 
     # Add each projections required parts to production queue, minus items already on hand in inventory
     # (parts will be subtracted later)
     for projection in projections:
+
+        progress['item_projection'] += projection['qty']
 
         print("-" * 80)
         print(f"Projection:{projection['qty']} {projection['name']} {projection['size']} {projection['a_color']}/{projection['b_color']}/{projection['c_color']}")
@@ -381,6 +392,7 @@ def build_production(templates):
 
                 # Subtract assembled items qty from projections qty
                 projection['qty'] -= item['qty']
+                progress['item_inventory'] += item['qty']
 
                 print (f"{item['qty']} {item['size']} {item['name']} {item['a_color']}/{item['b_color']}/{item['c_color']} already in inventory")
 
@@ -549,6 +561,8 @@ def build_production(templates):
     # Subtract existing parts from queue
     for q in queue:
 
+        progress['parts_projection'] += int(q[3])
+
         # print(f"q:{q}")
         for part in parts:
 
@@ -559,6 +573,11 @@ def build_production(templates):
 
                 print(f"Matched {part['name']} {part['size']} {part['color']}")
                 print(f"Need {q[3]}, have {part['qty']}")
+
+                if int(q[3]) > part['qty']:
+                    progress['parts_inventory'] += part['qty']
+                else:
+                    progress['parts_inventory'] += int(q[3])
 
                 if part['qty'] == 0:
                     continue
@@ -623,11 +642,15 @@ def build_production(templates):
                 total += int(box[1])
                 # print(f"found {loteria['nombre']} in queue, total up to {total}")
 
+                progress['box_projection'] += total
+
         # Subtract existing box inventory
         for box in boxes:
             if box['name'] == loteria['nombre']:
                 total -= box['qty']
                 # print(f"found {loteria['nombre']} in inventory, total down to {total}")
+
+                progress['box_inventory'] += box['qty']
 
         if total > 0:
             tmp.append([])
@@ -684,7 +707,23 @@ def build_production(templates):
     #     'parts': part_added
     # }
 
-    return 0
+    try:
+        progress['item_percent'] = progress['item_inventory'] / progress['item_projection'] * 100
+    except:
+        progress['item_percent'] = 0
+
+    try:
+        progress['parts_percent'] = progress['parts_inventory'] / progress['parts_projection'] * 100
+    except:
+        progress['parts_percent'] = 0
+
+    try:
+        progress['box_percent'] = progress['box_inventory'] / progress['box_projection'] * 100
+    except:
+        progress['box_percent'] = 0
+
+    print(progress)
+    return progress
         
 
 
@@ -721,7 +760,7 @@ def dashboard():
 
         templates = gather_templates()
 
-        build_production(templates)
+        progress = build_production(templates)
 
         production = db.execute("SELECT * FROM production ORDER BY size DESC, name DESC, color DESC")
 
@@ -813,6 +852,7 @@ def dashboard():
             totals=totals,
             cycle=cycle,
             time=time,
+            progress=progress,
             grand_total=grand_total)
 
     else:

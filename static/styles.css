@@ -1,5 +1,6 @@
 :root {
   --gray: rgba(211, 211, 211, 0.953);
+  --darkgray : rgba(20, 20, 30, 0.788);
   --dark: rgb(7, 8, 9);
   --xtdark: rgb(2, 2, 2);
 }
@@ -28,6 +29,10 @@ main, body, .card, .list-group-item {
 
 hr {
     border-top: .8rem solid rgba(255, 255, 255, 0.618);
+}
+
+.progress {
+  background-color: var(--darkgray);
 }
 
 /* h5 {

@@ -8,42 +8,46 @@ Dashboard
 
 <container>
 
-    <!-- <div class="row justify-content-center">
-        <br>
+    <div class="row align-items-end justify-content-start">
+        <div class="col-md-2 col-sm-12">
+            <img src="/static/bsl.png" class="img-fluid" alt="big scary laser">
+        </div>
+        <div class="col-md-10 col-sm-12 align-items-start">
+            <h1 class="display-3">{{ cycle.0.name }}</h1>
+        </div>
     </div>
-    <div class="row justify-content-center">
-        <h1>Hi, {{ user[0]['username'] }}</h1>
-        <br>
+ 
+    <br>
+
+
+
+    <div class="row">
+        <div class="col">
+            <h2>Items</h2>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: {{ progress.item_percent }}%;" aria-valuenow="{{ progress.item_inventory }}" aria-valuemin="0" aria-valuemax="{{ progress.item_projection }}">{{ progress.item_inventory }} / {{ progress.item_projection }}</div>
+            </div>
+
+            <br>
+
+            <h2>Parts</h2>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: {{ progress.parts_percent }}%;" aria-valuenow="{{ progress.parts_inventory }}" aria-valuemin="0" aria-valuemax="{{ progress.parts_projection }}">{{ progress.parts_inventory }} / {{ progress.parts_projection }}</div>
+            </div>
+
+            <br>
+
+            <h2>Boxes</h2>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: {{ progress.box_percent }}%;" aria-valuenow="{{ progress.box_inventory }}" aria-valuemin="0" aria-valuemax="{{ progress.box_projection }}">{{ progress.box_inventory }} / {{ progress.box_projection }}</div>
+            </div>
+
+            <br>
+
+        </div>
     </div>
 
     <br>
- -->
-
- 
- 
- <div class="row justify-content-center">
-        <!-- https://stackoverflow.com/questions/14207109/hiding-elements-in-responsive-layout -->
-        <div class="col-md-2 d-none d-md-block">
-            <div class="row">
-                <div class="col">
-                    <img src="/static/bsl.png" class="img-fluid" alt="big scary laser">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <small>
-                        {{ user[0]['username'] }}
-                    </small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-10 col-sm-12">
-            <h1 class="display-4">{{ cycle.0.name }}</h1>
-        </div>
-    </div>
-
-    <br>
-    <!-- <hr> -->
 
     <div class="row justify content end">
         <div class="col">
@@ -56,7 +60,7 @@ Dashboard
     <div class="row justify-content-center">
         <div class="col">
             <table class="table-responsive-sm table-bordered table-hover table-dark text-right">
-                <caption><small>cycle #{{ cycle.0.id }} | rendered at {{ time }}</small></caption>
+                        <caption><small>cycle #{{ cycle.0.id }} | rendered at {{ time }} | logged in as {{ user[0]['username'] }}</small></caption>
                 <thead>
                     <tr>
                         <small>
@@ -110,7 +114,7 @@ Dashboard
     </div>
     <br>
 
-    <div class="row justify content end">
+    <!-- <div class="row justify content end">
         <div class="col">
             <h2>Summary</h2>                
         </div>
@@ -152,7 +156,7 @@ Dashboard
                 </tbody>
             </table>
         </div>
-    </div>
+    </div> -->
     
     <hr>
     <br>
@@ -167,9 +171,11 @@ Dashboard
                 </li> -->
 
                 {% for color in templates.colors %}
-                    <li class="list-inline-item">
-                        <a style="text-transform: capitalize" class="" href="/parts/{{ color.name }}">{{ color.emoji }} {{ color.name }}</a>
-                    </li>
+                    {% if color.sku <= 7 %}
+                        <li class="list-inline-item">
+                            <a style="text-transform: capitalize" class="" href="/parts/{{ color.name }}">{{ color.emoji }} {{ color.name }}</a>
+                        </li>
+                    {% endif %}
                 {% endfor %}
                 <li>
                     
