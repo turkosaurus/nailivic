@@ -365,6 +365,7 @@ def build_production(templates):
 
                 # make a box
                 qty = projection['qty']
+                progress['box_projection'] += projection['qty']
 
                 if qty > 0:
 
@@ -642,8 +643,6 @@ def build_production(templates):
                 total += int(box[1])
                 # print(f"found {loteria['nombre']} in queue, total up to {total}")
 
-                progress['box_projection'] += total
-
         # Subtract existing box inventory
         for box in boxes:
             if box['name'] == loteria['nombre']:
@@ -692,7 +691,6 @@ def build_production(templates):
         box_added = db.execute(f"INSERT INTO boxprod (name, qty) VALUES {box_queue}")
 
     
-
     # Wipe production
     db.execute("DELETE FROM production")
     # New Part Production

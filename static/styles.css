@@ -22,10 +22,11 @@ main, body, .card, .list-group-item {
     background-color: var(--dark);
 }
 
-.form-control {
+.form-control, option, optgroup {
   color: var(--dark);
-  background-color: hsla(0, 0%, 95%, 0.816);
+  background-color: var(--gray);
 }
+
 
 hr {
     border-top: .8rem solid rgba(255, 255, 255, 0.618);
@@ -33,6 +34,15 @@ hr {
 
 .progress {
   background-color: var(--darkgray);
+}
+
+.dropdown-menu {
+  background-color: var(--gray);
+}
+
+.dropdown-item:hover {
+  background-color: var(--darkgray);
+  color: var(--gray)
 }
 
 /* h5 {
