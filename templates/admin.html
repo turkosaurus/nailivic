@@ -417,7 +417,10 @@ Admin -
                         <!-- <option title="">Select Event</option> -->
                         {% for loteria in templates.loterias %}
                             <option title="" value="{{ loteria.sku }}">{{ loteria.sku }} - {{ loteria.nombre }}</option>
-                        {% endfor %}    
+                        {% endfor %}
+                        {% for loteria in templates.shirts %}    
+                            <option title="" value="{{ loteria.sku }}">{{ loteria.sku }} - {{ loteria.nombre }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 

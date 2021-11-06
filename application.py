@@ -82,12 +82,14 @@ def gather_templates():
 
     # Gather template data
     loterias = db.execute("SELECT * FROM loterias ORDER BY SKU ASC")
+    shirts = db.execute("SELECT * FROM shirts")
     colors = db.execute("SELECT * FROM colors")
     sizes = db.execute("SELECT * FROM sizes")
     types = db.execute("SELECT * FROM types")
 
     response = {
         'loterias': loterias,
+        'shirts': shirts,
         'colors': colors,
         'sizes': sizes,
         'types': types
@@ -149,6 +151,11 @@ def generate_item(templates, sku):
         if loteria['sku'] == sku['item']:
             named['item'] = loteria['nombre']
 
+    # SKU > Loteria name (shirts)
+    for loteria in templates['shirts']:
+        if loteria['sku'] == sku['item']:
+            named['item'] = loteria['nombre']
+
     # SKU > A color name
     for color in templates['colors']:
         if color['sku'] == sku['a']:
@@ -195,6 +202,13 @@ def generate_sku(templates, item):
 
     # Loteria name > SKU
     for loteria in templates['loterias']:
+        if loteria['nombre'] in item['name']:
+            sku = str(loteria['sku']).zfill(2)
+            print(f"matched {loteria['nombre']} to {item['name']}. SKU:{sku}")
+            valid['name'] = True
+
+    # Loteria name > SKU (for shirts)
+    for loteria in templates['shirts']:
         if loteria['nombre'] in item['name']:
             sku = str(loteria['sku']).zfill(2)
             print(f"matched {loteria['nombre']} to {item['name']}. SKU:{sku}")
