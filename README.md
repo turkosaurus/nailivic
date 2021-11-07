@@ -1,7 +1,7 @@
 # Nailivic Studios
 Inventory management and production tracking webapp
 
-## Initial Specifications:
+## Product Specifications:
 - Laser Production Dashboard
 - Parts Inventory (list and form)
 - Product Inventory (list and form)
@@ -51,39 +51,39 @@ Producing parts and making items and boxes updates the laser production queue in
 
 # Version History
 
-## v1.0
+## v1.0.0
 - progress bars for production objectives 
 - custom dark style from modified bootstrap
 
-## v0.9
+## v0.9.0
 - dedicated parts routes by color
 - make button directly from part size/name table
 
-## v0.8
+## v0.8.0
 - csv projection exports & imports
 - parts and items inventory export
 
-## v0.7
+## v0.7.0
 - SKU number system
 
-## v0.6
+## v0.6.0
 - used box inventory routes added
 - title tips for option menus
 
-## v0.5
+## v0.5.0
 - deplete parts when items are produced
 - build totals table to include backs and boxes
 - adjust production table when part is made
 - adjust production table when item is made
 
-## v0.4
+## v0.4.0
 - built csv import to database
 - refined formatting on entry forms
 - wrote box and backs inventory and production logic
 - rewrote production building function
 - complete data restructuring (86 loterias SUB newloterias)
 
-## v0.3
+## v0.3.0
 - setup sort columns and categories for
     - items
     - parts
@@ -95,7 +95,7 @@ Producing parts and making items and boxes updates the laser production queue in
     - subtract on hand
     - queue what's needed for production
 
-## v0.2
+## v0.2.0
 - setup form capture items into database
 - setup form to caputre parts into database
 - setup form to capture production target
@@ -103,7 +103,7 @@ Producing parts and making items and boxes updates the laser production queue in
     - create new cycle page
     - associate each projection with a cycle
 
-## v0.1
+## v0.1.0
 - buildout online hello nailivic in flask
 - get squareup credentials
 - get shopify credentials
