@@ -1,6 +1,6 @@
 import os
-import requests
-import urllib.parse
+# import requests
+# import urllib.parse
 import datetime
 import csv
 
@@ -9,59 +9,16 @@ from flask import Flask, redirect, render_template, request, session, url_for, f
 from flask_session import Session
 from tempfile import mkdtemp
 from functools import wraps
-from termcolor import colored
+# from termcolor import colored
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
-###### DEFINITIONS ######
-"""
-item: fully assembled woodcut item
-part: constituent piece that comprises an item, usually one of two or three
-loteria: woodcut loteria pieces
-"""
 
+###### FUNCTIONS ######
 
-###### CONFIGURATION ######
-# Initialize Flask App Ojbect
-app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY')
+## I/O
 
-# Ensure templates are auto-reloaded
-app.config["TEMPLATES_AUTO_RELOAD"] = True
-
-# Ensure responses aren't cached
-@app.after_request
-def after_request(response):
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    response.headers["Expires"] = 0
-    response.headers["Pragma"] = "no-cache"
-    return response
-
-# Configure session to use filesystem (instead of signed cookies)
-app.config["SESSION_FILE_DIR"] = mkdtemp()
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
-app.config['UPLOAD_FOLDER'] = os.getenv('PWD') + "/static/uploads"
-app.config['BACKUPS'] = os.getenv('PWD') + "/static/backups"
-ALLOWED_EXTENSIONS = {'csv'}
-
-Session(app)
-
-# Configure Heroku Postgres database
-db = SQL(os.getenv('DATABASE_URL'))
-
-# Import Authorized User List
-authusers = []
-authusers.append(os.getenv('USERA'))
-authusers.append(os.getenv('USERB'))
-authusers.append(os.getenv('USERC'))
-
-
-
-###### DECORATORS & HELPERS ######
-
-#
 def login_required(f):
     """
     Decorate routes to require login.
@@ -77,6 +34,9 @@ def login_required(f):
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+## Inventory Management
 
 def gather_templates():
 
@@ -299,22 +259,6 @@ def sql_cat(lists):
     string = string[:-2]
 
     return string
-
-# TODO 
-def tuplefy(list):
-    print(list)
-    tmp = ()
-
-
-
-    return tuple(i for i in list)
-
-
-###### QUEUE ######
-
-# These functions produce production table, calculating projecitons less inventory
-# Negative values can dequeue items
-
 
 def build_production(templates):
 
@@ -643,6 +587,8 @@ def build_production(templates):
                 total += int(box[1])
                 # print(f"found {loteria['nombre']} in queue, total up to {total}")
 
+
+
         # Subtract existing box inventory
         for box in boxes:
             if box['name'] == loteria['nombre']:
@@ -723,6 +669,67 @@ def build_production(templates):
     print(progress)
     return progress
         
+
+
+###### DEFINITIONS ######
+"""
+item: fully assembled woodcut item
+part: constituent piece that comprises an item, usually one of two or three
+loteria: woodcut loteria pieces
+"""
+
+###### CONFIGURATION ######
+# Initialize Flask App Ojbect
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY')
+
+# Ensure templates are auto-reloaded
+app.config["TEMPLATES_AUTO_RELOAD"] = True
+
+# Ensure responses aren't cached
+@app.after_request
+def after_request(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Expires"] = 0
+    response.headers["Pragma"] = "no-cache"
+    return response
+
+# Configure session to use filesystem (instead of signed cookies)
+app.config["SESSION_FILE_DIR"] = mkdtemp()
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+app.config['UPLOAD_FOLDER'] = os.getenv('PWD') + "/static/uploads"
+app.config['BACKUPS'] = os.getenv('PWD') + "/static/backups"
+ALLOWED_EXTENSIONS = {'csv'}
+
+Session(app)
+
+# Configure Heroku Postgres database
+db = SQL(os.getenv('DATABASE_URL'))
+
+# Import Authorized User List
+authusers = []
+authusers.append(os.getenv('USERA'))
+authusers.append(os.getenv('USERB'))
+authusers.append(os.getenv('USERC'))
+
+
+
+###### DECORATORS & HELPERS ######
+
+# TODO 
+def tuplefy(list):
+    print(list)
+    tmp = ()
+
+    return tuple(i for i in list)
+
+
+###### QUEUE ######
+
+# These functions produce production table, calculating projections less inventory
+# Negative values can dequeue items
+
 
 
 # TODO
