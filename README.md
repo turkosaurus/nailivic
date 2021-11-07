@@ -29,7 +29,7 @@ Producing parts and making items and boxes updates the laser production queue in
 - Parts: Add to, remove from, or view inventory of laser etched parts
 - Items: Add to, remove from, or view inventory of assembled items 
 - Projections: Enter the number of completed items necessary for the upcoming Production Cycle (todo: capture from square)
-- Shipping: #TODO (todo: update from shopify)
+<!-- - Shipping: #TODO (todo: update from shopify) -->
 - Dashboard (home): display the current total number of parts onhand, and parts required to meet production goals, sorted
 
 > Production Cycle: period of time or event before which all production needs should be met
@@ -41,21 +41,19 @@ Producing parts and making items and boxes updates the laser production queue in
 # Development Tasks
 
 ## Unscheduled
-#### style
-- custom dark mode
 #### accessibility
 - complete checklist
-#### test and verify
-- id and run tests
-#### document
-- standard uses
 #### automate
 - database backup and migration
 - alerts and logging
 - test backups and alerts
 
 
-# Released Versions
+# Version History
+
+## v1.0
+- progress bars for production objectives 
+- custom dark style from modified bootstrap
 
 ## v0.9
 - dedicated parts routes by color
