@@ -20,9 +20,11 @@ Items
                 </li> -->
 
                 {% for color in templates.colors %}
-                    <li class="list-inline-item">
-                        <a style="text-transform: capitalize" class="" href="/parts/{{ color.name }}">{{ color.emoji }} {{ color.name }}</a>
-                    </li>
+                    {% if color.sku <= 7 %}
+                        <li class="list-inline-item">
+                            <a style="text-transform: capitalize" class="" href="/parts/{{ color.name }}">{{ color.emoji }} {{ color.name }}</a>
+                        </li>
+                    {% endif %}
                 {% endfor %}
                 <li>
                     

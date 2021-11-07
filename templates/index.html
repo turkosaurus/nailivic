@@ -13,7 +13,7 @@ Dashboard
             <img src="/static/bsl.png" class="img-fluid" alt="big scary laser">
         </div>
         <div class="col-md-10 col-sm-12 align-items-start">
-            <h1 class="display-3">{{ cycle.0.name }}</h1>
+            <h1 class="display-4">{{ cycle.0.name }}</h1>
         </div>
     </div>
  
@@ -27,21 +27,28 @@ Dashboard
             <div class="progress">
                 <div class="progress-bar" role="progressbar" style="width: {{ progress.item_percent }}%;" aria-valuenow="{{ progress.item_inventory }}" aria-valuemin="0" aria-valuemax="{{ progress.item_projection }}">{{ progress.item_inventory }} / {{ progress.item_projection }}</div>
             </div>
+            <small>Current Inventory / Needed for {{ cycle.0.name }}</small>
 
+            <br>
             <br>
 
             <h2>Parts</h2>
             <div class="progress">
                 <div class="progress-bar" role="progressbar" style="width: {{ progress.parts_percent }}%;" aria-valuenow="{{ progress.parts_inventory }}" aria-valuemin="0" aria-valuemax="{{ progress.parts_projection }}">{{ progress.parts_inventory }} / {{ progress.parts_projection }}</div>
             </div>
+            <small>Parts in Inventory /  Parts Required for {{ cycle.0.name }}</small>
+            <small>⚠ These values may disagree with other methods. Please report any anomalies.</small>
 
+            <br>
             <br>
 
             <h2>Boxes</h2>
             <div class="progress">
                 <div class="progress-bar" role="progressbar" style="width: {{ progress.box_percent }}%;" aria-valuenow="{{ progress.box_inventory }}" aria-valuemin="0" aria-valuemax="{{ progress.box_projection }}">{{ progress.box_inventory }} / {{ progress.box_projection }}</div>
             </div>
+            <small>Boxes in Inventory /  Boxes Required for {{ cycle.0.name }}</small>
 
+            <br>
             <br>
 
         </div>

@@ -36,6 +36,21 @@ hr {
   background-color: var(--darkgray);
 }
 
+.table-dark {
+  color: var(--gray);
+  background-color: var(--dark);
+}
+
+/* tr:hover {
+  color: var(--dark);
+  background-color: var(--gray);
+} */
+
+
+td, th {
+  background-color: var(--darkgray);
+}
+
 .dropdown-menu {
   background-color: var(--gray);
 }

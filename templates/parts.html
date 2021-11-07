@@ -20,7 +20,7 @@ Items
                 </li> -->
 
                 {% for color in templates.colors %}
-                    {% if color.sku < 7 %}
+                    {% if color.sku <= 7 %}
                         <li class="list-inline-item">
                             <a style="text-transform: capitalize" class="" href="/parts/{{ color.name }}">{{ color.emoji }} {{ color.name }}</a>
                         </li>
