@@ -452,7 +452,7 @@ Admin -
                 <div class="form-row">
                     <label class="col-4" for="c">Color C</label>
                     <select class="col-8 form-control" name="c" id="c">
-                        <option selected title="Defaults to 00" value="00">none</option>
+                        <option selected title="Defaults to 00" value="00">0 - none</option>
                         {% for color in templates.colors %}
                         <option title="" value="{{ color.sku }}">{{ color.sku }} - {{ color.emoji }} {{ color.name }}</option>
                         {% endfor %}    
