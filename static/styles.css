@@ -55,9 +55,9 @@ hr {
   background-color: var(--dark);
 }
 
-tr:hover {
-  color: var(--dark);
-  background-color: var(--gray);
+tr:hover, th:hover {
+  background-color: var(--darkgray);
+  color: var(--gray)
 }
 
 
