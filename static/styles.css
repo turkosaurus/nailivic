@@ -39,7 +39,6 @@ main, body, .card, .list-group-item {
 }
 
 .queue th {
-  color: unset;
   width: 10vw;
 }
 
@@ -54,13 +53,12 @@ hr {
 .table-dark {
   color: var(--gray);
   background-color: var(--dark);
-  font-weight: normal;
 }
 
-/* tr:hover {
+tr:hover {
   color: var(--dark);
   background-color: var(--gray);
-} */
+}
 
 
 td, th {
