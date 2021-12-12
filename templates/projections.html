@@ -20,7 +20,18 @@ Projections
             <!-- <h1>{{ current[0].name }} <span class="badge badge-secondary">{{ total.0.sum }}</span></h1> -->
         </div>
     </div>
-    <a href="#additem"><img src='static/arrow-circle-down-solid.svg' width="25em"></a> Jump to <a href="#additem">Add Projection</a>
+    
+    <div class="row">
+        <div class="col">
+            <a href="#additem"><img src='static/arrow-circle-down-solid.svg' width="35em"></a> Jump to <a href="#additem">Add Projection</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <a href="#projections"><img src='static/arrow-circle-down-solid.svg' width="35em"></a> Jump to <a href="#projections">Projections</a>
+        </div>
+    </div>
+
     <hr>
     <br>
 
@@ -75,16 +86,27 @@ Projections
         <div class="col">
             
             <form action="/projections" method="post">
+
+                <div class="row">
+                    <div class="col">
+                        <a href='#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"></a> <a href='#navbartop'>return to top</a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <a href="#projections"><img src='static/arrow-circle-down-solid.svg' width="35em"></a> Jump to <a href="#projections">Projections</a>
+                    </div>
+                </div>
+
                 <div class="row">
                     <div class="col">
                         <br>
                         <h2>Add Item to {{ current[0].name }} Projections</h2>
-                        <p>
-                            <a href='/projections#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"></a> <a href='/projections#navbartop'>return to top</a>
-                        </p>
                     </div>
                     <br>
                 </div>
+                
+                        
 
                 <div class="row">
                     <!-- Item -->
@@ -242,12 +264,25 @@ Projections
 
     <div class="row">
         <!-- View Current Projections -->
-        <div class="col">
+        <div class="col" id="projections">
+            <div class="row">
+                <div class="col">
+                    <a href='#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"></a> <a href='#navbartop'>return to top</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <a href="#additem"><img src='static/arrow-circle-up-solid.svg' width="35em"></a> Jump to <a href="#additem">Add Item</a>
+                </div>
+            </div>
             <br>
-            <h4>{{ current[0].name }} Target Production</h4>
-            <p>
-                <a href='/projections#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"></a> <a href='/projections#navbartop'>return to top</a>
-            </p>
+
+            <div class="row">
+                <div class="col">
+                    <h2>{{ current[0].name }} Target Production</h2>
+                </div>
+            </div>
+
             <table class="table table-sm table-dark table-hover">
                 <thead>
                     <tr>
