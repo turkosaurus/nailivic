@@ -66,17 +66,17 @@ Dashboard
 
     <div class="row justify-content-center">
         <div class="col">
-            <table class="table-responsive-sm table-bordered table-hover table-dark text-right">
+            <table class="table-responsive-sm table-bordered table-hover table-dark text-right queue">
                         <caption><small>cycle #{{ cycle.0.id }} | rendered at {{ time }} | logged in as {{ user[0]['username'] }}</small></caption>
                 <thead>
                     <tr>
                         <small>
-                            <th scope="col" style="width: 10vw">ttl:{{ grand_total }}</th>
+                            <th scope="col">ttl:{{ grand_total }}</th>
                             {% for color in templates.colors %}
-                                <th scope="col" style="width: 10vw"><a href="/parts/{{ color.name }}">{{ color.emoji }}</a></th>
+                                <th scope="col"><a href="/parts/{{ color.name }}"><i data-emoji="{{ color.emoji }}"></i></a></th>
                             {% endfor %}
-                            <th scope="col" style="width: 10vw"><a href="/parts/backs">🍑</a></th>
-                            <th scope="col" style="width: 10vw"><a href="/parts/boxes">📦</a></th>
+                            <th scope="col"><a href="/parts/backs"><i data-emoji="🍑"></i></a></th>
+                            <th scope="col"><a href="/parts/boxes"><i data-emoji="📦"></i></a></th>
                         </small>
                     </tr>
                 </thead>

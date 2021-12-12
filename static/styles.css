@@ -5,6 +5,17 @@
   --xtdark: rgb(2, 2, 2);
 }
 
+/* Fixing Chrome emoji styling bullshit */
+/* https://codepen.io/niklass/pen/MXzJBQ */
+[data-emoji] {
+  font-style: normal;
+  font-weight: normal;
+}
+[data-emoji]:before {
+  content: attr(data-emoji);
+  margin-right: .125em;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -27,6 +38,10 @@ main, body, .card, .list-group-item {
   background-color: var(--gray);
 }
 
+.queue th {
+  color: unset;
+  width: 10vw;
+}
 
 hr {
     border-top: .8rem solid rgba(255, 255, 255, 0.618);
@@ -39,6 +54,7 @@ hr {
 .table-dark {
   color: var(--gray);
   background-color: var(--dark);
+  font-weight: normal;
 }
 
 /* tr:hover {

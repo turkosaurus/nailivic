@@ -15,6 +15,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 
+from dotenv import load_dotenv
+load_dotenv()
+
 
 ###### DEFINITIONS ######
 """
@@ -313,6 +316,8 @@ def sql_cat(lists):
     print(string)
     return string
 
+# Unused. Testing revealed that the CS50 opens a new connection for each transaction. 
+# Migration to native psychopg implementation would allow proper tuple-ization rather than contenation.
 def Xsql_cat(lists):
     # print(f"before:{lists}")
     for i in range(len(lists)):

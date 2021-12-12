@@ -38,3 +38,7 @@ function resetForm(form) {
 
     return false;
 }
+
+// enable syntax highlighting
+// https://codepen.io/niklass/pen/MXzJBQ
+hljs.initHighlightingOnLoad()
