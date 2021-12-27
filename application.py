@@ -910,7 +910,7 @@ def parts(part):
 
             print(cur_color)
             inventory = db.execute("SELECT * FROM parts WHERE color LIKE :name \
-                ORDER BY QTY DESC", name=part_like)
+                ORDER BY size DESC, qty DESC", name=part_like)
     
             if not 'recent_part' in session :
                 session['recent_part'] = 'None'
@@ -925,7 +925,7 @@ def parts(part):
             }
 
             productions = db.execute("SELECT * FROM production WHERE name LIKE '%Backs' ORDER BY qty DESC")
-            inventory = db.execute("SELECT * FROM PARTS WHERE name LIKE '%Backs' ORDER BY qty DESC")
+            inventory = db.execute("SELECT * FROM PARTS WHERE name LIKE '%Backs' ORDER BY size DESC, qty DESC")
 
             print("part is a back...")
             print(f"productions:{productions}")
@@ -942,9 +942,9 @@ def parts(part):
             box_prod_total = box_prod_total[0]['sum']
 
             # Box Inventory & Production
-            boxes = db.execute("SELECT * FROM boxes")
-            boxprod = db.execute("SELECT * FROM boxprod")
-            boxused = db.execute("SELECT * FROM boxused")
+            boxes = db.execute("SELECT * FROM boxes ORDER BY qty DESC")
+            boxprod = db.execute("SELECT * FROM boxprod ORDER BY qty DESC")
+            boxused = db.execute("SELECT * FROM boxused ORDER BY qty DESC")
 
             cur_color = {
                 'name': 'boxes',
@@ -1092,7 +1092,7 @@ def parts(part):
 def items():
     if request.method == 'GET':
 
-        items = db.execute("SELECT * FROM items ORDER BY size DESC, name DESC, qty DESC")
+        items = db.execute("SELECT * FROM items ORDER BY size DESC, name ASC, qty DESC")
         templates = gather_templates()
 
         if not 'recent_item' in session :
