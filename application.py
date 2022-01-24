@@ -1,8 +1,10 @@
 import os
-# import requests
+import requests
 # import urllib.parse
 import datetime
 import csv
+import shopify
+import json
 
 from cs50 import SQL
 from flask import Flask, redirect, render_template, request, session, url_for, flash, send_from_directory, Markup
@@ -24,6 +26,7 @@ load_dotenv()
 item: fully assembled woodcut item
 part: constituent piece that comprises an item, usually one of two or three
 loteria: woodcut loteria pieces
+cycle: a single event or series of events, used for creating projections
 """
 
 
@@ -294,7 +297,6 @@ def sql_cat(lists):
         string += '('
 
         for value in list:
-            # TODO test this sanitation
             # All the words coming in should be
             # only from the database, this is 
             # a precautionary step
@@ -658,7 +660,6 @@ def build_production(templates):
                 # print(f"found {loteria['nombre']} in queue, total up to {total}")
 
 
-
         # Subtract existing box inventory
         for box in boxes:
             if box['name'] == loteria['nombre']:
@@ -752,10 +753,71 @@ def build_production(templates):
 
 
 
-# TODO
-# @app.context_processor
-# def colors():
-#     return dict(colors=colors)
+
+
+
+
+@app.route('/shopifytest', methods=['GET', 'POST'])
+@login_required
+def test():
+    
+    # Establish connection to Shopify
+    # https://shopify.github.io/shopify_python_api/
+    api_version = "2022-01"
+    shopify_apikey = os.getenv('SHOPIFY_API')
+    shopify_password = os.getenv('SHOPIFY_PASSWORD')
+    shop_url = "https://%s:%s@nailivic-studios.myshopify.com/admin" % (shopify_apikey, shopify_password)
+    shopify.ShopifyResource.set_site(shop_url)
+    shop = shopify.Shop.current
+
+    
+    # Fuck it we'll do it live
+
+    route = f"admin/api/{api_version}/products.json"
+    # route = f"admin/api/{api_version}/inventory_items.json?"
+    # route = f"admin/products.json"
+    base_url = f"https://{shopify_apikey}:{shopify_password}@nailivic-studios.myshopify.com/{route}"
+
+    r = requests.get(base_url)
+    print(f"r:{r}")
+    # print(f"r:{r.content}")
+
+    content = json.loads(r.content)
+    # print(f"content:{content}")
+
+    content = content['products']
+
+    extracted_data = []
+    for i in content:
+        
+        data = [i['id'], i['title'], i['variants'][0]['sku'], i['variants'][0]['inventory_quantity']]
+        extracted_data.append(data)
+
+    print(f"extracted_data:{extracted_data}")
+
+
+
+    return render_template("error.html", errmsg=extracted_data)
+
+    # print(f"r:{r.json()['products'][0]['vendor']}")
+
+    # inventory_item_id = 270107000204
+    # product = shopify.InventoryItem(api_version, inventory_item_id)
+    # print(f'RESULTS:{product}')
+
+
+    # sku = 270107000204
+    # product = shopify.InventoryItem(api_version, '*')
+    # print(f'RESULTS:{product}')
+
+
+    # return redirect("/admin")
+
+
+
+
+
+
 
 
 ###### MAIN ROUTES ######
@@ -2429,8 +2491,13 @@ def login():
         time = datetime.datetime.utcnow().isoformat()
         db.execute("UPDATE users SET last_login=:time WHERE id=:id", time=time, id=session["user_id"])
 
-        # Redirect user to home page
-        return redirect("/")
+        # Send developer directly to Admin
+        if request.form.get("username") == 'Turkosaurus':
+            return redirect("/admin")
+
+        else:
+            # Redirect user to home page
+            return redirect("/")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
