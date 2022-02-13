@@ -2420,26 +2420,31 @@ def register():
         # Error Checking
         # Ensure username was submitted
         if not request.form.get("username"):
-            return render_template("error.html", errcode=403, errmsg="Username required.")
+            flash("Username required.")
+            return redirect('/register')
 
         # Ensure password was submitted
         if not request.form.get("password"):
-            return render_template("error.html", errcode=403, errmsg="Password required.")
+            flash("Password required.")
+            return redirect('/register')
 
         # Ensure password and password confirmation match
         if request.form.get("password") != request.form.get("passwordconfirm"):
-            return render_template("error.html", errcode=403, errmsg="Passwords must match.")
+            flash("Passwords must match.")
+            return redirect('/register')
 
         # Ensure minimum password length
         if len(request.form.get("password")) < 8:
-            return render_template("error.html", errcode=403, errmsg="Password must be at least 8 characters.")
+            flash("Password must be at least 8 characters.")
+            return redirect('/register')
 
         # Store the hashed username and password
         username = request.form.get("username")
         hashedpass = generate_password_hash(request.form.get("password"))
 
         if username not in authusers:
-            return render_template("error.html", errcode=403, errmsg="Unauthorized user.")
+            flash("Unauthorized user.")
+            return redirect('/register')
 
         # Check if username is already taken
         if not db.execute("SELECT username FROM users WHERE username LIKE (?)", username):
@@ -2451,7 +2456,8 @@ def register():
             return redirect("/")
 
         else:
-            return render_template("error.html", errcode=403, errmsg="Username invalid or already taken.")
+            flash("Username invalid or already taken.")
+            return redirect('/register')
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -2466,11 +2472,14 @@ def login():
 
         # Ensure username was submitted
         if not request.form.get("username"):
-            return render_template("error.html", errcode=400, errmsg="Username required.")
+
+            flash("Username required.")
+            return redirect('/login')
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return render_template("error.html", errcode=400, errmsg="Password required.")
+            flash("Password required.")
+            return redirect('/login')
 
         # Query database for username
         rows = db.execute("SELECT * FROM users WHERE username = :username",
@@ -2478,11 +2487,13 @@ def login():
 
         # Ensure username exists
         if len(rows) != 1:
-            return render_template("register.html", errmsg="Username not found.")
+            flash("Username not found.")
+            return redirect('/login')
 
         # Ensure username exists and password is correct
         if not check_password_hash(rows[0]["password"], request.form.get("password")):
-            return render_template("error.html", errcode=403, errmsg="Incorrect password.")
+            flash("Incorrect password.")
+            return redirect('/login')
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
