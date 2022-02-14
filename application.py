@@ -201,7 +201,7 @@ def generate_item(templates, sku):
             named['size'] = size['shortname']
     
     if 'size' not in named.keys():
-        named['error'] = 'No size given.'
+        named['error'] = 'SKU Error: Invalid size number.'
     
     return named
 
@@ -1917,38 +1917,48 @@ def config(path):
                     csv_reader = csv.reader(csvfile)
     
                     total = 0
+                    added = 0
                     skipped = 0
+                    errors = ''
+                    err_lines = []
 
                     values = []
 
                     next(csv_reader)
                     for row in csv_reader:
-
+                        total += 1
+    
+                        # SKU exists
                         if row[2]:
                             sku = parse_sku(row[2])
                             item = generate_item(templates, sku)
 
                             if 'error' in item.keys():
-                                flash(f"SKU Error: {item['error']}")
-                                return redirect('/admin')
+                                skipped += 1
+                                err_lines.append(total + 1)
+                                errors = f"{item['error']}"
+                                continue
+
+                                # flash(f"SKU Error: {item['error']}")
+                                # return redirect('/admin') # harsh error handling
 
                             print(f"Item from production:{item}")
 
                         else:
                             skipped += 1
+                            err_lines.append(total + 1)
 
                         values.append([])
-                        values[total].append(item['item'])
-                        values[total].append(item['size'])
-                        values[total].append(item['a'])
-                        values[total].append(item['b'])
-                        values[total].append(item['c'])
-                        values[total].append(row[7]) # quantity
-                        values[total].append(event) # event cycle number
-                        values[total].append(sku['sku'])
+                        values[added].append(item['item'])
+                        values[added].append(item['size'])
+                        values[added].append(item['a'])
+                        values[added].append(item['b'])
+                        values[added].append(item['c'])
+                        values[added].append(row[7]) # quantity
+                        values[added].append(event) # event cycle number
+                        values[added].append(sku['sku'])
                         print(f"values:{values}")
-
-                        total += 1
+                        added += 1
 
                     values = sql_cat(values)
 
@@ -1958,7 +1968,7 @@ def config(path):
 
                 cycle_name = db.execute("SELECT name FROM cycles WHERE id=:event", event=event)
 
-                flash(f"""Processed "{filename_user}" into database for event "{cycle_name[0]['name']}." {skipped} failures out of {total} imports.""")
+                flash(f"""Processed {added}/{total} items from "{filename_user}" into database for event "{cycle_name[0]['name']}." {skipped} failures on lines {err_lines} {errors}""")
 
             return redirect('/admin')
 
