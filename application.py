@@ -1442,7 +1442,6 @@ def projections():
                 flash("Invalid entry. No C color for this item.")
                 return redirect('/projections')
 
-
         session['recent_projection'] = {
             'item': item,
             'size': size,
