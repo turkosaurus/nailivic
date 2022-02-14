@@ -1412,7 +1412,36 @@ def projections():
         print("input")
         print(item, size, a, b, c, qty)
 
-        templates = gather_templates()
+        ## Validation
+        # Return error if missing basic entries
+        if size == None:
+            flash("Invalid entry. Size required.")
+            return redirect('/projections')
+
+        if a == None:
+            flash("Invalid entry. Color A required.")
+            return redirect('/projections')
+
+        if b == None:
+            flash("Invalid entry. Color B required.")
+            return redirect('/projections')
+
+        # Test for presence of c_color
+        ctest = db.execute("SELECT c FROM loterias WHERE nombre=:name", name=item)
+
+        # No c is given
+        if not c:
+            # But there should be a c
+            if ctest[0]['c'] != '':
+                flash("Invalid entry. Color C required.")
+                return redirect('/projections')
+
+        # Superfulous c value is given
+        else:
+            if ctest[0]['c'] == '':
+                flash("Invalid entry. No C color for this item.")
+                return redirect('/projections')
+
 
         session['recent_projection'] = {
             'item': item,
@@ -1432,38 +1461,9 @@ def projections():
             'qty': qty,
         }
 
+        templates = gather_templates()
         sku = generate_sku(templates, itemdata)
         print(f"sku:{sku}")
-
-        ## Validation
-        # Return error if missing basic entries
-        if (size is None):
-            flash("Invalid entry. Size required.")
-            return redirect('/projections')
-
-        if (a is None):
-            flash("Invalid entry. Color A required.")
-            return redirect('/projections')
-
-        if (b is None):
-            flash("Invalid entry. Color B required.")
-            return redirect('/projections')
-
-        # Test for presence of c_color
-        ctest = db.execute("SELECT c FROM loterias WHERE nombre=:name", name=item)
-
-        # No c is given
-        if not c:
-            # But there should be a c
-            if ctest[0]['c'] != '':
-                flash("Invalid entry. Color C required.")
-                return redirect('/projections')
-
-        # Superfulous c value is given
-        else:
-            if ctest[0]['c'] == '':
-                flash("Invalid entry. No C color for this item.")
-                return redirect('/projections')
             
         # Identify current cycle
         active = db.execute("SELECT id, name, created_on FROM cycles WHERE current='TRUE'")
