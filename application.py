@@ -199,8 +199,12 @@ def generate_item(templates, sku):
     for size in templates['sizes']:
         if size['sku'] == sku['size']:
             named['size'] = size['shortname']
-        
+    
+    if 'size' not in named.keys():
+        named['error'] = 'No size given.'
+    
     return named
+
 
 def generate_sku(templates, item):
     # from names
@@ -1923,6 +1927,10 @@ def config(path):
                         if row[2]:
                             sku = parse_sku(row[2])
                             item = generate_item(templates, sku)
+
+                            if 'error' in item.keys():
+                                flash(f"SKU Error: {item['error']}")
+                                return redirect('/admin')
 
                             print(f"Item from production:{item}")
 
