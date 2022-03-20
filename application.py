@@ -2481,6 +2481,8 @@ def register():
 def login():
     """Log user in"""
 
+    flash("test")
+
     # Forget any user_id
     session.clear()
 
@@ -2489,7 +2491,6 @@ def login():
 
         # Ensure username was submitted
         if not request.form.get("username"):
-
             flash("Username required.")
             return redirect('/login')
 

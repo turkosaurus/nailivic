@@ -148,7 +148,7 @@ Projections
                     <!-- Color A -->
                     <div class="col-md-3 col-sm-6">
                         <div class="form-group">
-                            <h6>Color A</h6>
+                            <h6 id="colorA">Color A</h6>
                             {% for color in templates.colors %}
                                 {% if color.sku <= 7 %}
                                     {% if recent.a == color.name %}
@@ -170,7 +170,7 @@ Projections
                     <!-- Color B -->
                     <div class="col-md-3 col-sm-6">
                         <div class="form-group">
-                            <h6>Color B</h6>
+                            <h6 id="colorB">Color B</h6>
                             {% for color in templates.colors %}
                                 {% if color.sku <= 7 %}
                                     {% if recent.b == color.name %}
@@ -192,7 +192,7 @@ Projections
                     <!-- Color C -->
                     <div class="col-md-3 col-sm-6">
                         <div class="form-group">
-                            <h6>Color C</h6>
+                            <h6 id="colorC">Color C</h6>
                             {% for color in templates.colors %}
                                 {% if color.sku <= 7 %}
                                     {% if recent.c == color.name %}
@@ -320,4 +320,11 @@ Projections
         <hr>
     </div>
 </container>
+
+<script type="text/javascript">
+    const templateData = '{{ templates|tojson }}'
+</script>
+
+<script src="./static/loterias.js" defer></script>
+
 {% endblock %}
