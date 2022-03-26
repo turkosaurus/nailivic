@@ -5,7 +5,8 @@ import datetime
 import csv
 import shopify
 import json
-
+import psycopg2
+import psycopg2.extras
 from cs50 import SQL
 from flask import Flask, redirect, render_template, request, session, url_for, flash, send_from_directory, Markup
 from flask_session import Session
@@ -17,10 +18,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from helpers import build_production, sql_cat
-from database import initialize_database, setup_loterias
+from database import tupleToDict, gather_templates_new, initialize_database, setup_loterias
 
 from dotenv import load_dotenv
-
 load_dotenv()
 
 
@@ -30,6 +30,7 @@ item: fully assembled woodcut item
 part: constituent piece that comprises an item, usually one of two or three
 loteria: woodcut loteria pieces
 cycle: a single event or series of events, used for creating projections
+event: renamed cycles for clarity
 """
 
 
@@ -62,12 +63,25 @@ Session(app)
 # Configure Heroku Postgres database
 db = SQL(os.getenv('DATABASE_URL'))
 
+
+# Setup PostgreSQL database connection
+conn = None
+# Testing
+if int(os.getenv('FLASK_DEBUG')) == 1: # Testing DB until migration
+    print("Connecting to Turkosaurus database...", end="")
+    conn = psycopg2.connect(os.getenv('HEROKU_POSTGRESQL_BLUE_URL'))
+    print("connected.")
+# Production
+else:
+    # conn = psycopg2.connect(os.getenv(''))    # TODO v1.1 add prodution URL
+    print("Connecting to PRODUCTION database...", end="")
+
+
 # Import Authorized User List
 authusers = []
 authusers.append(os.getenv('USERA'))
 authusers.append(os.getenv('USERB'))
 authusers.append(os.getenv('USERC'))
-
 
 ###### FUNCTIONS ######
 
@@ -95,6 +109,7 @@ def allowed_file(filename):
 # These functions produce production table, calculating projections less inventory
 # Negative values can dequeue items
 
+#TODO delete in 1.1
 def gather_templates():
 
     # Gather template data
@@ -113,6 +128,7 @@ def gather_templates():
     }
 
     return response
+
 
 def parse_sku(sku):
     # turns SKU into object with integers
@@ -1628,19 +1644,32 @@ def config(path):
 
     # On POST
     else:
+        if path == 'gather-templates-new':
+
+            print(f"templates")
+            templates = gather_templates()
+            for item in templates:
+                print(f"{item} ({len(item)})")
+                # print(templates[item])
+            print(templates)
+
+            print(f"new_templates")
+            new_templates = gather_templates_new(conn)
+            for item in new_templates:
+                print(f"{item} ({len(item)})")
+                # print(new_templates[item])
+            print(new_templates)
+
+            return redirect("/admin")
 
 
         if path == 'initialize-database':
             print("initialize_database 1")
-            initialize_database()
+            initialize_database(conn)
             print("initialize_database 3")
 
             flash("Tables setup.")
             return redirect("/admin")
-
-
-
-
 
         # Setup loterias
         if path == 'setup-loterias':

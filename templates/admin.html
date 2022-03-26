@@ -128,7 +128,7 @@ Admin -
                         {% endfor %}
                     </select>
                 </div>
-                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete event and all associated projections?')">Delete</button>
+                <button type="submit" class="btn btn-danger btn-sm" onclick="confirm('Delete event and all associated projections?')">Delete</button>
             </form>
             <br>
         </div>
@@ -164,7 +164,7 @@ Admin -
                     </small>
                 </div>
                 
-                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Replace event with projections from file?')">
+                <button type="submit" class="btn btn-primary btn-sm" onclick="confirm('Replace event with projections from file?')">
                     Import File
                 </button>
                 <br>
@@ -236,7 +236,7 @@ Admin -
                     </small>
                 </div>
                 
-                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Overwrite inventory?')">Import File</button>
+                <button type="submit" class="btn btn-primary btn-sm" onclick="confirm('Overwrite inventory?')">Import File</button>
                 <br>
             </form>
             <br>
@@ -309,7 +309,7 @@ Admin -
                     {% endif %}
                 {% endfor %}
                 
-                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Wipe</button>
+                <button type="submit" class="btn btn-danger btn-sm" onclick="confirm('Are you sure?')">Wipe</button>
             </form>
             
             <br>
@@ -356,7 +356,7 @@ Admin -
                         Upload new loterias template. Do not modify without database edits; only add new items.
                     </small>
                 </div>
-                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Update loterias db table with this file?')">Upload New</button>
+                <button type="submit" class="btn btn-primary btn-sm" onclick="confirm('Update loterias db table with this file?')">Upload New</button>
             </form>
             <br>
             
@@ -373,7 +373,7 @@ Admin -
                     <label class="form-check-label" for="colors">Colors</label>
                 </div> -->
 
-                <button type="submit" disabled class="btn btn-danger btn-sm btn-block" onclick="return confirm('Are you sure?')">Recreate Tables</button>
+                <button type="submit" disabled class="btn btn-danger btn-sm btn-block" onclick="confirm('Are you sure?')">Recreate Tables</button>
             </form>
 
             <br>
@@ -384,9 +384,21 @@ Admin -
                     <label class="form-check-label" for="colors">Colors</label>
                 </div> -->
 
-                <button type="submit" class="btn btn-danger btn-sm btn-block" onclick="return confirm('Are you sure?')">Initialize Database</button>
+                <button type="submit" class="btn btn-danger btn-sm btn-block" onclick="confirm('Are you sure?')">Initialize Database</button>
             </form>
-            
+
+            <br>
+
+            <form action="/admin/gather-templates-new" method="post">
+                <!-- <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="colors" id="colors" value="true">
+                    <label class="form-check-label" for="colors">Colors</label>
+                </div> -->
+
+                <button type="submit" class="btn btn-danger btn-sm btn-block">Test Templates</button>
+            </form>
+
+
             <br>
         </div>
         

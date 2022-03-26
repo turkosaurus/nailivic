@@ -1,28 +1,69 @@
 import os
 import csv
 import psycopg2
+import psycopg2.extras
 import datetime
 from dotenv import load_dotenv
 load_dotenv()
 
 
-# Setup PostgreSQL database connection
-conn = ''
-try:
-    # Testing
-    if int(os.getenv('FLASK_DEBUG')) == 1: # Testing DB until migration
-        print("Connecting to Turkosaurus database ...", end="")
-        conn = psycopg2.connect(os.getenv('HEROKU_POSTGRESQL_BLUE_URL'))
-        print("connected.")
-    # Production
-    else:
-        print("Connecting to PRODUCTION environment...", end="")
-except:
-    print("unable to connect.")
+# # Setup PostgreSQL database connection
+# conn = ''
+# try:
+#     # Testing
+#     if int(os.getenv('FLASK_DEBUG')) == 1: # Testing DB until migration
+#         print("Connecting to Turkosaurus database ...", end="")
+#         conn = psycopg2.connect(os.getenv('HEROKU_POSTGRESQL_BLUE_URL'))
+#         print("connected.")
+#     # Production
+#     else:
+#         print("Connecting to PRODUCTION environment...", end="")
+# except:
+#     print("unable to connect.")
+#     conn = "Unable to connect."
 
+# FUNCTIONS #
 
+def tupleToDict(tuple_in):
+    result = []
+    for row in tuple_in:
+        result.append(dict(row._asdict()))
+    return result
 
-def setup_loterias():
+def gather_templates_new(conn):
+
+    # Gather template data
+    cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+
+    cur.execute("SELECT * FROM nail_loterias ORDER BY SKU ASC")
+    loterias = tupleToDict(cur.fetchall())
+
+    cur.execute("SELECT * FROM nail_shirts")
+    shirts = tupleToDict(cur.fetchall())
+
+    cur.execute("SELECT * FROM nail_colors")
+    colors = tupleToDict(cur.fetchall())
+
+    cur.execute("SELECT * FROM nail_sizes")
+    sizes = tupleToDict(cur.fetchall())
+
+    cur.execute("SELECT * FROM nail_types")
+    types = tupleToDict(cur.fetchall())
+
+    response = {
+        'loterias': loterias,
+        'shirts': shirts,
+        'colors': colors,
+        'sizes': sizes,
+        'types': types
+    }
+
+    conn.commit()
+    cur.close()
+
+    return response
+
+def setup_loterias(conn):
 
     with open('static/uploads/loterias.csv', 'r') as csvfile:
 
@@ -52,34 +93,37 @@ def setup_loterias():
         cur.close()
         return counter
 
-
-def initialize_database():
+def initialize_database(conn):
     print("Creating new tables...")
     cur = conn.cursor()
 
-    # cur.execute("DROP TABLE \
+    cur.execute("DROP TABLE IF EXISTS \
+        nail_colors, \
+        nail_sizes, \
+        nail_lotierias, \
+        nail_shirts, \
+        nail_types, \
+        nail_users, \
+        nail_parts, \
+        nail_items, \
+        nail_boxes, \
+        nail_boxprod, \
+        nail_boxused, \
+        nail_projections, \
+        nail_production, \
+        nail_cycles \
+        ")
         # nail_users, \
-        # nail_colors, \
-        # nail_sizes, \
-        # nail_parts, \
-        # nail_items, \
-        # nail_boxes, \
-        # nail_boxprod, \
-        # nail_boxused, \
-        # nail_projections, \
-        # nail_production, \
-        # nail_cycles \
-        # ")
 
     try:
-        setup_loterias()
+        setup_loterias(conn)
         print("Loterias setup from loterias.csv")
     except Exception as e:
         print("Error writing to database from loterias.csv. File may be missing.")
         print(e)
 
 
-    # Create table: users
+    # Users
     cur.execute("CREATE TABLE IF NOT EXISTS nail_users ( \
         id SERIAL NOT NULL, \
         username VARCHAR ( 255 ) UNIQUE NOT NULL, \
@@ -89,28 +133,46 @@ def initialize_database():
         )")
 
 
-    # Create table: colors
+    # Colors
     cur.execute("CREATE TABLE IF NOT EXISTS nail_colors ( \
-        sku INTEGER NOT NULL, \
+        sku SERIAL NOT NULL, \
         name VARCHAR ( 255 ), \
-        emoji VARCHAR ( 255 ) \
+        emoji VARCHAR ( 255 ), \
+        cssname VARCHAR ( 255 ) \
         )")
 
-    colors = [['black', '⬛'],['red', '🟥'], ['TQ', '🟦'], ['yellow', '🟨'], ['green', '🟩'], ['purple', '🟪'], ['white', '⬜']]
-    for i in range(len(colors)):
-        cur.execute("INSERT INTO nail_colors (sku, name, emoji) VALUES (%s, %s, %s)", ((i+1), colors[i][0], colors[i][1]))
+    colors = [
+        ['black', '⬛', 'black'], 
+        ['red', '🟥', 'red'], 
+        ['TQ', '🟦', 'turquoise'], 
+        ['yellow', '🟨', 'yellow'], 
+        ['green', '🟩', 'green'], 
+        ['purple', '🟪', 'purple'], 
+        ['white', '⬜', 'whilte'],
+        ['grey', '🔲', 'grey'],
+        ['gold', '🥇', 'gold'],
+        ['rose', '🌹', 'pink']        
+        ]
 
+    cur.execute("SELECT * FROM nail_colors")
+    color_data = cur.fetchall()
+    if not color_data:
+        for i in range(len(colors)):
+            cur.execute("INSERT INTO nail_colors (sku, name, emoji, cssname) VALUES (%s, %s, %s, %s)", ((i+1), colors[i][0], colors[i][1], colors[i][2]))
 
-    # Create table: sizes
+    # Sizes
     cur.execute("CREATE TABLE IF NOT EXISTS nail_sizes ( \
         sku INTEGER NOT NULL, \
         shortname VARCHAR ( 255 ), \
         longname VARCHAR ( 255 ) \
         )")
 
-    sizes = [['S', 'small'], ['M', 'medium'], ['L', 'large']]
-    for i in range(len(sizes)):
-        cur.execute("INSERT INTO nail_sizes (sku, shortname, longname) VALUES (%s, %s, %s)", ((i+1), sizes[i][0] , sizes[i][1]))
+    cur.execute("SELECT * FROM nail_sizes")
+    size_data = cur.fetchall()
+    if not size_data:
+        sizes = [['S', 'small'], ['M', 'medium'], ['L', 'large'], ['XL', 'XL'], ['2XL','2XL']]
+        for i in range(len(sizes)):
+            cur.execute("INSERT INTO nail_sizes (sku, shortname, longname) VALUES (%s, %s, %s)", ((i+1), sizes[i][0] , sizes[i][1]))
 
 
     # Create table: recent
@@ -124,7 +186,7 @@ def initialize_database():
     # )")
 
 
-    # Create table: parts
+    # Parts
     cur.execute("CREATE TABLE IF NOT EXISTS nail_parts ( \
         name VARCHAR ( 255 ) NOT NULL, \
         size VARCHAR ( 255 ) NOT NULL, \
@@ -132,7 +194,7 @@ def initialize_database():
         qty INTEGER \
         )")
 
-    # Create table: items
+    # Items
     cur.execute("CREATE TABLE IF NOT EXISTS nail_items ( \
         name VARCHAR ( 255 ) NOT NULL, \
         size VARCHAR ( 255 ) NOT NULL, \
@@ -142,20 +204,47 @@ def initialize_database():
         qty INTEGER \
         )")
 
+    # Types
     cur.execute("CREATE TABLE IF NOT EXISTS nail_types ( \
         name VARCHAR ( 255 ), \
         sku INTEGER \
         )")
 
+    types = [
+        ['Laser Cut', '0'],
+        ['Tee Shirt', '0'],
+        ['Tank Top', '2'],
+        ['Hoodie', '3'],
+        ['Screen Print', '10'],
+        ['Greeting Card', '11'] 
+        ]
+
+    cur.execute("SELECT * FROM nail_types")
+    types_data = cur.fetchall()
+    if not types_data:
+        for i in range(len(types)):
+            cur.execute("INSERT INTO nail_types (name, sku) VALUES (%s, %s)", (types[i][0], types[i][1]))
+
+    # Shirts
+    # Reformat these tables to be more relational with types, depending on business needs
     cur.execute("CREATE TABLE IF NOT EXISTS nail_shirts ( \
         name VARCHAR ( 255 ) NOT NULL, \
-        size VARCHAR ( 255 ) NOT NULL, \
         a VARCHAR ( 255 ), \
         b VARCHAR ( 255 ), \
         c VARCHAR ( 255 ), \
         backs VARCHAR ( 255 ), \
         sku INTEGER \
         )")
+
+    shirts = [
+        ['ReSister', '55']
+    ]
+    cur.execute("SELECT * FROM nail_shirts")
+    shirts_data = cur.fetchall()
+    if not shirts_data:
+        for i in range(len(shirts)):
+            cur.execute("INSERT INTO nail_shirts (name, sku) VALUES (%s, %s)", (shirts[i][0], shirts[i][1]))
+
 
     # Create table: boxes
     cur.execute("CREATE TABLE IF NOT EXISTS nail_boxes ( \
@@ -204,12 +293,12 @@ def initialize_database():
         )")
 
     # If empty cycles table
-    data = cur.execute("SELECT * FROM nail_cycles")
-    if not data:
+    cur.execute("SELECT * FROM nail_cycles")
+    event_data = cur.fetchall()
+    if not event_data:
         # Seed table with Default Event
         time = datetime.datetime.utcnow().isoformat()
         cur.execute("INSERT INTO nail_cycles (id, name, created_on, current) VALUES ('1', 'Default Event', %(time)s, 'TRUE')", {'time':time})
 
     conn.commit()
     cur.close()
-
