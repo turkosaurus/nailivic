@@ -363,17 +363,28 @@ Admin -
         </div>
 
         <div class="col-lg-3 col-md-6 col-sm-12">
+            <h4>
+                Setup Database
+            </h4>
             <form action="/admin/setup-tables" method="post">
-                <h4>
-                    Setup Database
-                </h4>
 
                 <!-- <div class="form-group form-check">
                     <input type="checkbox" class="form-check-input" name="colors" id="colors" value="true">
                     <label class="form-check-label" for="colors">Colors</label>
                 </div> -->
-                                
+
                 <button type="submit" disabled class="btn btn-danger btn-sm btn-block" onclick="return confirm('Are you sure?')">Recreate Tables</button>
+            </form>
+
+            <br>
+
+            <form action="/admin/initialize-database" method="post">
+                <!-- <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="colors" id="colors" value="true">
+                    <label class="form-check-label" for="colors">Colors</label>
+                </div> -->
+
+                <button type="submit" class="btn btn-danger btn-sm btn-block" onclick="return confirm('Are you sure?')">Initialize Database</button>
             </form>
             
             <br>

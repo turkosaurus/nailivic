@@ -1,25 +1,73 @@
 skulet,name,size,color,qty
-27a0101,Heart,S,black,7
-36a0301,Octopus,S,TQ,17
-36b0301,Octopus Swirls,S,TQ,38
-36c0301,Octopus Tentacles,S,TQ,13
-27b0301,Heart Swirls,S,TQ,35
-27b0201,Heart Swirls,S,red,81
+27b0201,Heart Swirls,S,red,50
 36b0201,Octopus Swirls,S,red,14
-36a0201,Octopus,S,red,14
-06a0201,Mermaid Body,S,red,8
-06b0201,Mermaid Hair,S,red,28
-06c0201,Mermaid Tail,S,red,36
-06c0301,Mermaid Tail,S,TQ,5
-06b0301,Mermaid Hair,S,TQ,28
-06a0101,Mermaid Body,S,black,36
-06c0501,Mermaid Tail,S,green,22
-06c0502,Mermaid Tail,M,green,5
-06x0001,Mermaid Backs,S,,23
-36x0001,Octopus Backs,S,,24
-27x0001,Heart Backs,S,,35
-27a0201,Heart,S,red,48
-27a0301,Heart,S,TQ,11
-03x0002,Frida Backs,M,,1
-36c0201,Octopus Tentacles,S,red,0
-06b0401,Mermaid Hair,S,yellow,2
+36c0201,Octopus Tentacles,S,red,14
+06a0201,Mermaid Body,S,red,4
+06c0201,Mermaid Tail,S,red,20
+06b0201,Mermaid Hair,S,red,7
+06c0301,Mermaid Tail,S,TQ,17
+36b0301,Octopus Swirls,S,TQ,17
+36c0301,Octopus Tentacles,S,TQ,17
+06c0502,Mermaid Tail,M,green,6
+06b0401,Mermaid Hair,S,yellow,33
+06b0402,Mermaid Hair,M,yellow,6
+06c0503,Mermaid Tail,L,green,2
+06c0501,Mermaid Tail,S,green,30
+27a0101,Heart,S,black,17
+32a0101,Guitar,S,black,6
+36a0101,Octopus,S,black,23
+32a0102,Guitar,M,black,2
+06a0101,Mermaid Body,S,black,25
+03b0201,Frida Flowers,S,red,6
+32b0201,Guitar Hands,S,red,4
+35b0201,Star Swirls,S,red,9
+35a0201,Star,S,red,9
+27b0202,Heart Swirls,M,red,4
+21b0201,Hand Swirls,S,red,4
+21c0201,Hand Mecha,S,red,4
+21a0201,Hand,S,red,4
+22b0201,Boot Swirls,S,red,4
+22c0201,Boot Flames,S,red,4
+06b0202,Mermaid Hair,M,red,2
+32b0202,Guitar Hands,M,red,2
+27a0302,Heart,M,TQ,2
+06b0302,Mermaid Hair,M,TQ,1
+21b0302,Hand Swirls,M,TQ,1
+21c0302,Hand Mecha,M,TQ,1
+41c0301,Rose Leaves,S,TQ,3
+41b0301,Rose Swirls,S,TQ,1
+27a0301,Heart,S,TQ,4
+36a0301,Octopus,S,TQ,7
+27b0301,Heart Swirls,S,TQ,20
+06b0301,Mermaid Hair,S,TQ,8
+32b0302,Guitar Hands,M,TQ,4
+03b0301,Frida Flowers,S,TQ,6
+22b0301,Boot Swirls,S,TQ,6
+22c0301,Boot Flames,S,TQ,6
+21c0301,Hand Mecha,S,TQ,8
+21b0301,Hand Swirls,S,TQ,8
+32b0301,Guitar Hands,S,TQ,6
+35b0301,Star Swirls,S,TQ,4
+36b0302,Octopus Swirls,M,TQ,4
+36c0302,Octopus Tentacles,M,TQ,4
+27x0001,Heart Backs,S,,16
+42a0102,Skull,M,black,4
+03a0102,Frida,M,black,1
+42b0302,Skull Flames,M,TQ,4
+42c0302,Skull Swirls,M,TQ,4
+27a0201,Heart,S,red,9
+27a0202,Heart,M,red,7
+36a0201,Octopus,S,red,11
+22b0302,Boot Swirls,M,TQ,2
+22c0302,Boot Flames,M,TQ,2
+06c0302,Mermaid Tail,M,TQ,3
+27b0302,Heart Swirls,M,TQ,15
+27b0303,Heart Swirls,L,TQ,1
+27b0203,Heart Swirls,L,red,1
+32b0203,Guitar Hands,L,red,1
+42a0101,Skull,S,black,1
+21a0101,Hand,S,black,8
+03a0101,Frida,S,black,12
+35a0101,Star,S,black,18
+36a0103,Octopus,L,black,1
+22a0101,Boot,S,black,4

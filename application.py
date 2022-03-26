@@ -16,8 +16,11 @@ from werkzeug.exceptions import default_exceptions, HTTPException, InternalServe
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
+from helpers import build_production, sql_cat
+from database import initialize_database, setup_loterias
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -28,7 +31,6 @@ part: constituent piece that comprises an item, usually one of two or three
 loteria: woodcut loteria pieces
 cycle: a single event or series of events, used for creating projections
 """
-
 
 
 ###### CONFIGURATION ######
@@ -65,7 +67,6 @@ authusers = []
 authusers.append(os.getenv('USERA'))
 authusers.append(os.getenv('USERB'))
 authusers.append(os.getenv('USERC'))
-
 
 
 ###### FUNCTIONS ######
@@ -287,40 +288,6 @@ def generate_sku(templates, item):
 
     return sku
 
-def sql_cat(lists):
-    # Takes list of lists and converts them into SQL compatible string concatenations
-    
-    # Converts arrays:
-    # [[foo, bar], [baz, bat]]
-    # into strings:
-    # (foo, bar), (baz, bat) 
-
-    string = ''
-
-    for list in lists:
-        string += '('
-
-        for value in list:
-            # All the words coming in should be
-            # only from the database, this is 
-            # a precautionary step
-            if isinstance(value, str):
-                value = value.replace('-', '')
-                value = value.replace("'", '')
-                value = value.replace("\\", '')
-                value = value.replace('"', '')
-            string += f"'{value}', "
-            # string += ', '
-
-        # Remove the last 2 chars
-        string = string[:-2]
-        string = string + '), '
-
-    # Remove the last 2 chars
-    string = string[:-2]
-
-    print(string)
-    return string
 
 # Unused. Testing revealed that the CS50 opens a new connection for each transaction. 
 # Migration to native psychopg implementation would allow proper tuple-ization rather than contenation.
@@ -336,424 +303,419 @@ def Xsql_cat(lists):
 
     return lists
 
-def build_production(templates):
+# def build_production(templates):
 
-    projections = db.execute("SELECT * FROM projections WHERE cycle=(SELECT id FROM cycles WHERE current='TRUE')")
-    items = db.execute("SELECT * FROM items")
-    parts = db.execute("SELECT * FROM parts")
-    boxes = db.execute("SELECT * FROM boxes UNION SELECT * FROM boxused")
-
-
-    # Initiate queue list and counter
-    queue = []
-    i = 0 # Parts Queue Counter
-
-    box_queue = []
-    j = 0 # Box Queue Counter
-
-    progress = {
-        'item_projection': 0,
-        'item_inventory': 0,
-        'item_percent': 0,
-        'parts_projection': 0,
-        'parts_inventory': 0,
-        'parts_percent': 0,
-        'box_projection': 0,
-        'box_inventory': 0,
-        'box_percent': 0
-    }
+#     projections = db.execute("SELECT * FROM projections WHERE cycle=(SELECT id FROM cycles WHERE current='TRUE')")
+#     items = db.execute("SELECT * FROM items")
+#     parts = db.execute("SELECT * FROM parts")
+#     boxes = db.execute("SELECT * FROM boxes UNION SELECT * FROM boxused")
 
 
-    # print(f"projections:{projections}")
+#     # Initiate queue list and counter
+#     queue = []
+#     i = 0 # Parts Queue Counter
 
-    # Add each projections required parts to production queue, minus items already on hand in inventory
-    # (parts will be subtracted later)
-    for projection in projections:
+#     box_queue = []
+#     j = 0 # Box Queue Counter
 
-        progress['item_projection'] += projection['qty']
-
-        print("-" * 80)
-        print(f"Projection:{projection['qty']} {projection['name']} {projection['size']} {projection['a_color']}/{projection['b_color']}/{projection['c_color']}")
-
-        # total_projections += projection['qty']
-
-        # Box creation for every small
-        for size in templates['sizes']:
-
-            # Small found
-            if size['sku'] == 1 and size['shortname'] == projection['size']:
-
-                # make a box
-                qty = projection['qty']
-                progress['box_projection'] += projection['qty']
-
-                if qty > 0:
-
-                    box_queue.append([])
-
-                    # name
-                    box_queue[j].append(projection['name'])
-                    # qty
-                    box_queue[j].append(qty)
-
-                    j += 1
-
-                # print(f"Make boxes {box_queue}.")
-
-        # Subtract Items in Inventory
-        for item in items:
-            # print(f"item:{item}")
-
-            # Matching item in inventory
-            if item['name'] == projection['name'] and \
-                item['size'] == projection['size'] and \
-                item['a_color'] == projection['a_color'] and \
-                item['b_color'] == projection['b_color'] and \
-                item['c_color'] == projection['c_color']:
-
-                # Subtract assembled items qty from projections qty
-                projection['qty'] -= item['qty']
-                progress['item_inventory'] += item['qty']
-
-                print (f"{item['qty']} {item['size']} {item['name']} {item['a_color']}/{item['b_color']}/{item['c_color']} already in inventory")
-
-        # Add to production all parts that existing items inventory does not satisfy
-        if projection['qty'] > 0:
-
-            print(f"{projection['qty']} {projection['name']} unmet by items inventory.")
-            # print(f"projections.qty > 0 and queue:{queue}")
-
-            # Match name to existing loteria template
-            for loteria in templates['loterias']:
-                if loteria['nombre'] == projection['name']:
-
-                    qtys = {
-                        'a': projection['qty'],
-                        'b': projection['qty'],
-                        'c': projection['qty'],
-                        'backs': projection['qty']
-                    }
-
-                    print(f"Checking parts inventory for {loteria['a']}, {loteria['b']}, {loteria['c']}, {loteria['backs']}")
-                    # print(qtys)
-
-                # Add A
-                    # Update existing entry or make new
-                    found_existing = False
-                    for line in queue:
-                        # print(f"A line: {line}")
-
-                        if line[0] == loteria['a'] and \
-                            line[1] == projection['size'] and \
-                            line[2] == projection['a_color']:
-
-                            line[3] = int(line[3]) + qtys['a']
-
-                            found_existing = True
-
-                            # print(f"FOUND MATCHING EXISTING A:")
-                            # print(f"queue:{line}")
-                            # print(f"projection:{projection}")
-                            # print('-' * 80)
+#     progress = {
+#         'item_projection': 0,
+#         'item_inventory': 0,
+#         'item_percent': 0,
+#         'parts_projection': 0,
+#         'parts_inventory': 0,
+#         'parts_percent': 0,
+#         'box_projection': 0,
+#         'box_inventory': 0,
+#         'box_percent': 0
+#     }
 
 
-                    if found_existing == False:
+#     # print(f"projections:{projections}")
 
-                        # print(f"MAKING NEW A:")
+#     # Add each projections required parts to production queue, minus items already on hand in inventory
+#     # (parts will be subtracted later)
+#     for projection in projections:
 
-                        # Add a new list for the part to be made
-                        queue.append([])
-                        # name
-                        queue[i].append(loteria['a'])
-                        # size
-                        queue[i].append(projection['size'])
-                        # color
-                        queue[i].append(projection['a_color'])
-                        # qty
-                        queue[i].append(f'{qtys["a"]}')
+#         progress['item_projection'] += projection['qty']
+
+#         print("-" * 80)
+#         print(f"Projection:{projection['qty']} {projection['name']} {projection['size']} {projection['a_color']}/{projection['b_color']}/{projection['c_color']}")
+
+#         # total_projections += projection['qty']
+
+#         # Box creation for every small
+#         for size in templates['sizes']:
+
+#             # Small found
+#             if size['sku'] == 1 and size['shortname'] == projection['size']:
+
+#                 # make a box
+#                 qty = projection['qty']
+#                 progress['box_projection'] += projection['qty']
+
+#                 if qty > 0:
+
+#                     box_queue.append([])
+
+#                     # name
+#                     box_queue[j].append(projection['name'])
+#                     # qty
+#                     box_queue[j].append(qty)
+
+#                     j += 1
+
+#                 # print(f"Make boxes {box_queue}.")
+
+#         # Subtract Items in Inventory
+#         for item in items:
+#             # print(f"item:{item}")
+
+#             # Matching item in inventory
+#             if item['name'] == projection['name'] and \
+#                 item['size'] == projection['size'] and \
+#                 item['a_color'] == projection['a_color'] and \
+#                 item['b_color'] == projection['b_color'] and \
+#                 item['c_color'] == projection['c_color']:
+
+#                 # Subtract assembled items qty from projections qty
+#                 projection['qty'] -= item['qty']
+#                 progress['item_inventory'] += item['qty']
+
+#                 print (f"{item['qty']} {item['size']} {item['name']} {item['a_color']}/{item['b_color']}/{item['c_color']} already in inventory")
+
+#         # Add to production all parts that existing items inventory does not satisfy
+#         if projection['qty'] > 0:
+
+#             print(f"{projection['qty']} {projection['name']} unmet by items inventory.")
+#             # print(f"projections.qty > 0 and queue:{queue}")
+
+#             # Match name to existing loteria template
+#             for loteria in templates['loterias']:
+#                 if loteria['nombre'] == projection['name']:
+
+#                     qtys = {
+#                         'a': projection['qty'],
+#                         'b': projection['qty'],
+#                         'c': projection['qty'],
+#                         'backs': projection['qty']
+#                     }
+
+#                     print(f"Checking parts inventory for {loteria['a']}, {loteria['b']}, {loteria['c']}, {loteria['backs']}")
+#                     # print(qtys)
+
+#                 # Add A
+#                     # Update existing entry or make new
+#                     found_existing = False
+#                     for line in queue:
+#                         # print(f"A line: {line}")
+
+#                         if line[0] == loteria['a'] and \
+#                             line[1] == projection['size'] and \
+#                             line[2] == projection['a_color']:
+
+#                             line[3] = int(line[3]) + qtys['a']
+
+#                             found_existing = True
+
+#                             # print(f"FOUND MATCHING EXISTING A:")
+#                             # print(f"queue:{line}")
+#                             # print(f"projection:{projection}")
+#                             # print('-' * 80)
+
+
+#                     if found_existing == False:
+
+#                         # print(f"MAKING NEW A:")
+
+#                         # Add a new list for the part to be made
+#                         queue.append([])
+#                         # name
+#                         queue[i].append(loteria['a'])
+#                         # size
+#                         queue[i].append(projection['size'])
+#                         # color
+#                         queue[i].append(projection['a_color'])
+#                         # qty
+#                         queue[i].append(f'{qtys["a"]}')
         
-                        i += 1
+#                         i += 1
 
-                    # Add B
+#                     # Add B
 
-                    # Update existing entry or make new
-                    found_existing = False
-                    for line in queue:
-                        # print(f"B line: {line}")
-                        if line[0] == loteria['b'] and \
-                            line[1] == projection['size'] and \
-                            line[2] == projection['b_color']:
+#                     # Update existing entry or make new
+#                     found_existing = False
+#                     for line in queue:
+#                         # print(f"B line: {line}")
+#                         if line[0] == loteria['b'] and \
+#                             line[1] == projection['size'] and \
+#                             line[2] == projection['b_color']:
 
-                            line[3] = int(line[3]) + qtys['b']
+#                             line[3] = int(line[3]) + qtys['b']
 
-                            found_existing = True
-                            # print("FOUND EXISTING B")
+#                             found_existing = True
+#                             # print("FOUND EXISTING B")
 
-                    if found_existing == False:
+#                     if found_existing == False:
 
-                        # Add a new list for the part to be made
-                        # print(f"MAKING NEW B:")
+#                         # Add a new list for the part to be made
+#                         # print(f"MAKING NEW B:")
 
-                        # Add b new list for the part to be made
-                        queue.append([])
+#                         # Add b new list for the part to be made
+#                         queue.append([])
 
-                        # name
-                        queue[i].append(loteria['b'])
-                        # size
-                        queue[i].append(projection['size'])
-                        # color
-                        queue[i].append(projection['b_color'])
-                        # qty
-                        queue[i].append(f'{qtys["b"]}')
+#                         # name
+#                         queue[i].append(loteria['b'])
+#                         # size
+#                         queue[i].append(projection['size'])
+#                         # color
+#                         queue[i].append(projection['b_color'])
+#                         # qty
+#                         queue[i].append(f'{qtys["b"]}')
         
-                        i += 1
+#                         i += 1
 
-                    # Add C
+#                     # Add C
 
-                    if loteria['c'] != '':
+#                     if loteria['c'] != '':
 
-                        # Update existing entry or create new
-                        found_existing = False
-                        for line in queue:
-                            # print(f"C line: {line}")
-                            if line[0] == loteria['c'] and \
-                                line[1] == projection['size'] and \
-                                line[2] == projection['c_color']:
+#                         # Update existing entry or create new
+#                         found_existing = False
+#                         for line in queue:
+#                             # print(f"C line: {line}")
+#                             if line[0] == loteria['c'] and \
+#                                 line[1] == projection['size'] and \
+#                                 line[2] == projection['c_color']:
 
-                                line[3] = int(line[3]) + qtys['c']
+#                                 line[3] = int(line[3]) + qtys['c']
 
-                                found_existing = True
-                                # print("FOUND EXISTING C")
+#                                 found_existing = True
+#                                 # print("FOUND EXISTING C")
 
-                        if found_existing == False:
+#                         if found_existing == False:
 
-                            # print(f"MAKING NEW C:")
+#                             # print(f"MAKING NEW C:")
 
-                            # Add a new list for the part to be made
-                            queue.append([])
-                            # name
-                            queue[i].append(loteria['c'])
-                            # size
-                            queue[i].append(projection['size'])
-                            # color
-                            queue[i].append(projection['c_color'])
-                            # qty
-                            queue[i].append(f'{qtys["c"]}')
+#                             # Add a new list for the part to be made
+#                             queue.append([])
+#                             # name
+#                             queue[i].append(loteria['c'])
+#                             # size
+#                             queue[i].append(projection['size'])
+#                             # color
+#                             queue[i].append(projection['c_color'])
+#                             # qty
+#                             queue[i].append(f'{qtys["c"]}')
             
-                            i += 1
+#                             i += 1
 
-                    # Add Backs
+#                     # Add Backs
 
-                    # Update existing entry
-                    found_existing = False
-                    for line in queue:
-                        if line[0] == loteria['backs'] and \
-                            line[1] == projection['size']:
+#                     # Update existing entry
+#                     found_existing = False
+#                     for line in queue:
+#                         if line[0] == loteria['backs'] and \
+#                             line[1] == projection['size']:
 
-                            line[3] = int(line[3]) + qtys['backs']
+#                             line[3] = int(line[3]) + qtys['backs']
 
-                            found_existing = True
-                            # print("FOUND EXISTING BACK")
+#                             found_existing = True
+#                             # print("FOUND EXISTING BACK")
 
-                    if found_existing == False:
+#                     if found_existing == False:
 
-                        # print("MAKING NEW BACK")
+#                         # print("MAKING NEW BACK")
 
 
-                        # Add a new list for the part to be made
-                        queue.append([])
-                        # name
-                        queue[i].append(loteria['backs'])
-                        # size
-                        queue[i].append(projection['size'])
-                        # color
-                        queue[i].append('')
-                        # qty
-                        queue[i].append(f'{qtys["backs"]}')
+#                         # Add a new list for the part to be made
+#                         queue.append([])
+#                         # name
+#                         queue[i].append(loteria['backs'])
+#                         # size
+#                         queue[i].append(projection['size'])
+#                         # color
+#                         queue[i].append('')
+#                         # qty
+#                         queue[i].append(f'{qtys["backs"]}')
         
-                        i += 1
+#                         i += 1
 
-    print('*' * 80)
-    print("PODUCTION QUEUE BUILT, REMOVING EXISTING ITEMS INVENTORY")
-    print("BEFORE")
-    # print(len(queue))
-    # print(queue)
+#     print('*' * 80)
+#     print("PODUCTION QUEUE BUILT, REMOVING EXISTING ITEMS INVENTORY")
+#     print("BEFORE")
+#     # print(len(queue))
+#     # print(queue)
 
-    # Subtract existing parts from queue
-    for q in queue:
+#     # Subtract existing parts from queue
+#     for q in queue:
 
-        progress['parts_projection'] += int(q[3])
+#         progress['parts_projection'] += int(q[3])
 
-        # print(f"q:{q}")
-        for part in parts:
+#         # print(f"q:{q}")
+#         for part in parts:
 
-            # Matching part found in inventory
-            if part['name'] == q[0] and \
-                part['size'] == q[1] and \
-                part['color'] == q[2]:
+#             # Matching part found in inventory
+#             if part['name'] == q[0] and \
+#                 part['size'] == q[1] and \
+#                 part['color'] == q[2]:
 
-                print(f"Matched {part['name']} {part['size']} {part['color']}")
-                print(f"Need {q[3]}, have {part['qty']}")
+#                 print(f"Matched {part['name']} {part['size']} {part['color']}")
+#                 print(f"Need {q[3]}, have {part['qty']}")
 
-                if int(q[3]) > part['qty']:
-                    progress['parts_inventory'] += part['qty']
-                else:
-                    progress['parts_inventory'] += int(q[3])
+#                 if int(q[3]) > part['qty']:
+#                     progress['parts_inventory'] += part['qty']
+#                 else:
+#                     progress['parts_inventory'] += int(q[3])
 
-                if part['qty'] == 0:
-                    continue
+#                 if part['qty'] == 0:
+#                     continue
 
-                # Demand is exactly met
-                elif int(q[3]) == part['qty']:
-                    q[3] = 0
-                    part['qty'] = 0
+#                 # Demand is exactly met
+#                 elif int(q[3]) == part['qty']:
+#                     q[3] = 0
+#                     part['qty'] = 0
                 
-                # Demand greater than inventory
-                elif int(q[3]) > part['qty']:                        
+#                 # Demand greater than inventory
+#                 elif int(q[3]) > part['qty']:                        
 
-                    # How many will be used?
-                    used = part['qty']
+#                     # How many will be used?
+#                     used = part['qty']
 
-                    # Removed the used amount from production queue and available parts
-                    q[3] = int(q[3]) - used
-                    part['qty'] -= used
+#                     # Removed the used amount from production queue and available parts
+#                     q[3] = int(q[3]) - used
+#                     part['qty'] -= used
 
-                # Inventory greater than demand
-                else:
-                # int(q[3]) < part['qty']
+#                 # Inventory greater than demand
+#                 else:
+#                 # int(q[3]) < part['qty']
 
-                    # How many will be used?
-                    used = int(q[3])
+#                     # How many will be used?
+#                     used = int(q[3])
 
-                    # Removed the used amount from production queue and available parts
-                    q[3] = 0
-                    part['qty'] -= used
+#                     # Removed the used amount from production queue and available parts
+#                     q[3] = 0
+#                     part['qty'] -= used
 
-                print(f"Adjusted to")
-                print(f"Need {q[3]}, have {part['qty']}")
+#                 print(f"Adjusted to")
+#                 print(f"Need {q[3]}, have {part['qty']}")
 
-    print("---")
-    print("AFTER SUBTRACTING PARTS")
-    # print(len(queue))
-    # print(queue)
-    print("*" * 80)
+#     print("---")
+#     print("AFTER SUBTRACTING PARTS")
+#     # print(len(queue))
+#     # print(queue)
+#     print("*" * 80)
 
-    # Eliminate production queue entries with quantity < 0
-    tmp = []
-    for q in queue:
-        if int(q[3]) > 0:
-            tmp.append(q)
-        else:
-            print(f"removing for qty=0:{q}")
-    queue = tmp
+#     # Eliminate production queue entries with quantity < 0
+#     tmp = []
+#     for q in queue:
+#         if int(q[3]) > 0:
+#             tmp.append(q)
+#         else:
+#             print(f"removing for qty=0:{q}")
+#     queue = tmp
 
-    # Consolidate duplicate box_queue entries and subtract existing box inventory
-    tmp = []
-    i = 0
+#     # Consolidate duplicate box_queue entries and subtract existing box inventory
+#     tmp = []
+#     i = 0
     
-    for loteria in templates['loterias']:
+#     for loteria in templates['loterias']:
 
-        total = 0
-        # print(f"box_queue:{box_queue}")
+#         total = 0
+#         # print(f"box_queue:{box_queue}")
 
-        # Consolidate all box entries
-        # TODO check this change. box_queue[0] > box_queue['name']
-        for box in box_queue:
-            if box[0] == loteria['nombre']:
-                total += int(box[1])
-                # print(f"found {loteria['nombre']} in queue, total up to {total}")
-
-
-        # Subtract existing box inventory
-        for box in boxes:
-            if box['name'] == loteria['nombre']:
-                total -= box['qty']
-                # print(f"found {loteria['nombre']} in inventory, total down to {total}")
-
-                progress['box_inventory'] += box['qty']
-
-        if total > 0:
-            tmp.append([])
-            tmp[i].append(loteria['nombre'])
-            tmp[i].append(total)
-            i += 1
-
-    box_queue = tmp
-
-    # Convert list to string
-    # boxes
-    print("Box List:")
-    # for row in box_queue:
-        # print(row)
+#         # Consolidate all box entries
+#         # TODO check this change. box_queue[0] > box_queue['name']
+#         for box in box_queue:
+#             if box[0] == loteria['nombre']:
+#                 total += int(box[1])
+#                 # print(f"found {loteria['nombre']} in queue, total up to {total}")
 
 
-    print(f"before:{box_queue}")
-    box_queue = sql_cat(box_queue)
-    print(f"after:{box_queue}")
+#         # Subtract existing box inventory
+#         for box in boxes:
+#             if box['name'] == loteria['nombre']:
+#                 total -= box['qty']
+#                 # print(f"found {loteria['nombre']} in inventory, total down to {total}")
 
-    # print(f"String:{box_queue}")
+#                 progress['box_inventory'] += box['qty']
 
-    # parts
-    print("Parts List:")
-    # for row in queue:
-        # print(row)
+#         if total > 0:
+#             tmp.append([])
+#             tmp[i].append(loteria['nombre'])
+#             tmp[i].append(total)
+#             i += 1
 
-    queue = sql_cat(queue)
-    # print(f"String:{queue}")
+#     box_queue = tmp
 
-    # queue = tuplefy(queue)
-    # print(f"Tuples:{queue}")
+#     # Convert list to string
+#     # boxes
+#     print("Box List:")
+#     # for row in box_queue:
+#         # print(row)
 
-    box_added = 0
-    part_added = 0
 
-    # Wipe Box Produciton
-    db.execute("DELETE FROM boxprod")
-    print(f"box_queue:{box_queue}")
+#     print(f"before:{box_queue}")
+#     box_queue = sql_cat(box_queue)
+#     print(f"after:{box_queue}")
 
-    # New Box Production
-    if box_queue:
-        print(box_queue)
-        box_added = db.execute(f"INSERT INTO boxprod (name, qty) VALUES {box_queue}")
+#     # print(f"String:{box_queue}")
+
+#     # parts
+#     print("Parts List:")
+#     # for row in queue:
+#         # print(row)
+
+#     queue = sql_cat(queue)
+#     # print(f"String:{queue}")
+
+#     # queue = tuplefy(queue)
+#     # print(f"Tuples:{queue}")
+
+#     box_added = 0
+#     part_added = 0
+
+#     # Wipe Box Produciton
+#     db.execute("DELETE FROM boxprod")
+#     print(f"box_queue:{box_queue}")
+
+#     # New Box Production
+#     if box_queue:
+#         print(box_queue)
+#         box_added = db.execute(f"INSERT INTO boxprod (name, qty) VALUES {box_queue}")
 
     
-    # Wipe production
-    db.execute("DELETE FROM production")
-    # New Part Production
-    if queue:
-        # part_added = db.execute(f"INSERT INTO production (name, size, color, qty) VALUES {queue}")
+#     # Wipe production
+#     db.execute("DELETE FROM production")
+#     # New Part Production
+#     if queue:
+#         # part_added = db.execute(f"INSERT INTO production (name, size, color, qty) VALUES {queue}")
 
-        part_added = db.execute(f"INSERT INTO production (name, size, color, qty) VALUES {queue}")
+#         part_added = db.execute(f"INSERT INTO production (name, size, color, qty) VALUES {queue}")
 
-    # tmp = {
-    #     'projections': total_projections,
-    #     'boxes': box_added,
-    #     'parts': part_added
-    # }
+#     # tmp = {
+#     #     'projections': total_projections,
+#     #     'boxes': box_added,
+#     #     'parts': part_added
+#     # }
 
-    try:
-        progress['item_percent'] = progress['item_inventory'] / progress['item_projection'] * 100
-    except:
-        progress['item_percent'] = 0
+#     try:
+#         progress['item_percent'] = progress['item_inventory'] / progress['item_projection'] * 100
+#     except:
+#         progress['item_percent'] = 0
 
-    try:
-        progress['parts_percent'] = progress['parts_inventory'] / progress['parts_projection'] * 100
-    except:
-        progress['parts_percent'] = 0
+#     try:
+#         progress['parts_percent'] = progress['parts_inventory'] / progress['parts_projection'] * 100
+#     except:
+#         progress['parts_percent'] = 0
 
-    try:
-        progress['box_percent'] = progress['box_inventory'] / progress['box_projection'] * 100
-    except:
-        progress['box_percent'] = 0
+#     try:
+#         progress['box_percent'] = progress['box_inventory'] / progress['box_projection'] * 100
+#     except:
+#         progress['box_percent'] = 0
 
-    print(progress)
-    return progress
-        
-
-
-
-
-
+#     print(progress)
+#     return progress
+      
 
 
 
@@ -851,7 +813,7 @@ def dashboard():
 
         templates = gather_templates()
 
-        progress = build_production(templates)
+        progress = build_production(templates, db)
 
         production = db.execute("SELECT * FROM production ORDER BY size DESC, name DESC, color DESC")
 
@@ -956,7 +918,7 @@ def parts(part):
     if request.method == 'GET':
 
         templates = gather_templates()
-        build_production(templates)
+        build_production(templates, db)
 
         # Determine if color
         is_color = False
@@ -1148,7 +1110,7 @@ def parts(part):
                             name=:name AND size=:size AND color=:color", name=part, size=size, color=color, new_partsprod=new_partsprod)
 
         templates = gather_templates()
-        build_production(templates)
+        build_production(templates, db)
         flash(f"Sucessfully created {qty} {size} {color} {part}")
         return redirect(f'/parts/{color}')
 
@@ -1346,7 +1308,7 @@ def items():
                             item=item, size=size, a=a, b=b, c=c, qty=new_qty)
 
         templates = gather_templates()
-        build_production(templates)
+        build_production(templates, db)
 
         flash(f"Added to items inventory: {qty} {size} {item} ({a}, {b}, {c})")
 
@@ -1528,7 +1490,7 @@ def projections():
 
             print("Existing projection updated.")
         
-        build_production(templates)
+        build_production(templates, db)
 
         return redirect('/projections')
 
@@ -1540,7 +1502,7 @@ def production():
 
     # Query for current cycle's projections
     templates = gather_templates()
-    build_production(templates)
+    build_production(templates, db)
     
     flash(f"Projections (re)calculated.")
     return redirect("/projections")
@@ -1660,143 +1622,18 @@ def config(path):
 
     if request.method == 'GET':
 
+
         # Not a valid admin route
         return redirect('/')
 
     # On POST
     else:
 
-        # Setup tables
-        if path == 'setup-tables':
 
-            # Create table: users
-            db.execute("CREATE TABLE IF NOT EXISTS users ( \
-                id serial PRIMARY KEY NOT NULL, \
-                username VARCHAR ( 255 ) UNIQUE NOT NULL, \
-                password VARCHAR ( 255 ) NOT NULL, \
-                created_on TIMESTAMP, \
-                last_login TIMESTAMP \
-                )")
-
-            # Create table: colors
-            db.execute("CREATE TABLE IF NOT EXISTS colors ( \
-                sku INTEGER PRIMARY KEY NOT NULL, \
-                name VARCHAR ( 255 ), \
-                emoji VARCHAR ( 255 ) \
-                )")
-
-            colors = [['black', '⬛'],['red', '🟥'], ['TQ', '🟦'], ['yellow', '🟨'], ['green', '🟩'], ['purple', '🟪'], ['white', '⬜']]
-            for i in range(len(colors)):
-                db.execute("INSERT INTO colors (sku, name, emoji) VALUES (:sku, :name, :emoji)", sku=(i+1), name=colors[i][0], emoji=colors[i][1])
-
-
-            # Create table: sizes
-            db.execute("CREATE TABLE IF NOT EXISTS sizes ( \
-                sku INTEGER PRIMARY KEY NOT NULL, \
-                shortname VARCHAR ( 255 ), \
-                longname VARCHAR ( 255 ) \
-                )")
-
-            sizes = [['S', 'small'], ['M', 'medium'], ['L', 'large']]
-            for i in range(len(sizes)):
-                db.execute("INSERT INTO sizes (sku, shortname, longname) VALUES (:sku, :shortname, :longname)", sku=(i+1), shortname=sizes[i][0] , longname=sizes[i][1])
-
-
-            # Create table: recent
-            # db.execute("CREATE TABLE IF NOT EXISTS recent ( \
-            #     user_id INTEGER, \
-            #     projection VARCHAR ( 255 ), \
-            #     item VARCHAR ( 255 ), \
-            #     part VARCHAR ( 255 ), \
-            #     PRIMARY KEY(user_id), \
-            #     CONSTRAINT
-            # )")
-
-
-            # Create table: parts
-            # db.execute("DROP TABLE parts")
-            db.execute("CREATE TABLE IF NOT EXISTS parts ( \
-                name VARCHAR ( 255 ) NOT NULL, \
-                size VARCHAR ( 255 ) NOT NULL, \
-                color VARCHAR ( 255 ), \
-                qty INTEGER \
-                )")
-
-            # Create table: items
-            # db.execute("DROP TABLE items")
-            db.execute("CREATE TABLE IF NOT EXISTS items ( \
-                name VARCHAR ( 255 ) NOT NULL, \
-                size VARCHAR ( 255 ) NOT NULL, \
-                a_color VARCHAR ( 255 ), \
-                b_color VARCHAR ( 255 ), \
-                c_color VARCHAR ( 255 ), \
-                qty INTEGER \
-                )")
-
-            # Create table: boxes
-            # db.execute("DROP TABLE boxes")
-            db.execute("CREATE TABLE IF NOT EXISTS boxes ( \
-                name VARCHAR ( 255 ), \
-                qty INTEGER \
-                )")
-
-            # Create table: boxprod
-            # db.execute("DROP TABLE boxprod")
-            db.execute("CREATE TABLE IF NOT EXISTS boxprod ( \
-                name VARCHAR ( 255 ), \
-                qty INTEGER \
-                )")
-            
-            # Create table: boxused
-            # db.execute("DROP TABLE boxused")
-            db.execute("CREATE TABLE IF NOT EXISTS boxused ( \
-                name VARCHAR ( 255 ), \
-                qty INTEGER \
-                )")
-
-            # Create table: projections
-            # db.execute("DROP TABLE projections")
-            db.execute("CREATE TABLE IF NOT EXISTS projections ( \
-                name VARCHAR ( 255 ) NOT NULL, \
-                size VARCHAR ( 255 ) NOT NULL, \
-                a_color VARCHAR ( 255 ), \
-                b_color VARCHAR ( 255 ), \
-                c_color VARCHAR ( 255 ), \
-                qty INTEGER, \
-                cycle INTEGER, \
-                sku BIGINT \
-                )")
-            
-            # Create table: production
-            # db.execute("DROP TABLE production")
-            db.execute("CREATE TABLE IF NOT EXISTS production ( \
-                name VARCHAR ( 255 ) NOT NULL, \
-                size VARCHAR ( 255 ) NOT NULL, \
-                color VARCHAR ( 255 ), \
-                qty INTEGER \
-                )")
-
-            # Create table: cycles
-            # db.execute("DROP TABLE cycles")
-            db.execute("CREATE TABLE IF NOT EXISTS cycles ( \
-                id serial PRIMARY KEY NOT NULL, \
-                name VARCHAR (255), \
-                created_on TIMESTAMP, \
-                current BOOL \
-                )")
-
-            # If empty cycles table
-            data = db.execute("SELECT * FROM cycles")
-            if not data:
-                # Seed table with Default Event
-                time = datetime.datetime.utcnow().isoformat()
-                db.execute("INSERT INTO cycles (id, name, created_on, current) VALUES ('1', 'Default Event', :time, 'TRUE')", time=time)
-
-
-            # EXPERIMENTAL
-            # Create table: summary
-            # db.execute("DROP TABLE summary")
-            db.execute("CREATE TABLE IF NOT EXISTS summary ()")
+        if path == 'initialize-database':
+            print("initialize_database 1")
+            initialize_database()
+            print("initialize_database 3")
 
             flash("Tables setup.")
             return redirect("/admin")
@@ -1829,29 +1666,8 @@ def config(path):
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
                 # Read loterias.csv into a SQL table
-                with open('static/uploads/loterias.csv', 'r') as csvfile:
-
-                    print('Reading loterias.csv...')
-                    csv_reader = csv.reader(csvfile)
-
-                    db.execute("CREATE TABLE IF NOT EXISTS loterias ( \
-                        nombre VARCHAR (255) NOT NULL, \
-                        a VARCHAR (255), \
-                        b VARCHAR (255), \
-                        c VARCHAR (255), \
-                        backs VARCHAR (255), \
-                        sku INTEGER \
-                        )")
-
-                    db.execute("DELETE from loterias")
-
-                    next(csv_reader)
-                    counter = 0
-                    for row in csv_reader:
-                        counter += 1
-                        db.execute("INSERT INTO loterias (sku, nombre, a, b, c, backs) VALUES (:sku, :nombre, :a, :b, :c, :backs)", \
-                                        sku=row[0], nombre=row[1], a=row[2], b=row[3], c=row[4], backs=row[5])
-
+                counter = setup_loterias()
+                print(f"Loterias updated with {counter} items.")
                 flash(f"Loterias updated with {counter} items.")
 
             else:
