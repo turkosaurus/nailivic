@@ -3,6 +3,9 @@ import csv
 import psycopg2
 import psycopg2.extras
 import datetime
+
+from helpers import parse_sku, parse_skulet
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -30,7 +33,19 @@ def tupleToDict(tuple_in):
         result.append(dict(row._asdict()))
     return result
 
-def gather_templates_new(conn):
+
+def quick_execute_dict(conn, query):
+    cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+    cur.execute(f"{query}")
+    result = tupleToDict(cur.fetchall())
+    conn.commit()
+    cur.close()
+
+    return result
+
+
+
+def gather_templates(conn):
 
     # Gather template data
     cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
@@ -148,7 +163,7 @@ def initialize_database(conn):
         ['yellow', '🟨', 'yellow'], 
         ['green', '🟩', 'green'], 
         ['purple', '🟪', 'purple'], 
-        ['white', '⬜', 'whilte'],
+        ['white', '⬜', 'white'],
         ['grey', '🔲', 'grey'],
         ['gold', '🥇', 'gold'],
         ['rose', '🌹', 'pink']        
@@ -212,7 +227,7 @@ def initialize_database(conn):
 
     types = [
         ['Laser Cut', '0'],
-        ['Tee Shirt', '0'],
+        ['Tee Shirt', '1'],
         ['Tank Top', '2'],
         ['Hoodie', '3'],
         ['Screen Print', '10'],
@@ -228,7 +243,7 @@ def initialize_database(conn):
     # Shirts
     # Reformat these tables to be more relational with types, depending on business needs
     cur.execute("CREATE TABLE IF NOT EXISTS nail_shirts ( \
-        name VARCHAR ( 255 ) NOT NULL, \
+        nombre VARCHAR ( 255 ) NOT NULL, \
         a VARCHAR ( 255 ), \
         b VARCHAR ( 255 ), \
         c VARCHAR ( 255 ), \
@@ -243,7 +258,7 @@ def initialize_database(conn):
     shirts_data = cur.fetchall()
     if not shirts_data:
         for i in range(len(shirts)):
-            cur.execute("INSERT INTO nail_shirts (name, sku) VALUES (%s, %s)", (shirts[i][0], shirts[i][1]))
+            cur.execute("INSERT INTO nail_shirts (nombre, sku) VALUES (%s, %s)", (shirts[i][0], shirts[i][1]))
 
 
     # Create table: boxes
@@ -302,3 +317,70 @@ def initialize_database(conn):
 
     conn.commit()
     cur.close()
+
+
+def restore_items(conn):
+
+    cur = conn.cursor()
+
+    with open('static/uploads/item-inventory.csv', 'r') as csvfile:
+
+        csv_reader = csv.reader(csvfile)
+
+        total = 0
+        skipped = 0
+
+        deleted = cur.execute("DELETE FROM items;")
+
+        next(csv_reader)
+        for row in csv_reader:
+            total += 1
+
+            if row[0]:
+                sku = parse_sku(row[0])
+                print(f"Found:{sku}")
+
+                # TODO update to use SKU, not spreadsheet values
+                cur.execute("INSERT INTO nail_items (name, size, a_color, b_color, c_color, qty) VALUES \
+                (%s, %s, %s, %s, %s, %s)", (row[1], row[2], row[3], row[4], row[5], row[7]))
+
+            else:
+                skipped += 1
+
+    conn.commmit()
+    cur.close()
+
+    results = {
+        "deleted":deleted,
+        "skipped":skipped,
+        "total":total
+    }
+
+    return results
+
+
+    with open('static/uploads/loterias.csv', 'r') as csvfile:
+
+        print('Reading loterias.csv...')
+        csv_reader = csv.reader(csvfile)
+
+        cur.execute("CREATE TABLE IF NOT EXISTS nail_loterias ( \
+            nombre VARCHAR (255) NOT NULL, \
+            a VARCHAR (255), \
+            b VARCHAR (255), \
+            c VARCHAR (255), \
+            backs VARCHAR (255), \
+            sku INTEGER \
+            )")
+
+        cur.execute("DELETE from nail_loterias")
+
+        next(csv_reader)
+        counter = 0
+        for row in csv_reader:
+            counter += 1
+            cur.execute("INSERT INTO nail_loterias (sku, nombre, a, b, c, backs) VALUES (%s, %s, %s, %s, %s, %s)", \
+                            (row[0], row[1], row[2], row[3], row[4], row[5]))
+
+        conn.commit()
+        cur.close()

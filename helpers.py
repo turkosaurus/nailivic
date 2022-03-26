@@ -1,4 +1,8 @@
+import psycopg2
+import psycopg2.extras
 from dotenv import load_dotenv
+
+from database import tupleToDict
 load_dotenv()
 
 # Configure Heroku Postgres database
@@ -43,13 +47,67 @@ def sql_cat(lists):
     return string
 
 
-def build_production(templates, db):
+def parse_sku(sku):
+    # turns SKU into object with integers
 
-    projections = db.execute("SELECT * FROM projections WHERE cycle=(SELECT id FROM cycles WHERE current='TRUE')")
-    items = db.execute("SELECT * FROM items")
-    parts = db.execute("SELECT * FROM parts")
-    boxes = db.execute("SELECT * FROM boxes UNION SELECT * FROM boxused")
+    # Add leading zero, if needed
+    if len(sku) == 11:
+        sku = sku.zfill(12)
 
+    if len(sku) != 12:
+        return 'err_len'
+
+    print(sku)
+    parsed = {
+        'item': (int(sku[0]) * 10) + int(sku[1]),
+        'a': (int(sku[2]) * 10) + int(sku[3]),
+        'b': (int(sku[4]) * 10) + int(sku[5]),
+        'c': (int(sku[6]) * 10) + int(sku[7]),
+        'type': (int(sku[8]) * 10) + int(sku[9]),
+        'size': (int(sku[10]) * 10) + int(sku[11]),
+        'sku': sku
+        }
+
+    return parsed
+
+def parse_skulet(sku):
+    # turns SKU into object with integers
+
+    # Add leading zero, if needed
+    if len(sku) == 6:
+        sku = sku.zfill(7)
+
+    if len(sku) != 7:
+        return 'err_len'
+
+    print(sku)
+    parsed = {
+        'item': (int(sku[0]) * 10) + int(sku[1]),
+        'part': sku[2],
+        'color': (int(sku[3]) * 10) + int(sku[4]),
+        'size': (int(sku[5]) * 10) + int(sku[6]),
+        'sku': sku
+        }
+
+    return parsed
+
+
+
+def build_production(conn, templates, db):
+
+    cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+
+    cur.execute("SELECT * FROM nail_projections WHERE cycle=(SELECT id FROM nail_cycles WHERE current='TRUE')")
+    projections = tupleToDict(cur.fetchall())
+    
+    cur.execute("SELECT * FROM nail_items")
+    items = tupleToDict(cur.fetchall())
+
+    cur.execute("SELECT * FROM nail_parts")    
+    parts = tupleToDict(cur.fetchall())
+    
+    cur.execute("SELECT * FROM nail_boxes UNION SELECT * FROM nail_boxused")
+    boxes = tupleToDict(cur.fetchall())
 
     # Initiate queue list and counter
     queue = []
@@ -422,13 +480,13 @@ def build_production(templates, db):
     part_added = 0
 
     # Wipe Box Produciton
-    db.execute("DELETE FROM boxprod")
+    cur.execute("DELETE FROM nail_boxprod")
     print(f"box_queue:{box_queue}")
 
     # New Box Production
     if box_queue:
         print(box_queue)
-        box_added = db.execute(f"INSERT INTO boxprod (name, qty) VALUES {box_queue}")
+        cur.execute(f"INSERT INTO boxprod (name, qty) VALUES {box_queue}")
 
     
     # Wipe production
@@ -445,6 +503,7 @@ def build_production(templates, db):
     #     'parts': part_added
     # }
 
+    # Handle divide by zero error
     try:
         progress['item_percent'] = progress['item_inventory'] / progress['item_projection'] * 100
     except:

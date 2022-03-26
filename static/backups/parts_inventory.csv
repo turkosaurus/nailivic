@@ -14,10 +14,7 @@ skulet,name,size,color,qty
 06c0503,Mermaid Tail,L,green,2
 06c0501,Mermaid Tail,S,green,30
 27a0101,Heart,S,black,17
-32a0101,Guitar,S,black,6
 36a0101,Octopus,S,black,23
-32a0102,Guitar,M,black,2
-06a0101,Mermaid Body,S,black,25
 03b0201,Frida Flowers,S,red,6
 32b0201,Guitar Hands,S,red,4
 35b0201,Star Swirls,S,red,9
@@ -71,3 +68,9 @@ skulet,name,size,color,qty
 35a0101,Star,S,black,18
 36a0103,Octopus,L,black,1
 22a0101,Boot,S,black,4
+32a0101,Guitar,S,black,12
+32a0102,Guitar,M,black,4
+27a0103,Heart,L,black,1
+36a0102,Octopus,M,black,3
+06a0102,Mermaid Body,M,black,4
+06a0101,Mermaid Body,S,black,26
