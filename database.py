@@ -4,8 +4,6 @@ import psycopg2
 import psycopg2.extras
 import datetime
 
-from helpers import parse_sku, parse_skulet
-
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -33,8 +31,7 @@ def tupleToDict(tuple_in):
         result.append(dict(row._asdict()))
     return result
 
-
-def quick_execute_dict(conn, query):
+def quick_execute_dict(conn, query): # TODO delete if unused
     cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
     cur.execute(f"{query}")
     result = tupleToDict(cur.fetchall())
@@ -42,8 +39,6 @@ def quick_execute_dict(conn, query):
     cur.close()
 
     return result
-
-
 
 def gather_templates(conn):
 
@@ -318,9 +313,8 @@ def initialize_database(conn):
     conn.commit()
     cur.close()
 
-
 def restore_items(conn):
-
+    from helpers import parse_sku
     cur = conn.cursor()
 
     with open('static/uploads/item-inventory.csv', 'r') as csvfile:
@@ -330,7 +324,7 @@ def restore_items(conn):
         total = 0
         skipped = 0
 
-        deleted = cur.execute("DELETE FROM items;")
+        deleted = cur.execute("DELETE FROM nail_items RETURNING *;") # TODO test returning
 
         next(csv_reader)
         for row in csv_reader:
@@ -347,7 +341,7 @@ def restore_items(conn):
             else:
                 skipped += 1
 
-    conn.commmit()
+    conn.commit()
     cur.close()
 
     results = {
@@ -355,32 +349,46 @@ def restore_items(conn):
         "skipped":skipped,
         "total":total
     }
-
     return results
 
 
-    with open('static/uploads/loterias.csv', 'r') as csvfile:
+def restore_parts(conn):
+    from helpers import parse_skulet
+    cur = conn.cursor()
 
-        print('Reading loterias.csv...')
+    with open('static/uploads/part-inventory.csv', 'r') as csvfile:
+
         csv_reader = csv.reader(csvfile)
 
-        cur.execute("CREATE TABLE IF NOT EXISTS nail_loterias ( \
-            nombre VARCHAR (255) NOT NULL, \
-            a VARCHAR (255), \
-            b VARCHAR (255), \
-            c VARCHAR (255), \
-            backs VARCHAR (255), \
-            sku INTEGER \
-            )")
+        total = 0
+        skipped = 0
 
-        cur.execute("DELETE from nail_loterias")
+        deleted = cur.execute("DELETE FROM nail_parts RETURNING *;") # TODO test returning
 
         next(csv_reader)
-        counter = 0
         for row in csv_reader:
-            counter += 1
-            cur.execute("INSERT INTO nail_loterias (sku, nombre, a, b, c, backs) VALUES (%s, %s, %s, %s, %s, %s)", \
-                            (row[0], row[1], row[2], row[3], row[4], row[5]))
+            total += 1
 
-        conn.commit()
-        cur.close()
+            if row[0]:
+
+                sku = parse_skulet(row[0])
+                print(f"Found:{sku}")
+
+                # TODO update to use SKU not spreadsheet values
+                cur.execute("INSERT INTO nail_parts (name, size, color, qty) VALUES \
+                    (%s, %s, %s, %s)", (row[1], row[2], row[3], row[4]))
+
+            else:
+                skipped += 1
+
+    conn.commit()
+    cur.close()
+
+    results = {
+        "deleted":deleted,
+        "skipped":skipped,
+        "total":total
+    }
+    return results
+
+

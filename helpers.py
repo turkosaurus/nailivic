@@ -47,6 +47,7 @@ def sql_cat(lists):
     return string
 
 
+
 def parse_sku(sku):
     # turns SKU into object with integers
 
@@ -70,6 +71,8 @@ def parse_sku(sku):
 
     return parsed
 
+
+
 def parse_skulet(sku):
     # turns SKU into object with integers
 
@@ -90,6 +93,7 @@ def parse_skulet(sku):
         }
 
     return parsed
+
 
 
 
@@ -460,7 +464,7 @@ def build_production(conn, templates, db):
 
 
     print(f"before:{box_queue}")
-    box_queue = sql_cat(box_queue)
+    # box_queue = sql_cat(box_queue)
     print(f"after:{box_queue}")
 
     # print(f"String:{box_queue}")
@@ -470,7 +474,7 @@ def build_production(conn, templates, db):
     # for row in queue:
         # print(row)
 
-    queue = sql_cat(queue)
+    # queue = sql_cat(queue)
     # print(f"String:{queue}")
 
     # queue = tuplefy(queue)
@@ -486,16 +490,29 @@ def build_production(conn, templates, db):
     # New Box Production
     if box_queue:
         print(box_queue)
-        cur.execute(f"INSERT INTO boxprod (name, qty) VALUES {box_queue}")
-
+        query = "INSERT INTO nail_boxprod (name, qty) VALUES %s"
+        psycopg2.extras.execute_values (
+            cur, query, box_queue, template=None, page_size=100 
+        )
     
     # Wipe production
-    db.execute("DELETE FROM production")
+    cur.execute("DELETE FROM nail_production")
+
     # New Part Production
     if queue:
-        # part_added = db.execute(f"INSERT INTO production (name, size, color, qty) VALUES {queue}")
+        query = "INSERT INTO nail_production (name, qty) VALUES %s"
+        psycopg2.extras.execute_values (
+            cur, query, queue, template=None, page_size=100 
+        )
 
-        part_added = db.execute(f"INSERT INTO production (name, size, color, qty) VALUES {queue}")
+    data = ((1, 2), (3, 4), (5, 6), (7, 8))
+    query = "INSERT INTO foo (a, b) VALUES %s"
+    psycopg2.extras.execute_values (
+        cur, query, data, template=None, page_size=100 
+    )
+
+    conn.commit()
+    cur.close()
 
     # tmp = {
     #     'projections': total_projections,

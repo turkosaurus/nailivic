@@ -1,3 +1,4 @@
+from difflib import restore
 import os
 import requests
 # import urllib.parse
@@ -108,33 +109,13 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+
+
+
 ###### QUEUE ######
 
 # These functions produce production table, calculating projections less inventory
 # Negative values can dequeue items
-
-
-
-# #TODO delete in 1.1
-# def gather_templates():
-
-#     # Gather template data
-#     loterias = db.execute("SELECT * FROM loterias ORDER BY SKU ASC")
-#     shirts = db.execute("SELECT * FROM shirts")
-#     colors = db.execute("SELECT * FROM colors")
-#     sizes = db.execute("SELECT * FROM sizes")
-#     types = db.execute("SELECT * FROM types")
-
-#     response = {
-#         'loterias': loterias,
-#         'shirts': shirts,
-#         'colors': colors,
-#         'sizes': sizes,
-#         'types': types
-#     }
-
-#     return response
-
 
 
 def generate_item(templates, sku):
@@ -285,50 +266,50 @@ def Xsql_cat(lists):
 
 
 
-
-
-
-@app.route('/shopifytest', methods=['GET', 'POST'])
-@login_required
-def test():
+# @app.route('/shopifytest', methods=['GET', 'POST'])
+# @login_required
+# def test():
     
-    # Establish connection to Shopify
-    # https://shopify.github.io/shopify_python_api/
-    api_version = "2022-01"
-    shopify_apikey = os.getenv('SHOPIFY_API')
-    shopify_password = os.getenv('SHOPIFY_PASSWORD')
-    shop_url = "https://%s:%s@nailivic-studios.myshopify.com/admin" % (shopify_apikey, shopify_password)
-    shopify.ShopifyResource.set_site(shop_url)
-    shop = shopify.Shop.current
+#     # Establish connection to Shopify
+#     # https://shopify.github.io/shopify_python_api/
+#     api_version = "2022-01"
+#     shopify_apikey = os.getenv('SHOPIFY_API')
+#     shopify_password = os.getenv('SHOPIFY_PASSWORD')
+#     shop_url = "https://%s:%s@nailivic-studios.myshopify.com/admin" % (shopify_apikey, shopify_password)
+#     shopify.ShopifyResource.set_site(shop_url)
+#     shop = shopify.Shop.current
 
     
-    # Fuck it we'll do it live
+#     # Fuck it we'll do it live
 
-    route = f"admin/api/{api_version}/products.json"
-    # route = f"admin/api/{api_version}/inventory_items.json?"
-    # route = f"admin/products.json"
-    base_url = f"https://{shopify_apikey}:{shopify_password}@nailivic-studios.myshopify.com/{route}"
+#     route = f"admin/api/{api_version}/products.json"
+#     # route = f"admin/api/{api_version}/inventory_items.json?"
+#     # route = f"admin/products.json"
+#     base_url = f"https://{shopify_apikey}:{shopify_password}@nailivic-studios.myshopify.com/{route}"
 
-    r = requests.get(base_url)
-    print(f"r:{r}")
-    # print(f"r:{r.content}")
+#     r = requests.get(base_url)
+#     print(f"r:{r}")
+#     # print(f"r:{r.content}")
 
-    content = json.loads(r.content)
-    # print(f"content:{content}")
+#     content = json.loads(r.content)
+#     # print(f"content:{content}")
 
-    content = content['products']
+#     content = content['products']
 
-    extracted_data = []
-    for i in content:
+#     extracted_data = []
+#     for i in content:
         
-        data = [i['id'], i['title'], i['variants'][0]['sku'], i['variants'][0]['inventory_quantity']]
-        extracted_data.append(data)
+#         data = [i['id'], i['title'], i['variants'][0]['sku'], i['variants'][0]['inventory_quantity']]
+#         extracted_data.append(data)
 
-    print(f"extracted_data:{extracted_data}")
+#     print(f"extracted_data:{extracted_data}")
 
 
 
-    return render_template("error.html", errmsg=extracted_data)
+#     return render_template("error.html", errmsg=extracted_data)
+
+
+
 
     # print(f"r:{r.json()['products'][0]['vendor']}")
 
@@ -475,6 +456,7 @@ def dashboard():
 
     else:
         return redirect("/")
+
 
 @app.route('/parts/<part>', methods=['GET', 'POST'])
 @login_required
@@ -721,13 +703,12 @@ def items():
             'deplete': deplete
         }
 
-        print(f"SESSION:{session}")
+        print(f"session['recent_item']:{session}")
 
         print(f"deplete:{deplete}")
 
         print("POST form with values:")
         print(qty, item, size, a, b, c, deplete)
-
 
         ## Validation ##
 
@@ -1186,8 +1167,6 @@ def admin():
 def config(path):
 
     if request.method == 'GET':
-
-
         # Not a valid admin route
         return redirect('/')
 
@@ -1195,19 +1174,23 @@ def config(path):
     else:
 
         if path == 'restore':
-            return "TODO"
-
-        if path == 'gather-templates-new':
-
-            print(f"templates")
-            templates = gather_templates(conn)
-            print(templates)
-
-            print(f"new_templates")
-            new_templates = gather_templates_new(conn)
-            print(new_templates)
-
+            resultsItem = restore_items(conn)
+            resultsParts = restore_parts(conn)
+            flash(f"Items:{resultsItem} Parts{resultsParts}")
             return redirect("/admin")
+
+
+        # if path == 'gather-templates-new': # TODO delete (for testing only)
+
+        #     print(f"templates")
+        #     templates = gather_templates(conn)
+        #     print(templates)
+
+        #     print(f"new_templates")
+        #     new_templates = gather_templates_new(conn)
+        #     print(new_templates)
+
+        #     return redirect("/admin")
 
 
         if path == 'initialize-database':
@@ -1434,37 +1417,9 @@ def config(path):
                     print(f"filename:{filename}")
                     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-                    with open('static/uploads/part-inventory.csv', 'r') as csvfile:
+                    results = restore_items()
 
-                        csv_reader = csv.reader(csvfile)
-        
-                        total = 0
-                        skipped = 0
-
-                        deleted = db.execute("DELETE FROM parts;")
-
-                        next(csv_reader)
-                        for row in csv_reader:
-                            total += 1
-
-                            if row[0]:
-
-                                sku = parse_skulet(row[0])
-                                print(f"Found:{sku}")
-
-                                # TODO update to use SKU not spreadsheet values
-                                db.execute("INSERT INTO parts (name, size, color, qty) VALUES (:name, :size, :color, :qty)",
-                                                name=row[1],
-                                                size=row[2],
-                                                color=row[3],
-                                                qty=row[4]
-                                                )
-
-                            else:
-                                skipped += 1
-
-
-                flash(f"""Deleted {deleted} old inventory items. Processed "{filename_user}" into items inventory. {skipped}/{total} failed (no SKU).""")
+                flash(f"""Deleted {results.deleted} old inventory parts. Processed "{filename_user}" into parts inventory. {results.skipped}/{results.total} failed (no SKU).""")
                 return redirect('/admin')
 
             else:
