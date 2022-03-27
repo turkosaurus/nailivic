@@ -18,8 +18,8 @@ from werkzeug.exceptions import default_exceptions, HTTPException, InternalServe
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
-from helpers import sql_cat, build_production, parse_sku, parse_skulet
-from database import restore_parts, tupleToDict, gather_templates, initialize_database, setup_loterias, restore_items, restore_parts
+from helpers import sql_cat, parse_sku, parse_skulet, build_production, build_totals, generate_item, generate_sku
+from database import migrate_users, restore_event, restore_parts, fetchDict, gather_templates, initialize_database, setup_loterias, restore_items, restore_parts
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -64,7 +64,6 @@ Session(app)
 # Configure Heroku Postgres database
 db = SQL(os.getenv('DATABASE_URL'))
 
-
 # Setup PostgreSQL database connection
 conn = None
 # Testing
@@ -77,7 +76,7 @@ else:
     # conn = psycopg2.connect(os.getenv(''))    # TODO v1.1 add prodution URL
     print("Connecting to Nalivic PRODUCTION database...", end="")
 if conn == None:
-    print("failed to connect.")
+    print("failed to connect to database.")
 
 
 # Import Authorized User List
@@ -116,138 +115,6 @@ def allowed_file(filename):
 
 # These functions produce production table, calculating projections less inventory
 # Negative values can dequeue items
-
-
-def generate_item(templates, sku):
-    # Intakes a dictionary object with parts sku, replaces number skus with words
-
-    named = {}
-
-    # SKU > Loteria name
-    for loteria in templates['loterias']:
-        if loteria['sku'] == sku['item']:
-            named['item'] = loteria['nombre']
-
-    # SKU > Loteria name (shirts)
-    for loteria in templates['shirts']:
-        if loteria['sku'] == sku['item']:
-            named['item'] = loteria['nombre']
-
-    # SKU > A color name
-    for color in templates['colors']:
-        if color['sku'] == sku['a']:
-            named['a'] = color['name']
-
-    # SKU > B color name
-    for color in templates['colors']:
-        if color['sku'] == sku['b']:
-            named['b'] = color['name']
-
-    # SKU > C color name
-    for color in templates['colors']:
-        if color['sku'] == sku['c']:
-            named['c'] = color['name']
-
-    if sku['c'] == 0:
-        named['c'] = ''
-
-    # Type
-    for type in templates['types']:
-        if type['sku'] == sku['type']:
-            named['type'] = type['name']
-
-    # SKU > size name
-    for size in templates['sizes']:
-        if size['sku'] == sku['size']:
-            named['size'] = size['shortname']
-    
-    if 'size' not in named.keys():
-        named['error'] = 'SKU Error: Invalid size number.'
-    
-    return named
-
-
-def generate_sku(templates, item):
-    # from names
-
-    # TODO use this for error checking
-    valid = {
-        'name': False,
-        'a': False,
-        'b': False,
-        'c': False,
-        'size': False,
-        'type': False
-    }
-    print(f"valid:{valid}")
-
-    # Loteria name > SKU
-    for loteria in templates['loterias']:
-        if loteria['nombre'] in item['name']:
-            sku = str(loteria['sku']).zfill(2)
-            print(f"matched {loteria['nombre']} to {item['name']}. SKU:{sku}")
-            valid['name'] = True
-
-    # Loteria name > SKU (for shirts)
-    for loteria in templates['shirts']:
-        if loteria['nombre'] in item['name']:
-            sku = str(loteria['sku']).zfill(2)
-            print(f"matched {loteria['nombre']} to {item['name']}. SKU:{sku}")
-            valid['name'] = True
-
-    # A color name > SKU
-    for color in templates['colors']:
-        if color['name'] in item['a_color']:
-            sku = sku + str(color['sku']).zfill(2)
-            print(f"matched {color['name']} to {item['a_color']}. SKU:{sku}")
-            valid['a'] = True
-
-    # B color name > SKU
-    for color in templates['colors']:
-        if color['name'] in item['b_color']:
-            sku = sku + str(color['sku']).zfill(2)
-            print(f"matched {color['name']} to {item['b_color']}. SKU:{sku}")
-            valid['b'] = True
-
-    # C color name > SKU
-    if item['c_color']:
-        for color in templates['colors']:
-            if color['name'] in item['c_color']:
-                sku = sku + str(color['sku']).zfill(2)
-                print(f"matched {color['name']} to {item['c_color']}. SKU:{sku}")
-                valid['c'] = True
-
-    else:
-        print("no c_color given")
-        sku = sku + str(00).zfill(2)
-        valid['c'] = True
-
-    # TODO replace with simpler if/else?
-    try:
-        print(80 * "X")
-        for type in templates['types']:
-            print(f"{type['name']}{item['type']}")
-            if type['name'] == item['type']:
-                print(type['sku'])
-                type_num = type['sku']
-    
-    except:
-        type_num = 0 # Laser Cuts do not specify their type, default to 0
-
-    finally:
-        sku = sku + str(type_num).zfill(2)
-
-    # Size name > SKU
-    for size in templates['sizes']:
-        if size['shortname'] in item['size']:
-            sku = sku + str(size['sku']).zfill(2)
-            print(f"matched {size['longname']} to {item['size']}. SKU:{sku}")
-            valid['size'] = True
-
-    print(f"valid:{valid}")
-
-    return sku
-
 
 # Unused. Testing revealed that the CS50 opens a new connection for each transaction. 
 # Migration to native psychopg implementation would allow proper tuple-ization rather than contenation.
@@ -340,88 +207,42 @@ def dashboard():
     if request.method == 'GET':
         print("--- / ---")
 
-        # Identify current cycle
-        cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
-        if not cycle:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
-            data = db.execute("SELECT * FROM cycles")
+        # Identify current cycle
+        cur.execute("SELECT * FROM nail_cycles WHERE current='TRUE'")
+        cycle = fetchDict(cur)
+        if not cycle:
+            data = cur.execute("SELECT * FROM nail_cycles")
+            data = fetchDict(cur)
             if not data:
                 # Seed table with Default Event
                 time = datetime.datetime.utcnow().isoformat()
-                db.execute("INSERT INTO cycles (id, name, created_on, current) VALUES ('1', 'Default Event', :time, 'TRUE')", time=time)            
+                cur.execute("INSERT INTO nail_cycles (id, name, created_on, current) VALUES ('1', 'Default Event', %s, 'TRUE')", (time,))
 
             else:
-                db.execute("UPDATE cycles SET current='TRUE' WHERE id=1")
-            cycle = db.execute("SELECT * FROM cycles WHERE current='TRUE'")
+                cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=1")
+            cur.execute("SELECT * FROM nail_cycles WHERE current='TRUE'")
+            cycle = fetchDict(cur)
 
         # Query for relevant data
-        user = db.execute("SELECT username from users WHERE id=:id", id=session["user_id"])
+        cur.execute("SELECT username from nail_users WHERE id=%s", (session["user_id"],))
+        user = fetchDict(cur)
 
         templates = gather_templates(conn)
 
-        progress = build_production(conn, templates, db)
+        progress = build_production(conn, templates)
 
-        production = db.execute("SELECT * FROM production ORDER BY size DESC, name DESC, color DESC")
+        cur.execute("SELECT * FROM nail_production ORDER BY size DESC, name DESC, color DESC")
+        production = fetchDict(cur)
 
-        # Build totals arrays
-        totals = []
-        grand_total = 0
+        data = build_totals(production, templates)
+        print(f"data:{data}")
+        totals = data['totals']
+        grand_total = data['grand_total']
 
-        # print(f"totals:{totals}")
-        # Build empty table
-        for i in range(len(templates['sizes'])):
-
-            # Make a list to hold each sizes's color array
-            totals.append([])
-            # print(f"totals:{totals}")
-
-            for j in range(len(templates['colors'])):
-    
-                # Make a list to hold the color totoals
-                totals[i].append([])
-                # print(f"totals:{totals}")
-                
-                totals[i][j] = 0
-
-            # Append one more for backs
-            totals[i].append(0)
-            # print(f"totals:{totals}")
-
-        # print(f"Built totals table: {totals}")
-
-        # Loop through each production row, adding color totals
-        for row in production:
-            # print("row in production")
-
-            # Loop sizes for a match
-            for i in range(len(templates['sizes'])):
-
-                # Size match found
-                if templates['sizes'][i]['shortname'] == row['size']:
-                    # print("match size")
-
-                    # For each color within the size
-                    for j in range(len(templates['colors'])):
-
-                        # Sanitize "None" into ''
-                        if row['color'] == None:
-                            row['color'] = ''
-
-                        # print(f"comparing {templates['colors'][j]['name']} {row['color']}")
-                        if templates['colors'][j]['name'] in row['color']:
-                            # print("match color")
-
-                            totals[i][j] += row['qty']
-                            grand_total += row['qty']
-
-                    #TODO v1.0 update get exact match instead of text search for Backs
-                    # For the back of that size
-                    if 'Backs' in row['name']:
-
-                        totals[i][len(templates['colors'])] += row['qty']
-                        grand_total += row['qty']
-
-        boxprod = db.execute("SELECT sum(qty) FROM boxprod")
+        cur.execute("SELECT sum(qty) FROM nail_boxprod")
+        boxprod = fetchDict(cur)
 
         if boxprod[0]['sum'] is not None:
             grand_total += boxprod[0]['sum']
@@ -433,10 +254,14 @@ def dashboard():
 
         print(f"totals:{totals}")
 
-        projection_totals = db.execute("SELECT sum(qty) FROM projections WHERE cycle=(SELECT id FROM cycles WHERE current='TRUE')")
-        item_totals = db.execute("SELECT sum(qty) FROM items")
-        part_totals = db.execute("SELECT sum(qty) FROM parts")
-        production_totals = db.execute("SELECT sum(qty) FROM production")
+        cur.execute("SELECT sum(qty) FROM nail_projections WHERE cycle=(SELECT id FROM nail_cycles WHERE current='TRUE')")
+        projection_totals = fetchDict(cur)
+        cur.execute("SELECT sum(qty) FROM nail_items")
+        item_totals = fetchDict(cur)
+        cur.execute("SELECT sum(qty) FROM nail_parts")
+        part_totals = fetchDict(cur)
+        cur.execute("SELECT sum(qty) FROM nail_production")
+        production_totals = fetchDict(cur)
 
         time = datetime.datetime.utcnow().isoformat()
 
@@ -464,8 +289,10 @@ def parts(part):
 
     if request.method == 'GET':
 
+        cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+
         templates = gather_templates(conn)
-        build_production(templates, db)
+        build_production(conn, templates)
 
         # Determine if color
         is_color = False
@@ -476,21 +303,24 @@ def parts(part):
 
         if is_color == True:
 
-            #TODO v1.0 update, eliminate like
+            #TODO eliminate like?
             part_like = cur_color['name']
             part_like = '%' + part
             # part_like = part
-            productions = db.execute("SELECT * FROM production WHERE color LIKE :name \
-                ORDER BY qty DESC", name=part_like)
+            cur.execute("SELECT * FROM nail_production WHERE color LIKE %s \
+                ORDER BY qty DESC", (part_like,))
+            productions = fetchDict(cur)
 
             print(cur_color)
-            inventory = db.execute("SELECT * FROM parts WHERE color LIKE :name \
-                ORDER BY size DESC, qty DESC", name=part_like)
+            cur.execute("SELECT * FROM nail_parts WHERE color LIKE %s \
+                ORDER BY size DESC, qty DESC", (part_like,))
+            inventory = fetchDict(cur)
     
             if not 'recent_part' in session :
                 session['recent_part'] = 'None'
             print(session)
 
+            cur.close()
             return render_template('parts.html', cur_color=cur_color, templates=templates, productions=productions, inventory=inventory, recent=session['recent_part'])
 
         if part == 'backs':
@@ -499,8 +329,10 @@ def parts(part):
                 'emoji': '🍑'
             }
 
-            productions = db.execute("SELECT * FROM production WHERE name LIKE '%Backs' ORDER BY qty DESC")
-            inventory = db.execute("SELECT * FROM PARTS WHERE name LIKE '%Backs' ORDER BY size DESC, qty DESC")
+            cur.execute("SELECT * FROM nail_production WHERE name LIKE '%Backs' ORDER BY qty DESC")
+            productions = fetchDict(cur)
+            cur.execute("SELECT * FROM nail_parts WHERE name LIKE '%Backs' ORDER BY size DESC, qty DESC")
+            inventory = fetchDict(cur)
 
             print("part is a back...")
             print(f"productions:{productions}")
@@ -508,32 +340,42 @@ def parts(part):
             if not 'recent_part' in session :
                 session['recent_part'] = 'None'
 
+            cur.close()
             return render_template('parts.html', cur_color=cur_color, templates=templates, part=part, productions=productions, inventory=inventory, recent=session['recent_part'])
 
         if part == 'boxes':
 
             # Box Production Total
-            box_prod_total = db.execute("SELECT SUM(qty) FROM boxprod")
+            cur.execute("SELECT SUM(qty) FROM nail_boxprod")
+            box_prod_total = fetchDict(cur)
             box_prod_total = box_prod_total[0]['sum']
 
             # Box Inventory & Production
-            boxes = db.execute("SELECT * FROM boxes ORDER BY qty DESC")
-            boxprod = db.execute("SELECT * FROM boxprod ORDER BY qty DESC")
-            boxused = db.execute("SELECT * FROM boxused ORDER BY qty DESC")
+            cur.execute("SELECT * FROM nail_boxes ORDER BY qty DESC")
+            boxes = fetchDict(cur)
+            cur.execute("SELECT * FROM nail_boxprod ORDER BY qty DESC")
+            boxprod = fetchDict(cur)
+            cur.execute("SELECT * FROM nail_boxused ORDER BY qty DESC")
+            boxused = fetchDict(cur)
 
             cur_color = {
                 'name': 'boxes',
                 'emoji': '📦'
             }
 
+            cur.close()
             return render_template('boxes.html', cur_color=cur_color, templates=templates, boxes=boxes, boxprod=boxprod, boxused=boxused, box_prod_total=box_prod_total)
 
         else:
             flash("Invalid part descriptor")
+            cur.close()
             return redirect("/")
+
 
     # Upon POSTing form submission
     else:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+
         part = request.form.get("part")
         size = request.form.get("size")
         color = request.form.get("color")
@@ -553,25 +395,28 @@ def parts(part):
             return redirect(f'/parts/{color}')
 
         # Determine if part with color, or backs
-        backs_onhand = db.execute("SELECT backs FROM loterias WHERE backs=:part", part=part)
+        cur.execute("SELECT backs FROM nail_loterias WHERE backs=%s", (part,))
+        backs_onhand = fetchDict(cur)
 
         # BACKS
         if backs_onhand:
             print(f"Backs on hand: {backs_onhand}")
 
             # What quantity of this part already exists?
-            onhand = db.execute("SELECT qty FROM parts WHERE \
-                                name=:name AND size=:size", \
-                                name=part, size=size)
+            cur.execute("SELECT qty FROM nail_parts WHERE \
+                                name=%s AND size=%s", \
+                                (part, size))
+            onhand = fetchDict(cur)
 
             print(f"Fetching onhand backs...")
             print(onhand)
 
             # None, create new entry
             if not onhand:
-                db.execute("INSERT INTO parts (name, size, qty) VALUES \
-                            (:name, :size, :qty)", \
-                            name=part, size=size, qty=qty)
+                cur.execute("INSERT INTO nail_parts (name, size, qty) VALUES \
+                            (%s, %s, %s)", \
+                            (part, size, qty))
+                conn.commit()
                 print(f"New {size} {part} entry created with qty {qty}.")                        
 
             # Update existing entry's quantity
@@ -579,18 +424,21 @@ def parts(part):
                 new_qty = onhand[0]['qty'] + qty
 
                 if new_qty < 1:
-                    db.execute("DELETE FROM parts WHERE \
-                                name=:name AND size=:size", name=part, size=size)
+                    cur.execute("DELETE FROM nail_parts WHERE \
+                                name=%s AND size=%s", (part, size))
+                    conn.commit()
                 else:
-                    db.execute("UPDATE parts SET qty=:qty WHERE \
-                                name=:name AND size=:size", qty=new_qty, name=part, size=size)
-                print(f"Existing {size} {part} inventory quantity updated from {onhand[0]['qty']} to {new_qty}.")                        
+                    cur.execute("UPDATE nail_parts SET qty=:qty WHERE \
+                                name=%s AND size=%s", (new_qty, part, size))
+                    conn.commit()
+                print(f"Existing {size} {part} inventory quantity updated from {onhand[0]['qty']} to {new_qty}.")
 
             # Update production queue
         
             # Identify matching part that is already in production
-            parts_inprod = db.execute("SELECT qty FROM production WHERE \
-                            name=:name AND size=:size", name=part, size=size)
+            cur.execute("SELECT qty FROM nail_production WHERE \
+                            name=%s AND size=%s", (part, size))
+            parts_inprod = fetchDict(cur)
 
             if parts_inprod:
 
@@ -599,47 +447,54 @@ def parts(part):
 
                 # Remove entry because <0
                 if new_partsprod < 1:
-                    db.execute("DELETE FROM production WHERE \
-                            name=:name AND size=:size", name=part, size=size)
+                    cur.execute("DELETE FROM nail_production WHERE \
+                            name=%s AND size=%s", (part, size))
+                    conn.commit()
 
                 # Update entry to new depleted quantity after accouting for newly produced parts
                 else:
-                    db.execute("UPDATE production SET qty=:new_partsprod WHERE \
-                            name=:name AND size=:size", name=part, size=size, new_partsprod=new_partsprod)
+                    cur.execute("UPDATE nail_production SET qty=:new_partsprod WHERE \
+                            name=%s AND size=%s", (part, size, new_partsprod))
+                    conn.commit()
 
         # PARTS WITH COLORS
         else:
             # What quantity of this part already exists?
-            onhand = db.execute("SELECT qty FROM parts WHERE \
-                                name=:name AND size=:size AND color=:color", \
-                                name=part, size=size, color=color)
+            cur.execute("SELECT qty FROM nail_parts WHERE \
+                                name=%s AND size=%s AND color=%s", \
+                                (part, size, color))
+            onhand = fetchDict(cur)
 
             print(f"Fetching onhand parts...")
             print(onhand)
 
             # None, create new entry
             if not onhand:
-                db.execute("INSERT INTO parts (name, size, color, qty) VALUES \
-                            (:name, :size, :color, :qty)", \
-                            name=part, size=size, color=color, qty=qty)
-                print(f"New {size} {color} {part} entry created with qty {qty}.")                        
+                cur.execute("INSERT INTO nail_parts (name, size, color, qty) VALUES \
+                            (%s, %s, %s, %s)", \
+                            (part, size, color, qty))
+                conn.commit()
+                print(f"New {size} {color} {part} entry created with qty {qty}.")
 
             # Update existing entry's quantity
             else:
                 new_qty = onhand[0]['qty'] + qty
                 if new_qty < 1:
-                    db.execute("DELETE FROM parts WHERE \
-                                name=:name AND size=:size AND color=:color", name=part, size=size, color=color)
+                    cur.execute("DELETE FROM nail_parts WHERE \
+                                name=%s AND size=%s AND color=%s", (part, size, color))
+                    conn.commit()
                 else:
-                    db.execute("UPDATE parts SET qty=:qty WHERE \
-                                name=:name AND size=:size AND color=:color", qty=new_qty, name=part, size=size, color=color)
-                print(f"Existing {size} {color} {part} inventory quantity updated from {onhand[0]['qty']} to {new_qty}.")                        
+                    cur.execute("UPDATE nail_parts SET qty=%s WHERE \
+                                name=%s AND size=%s AND color=%s", (new_qty, part, size, color))
+                    conn.commit()
+                print(f"Existing {size} {color} {part} inventory quantity updated from {onhand[0]['qty']} to {new_qty}.")
 
             # Update production queue
         
             # Identify matching part that is already in production
-            parts_inprod = db.execute("SELECT qty FROM production WHERE \
-                            name=:name AND size=:size AND color=:color", name=part, size=size, color=color)
+            cur.execute("SELECT qty FROM nail_production WHERE \
+                            name=%s AND size=%s AND color=%s", (part, size, color))
+            parts_inprod = fetchDict(cur)
 
             if parts_inprod:
 
@@ -648,16 +503,20 @@ def parts(part):
 
                 # Remove entry because <0
                 if new_partsprod < 1:
-                    db.execute("DELETE FROM production WHERE \
-                            name=:name AND size=:size AND color=:color", name=part, size=size, color=color)
-
+                    cur.execute("DELETE FROM nail_production WHERE \
+                            name=%s AND size=%s AND color=%s", (part, size, color))
+                    conn.commit()
                 # Update entry to new depleted quantity after accouting for newly produced parts
                 else:
-                    db.execute("UPDATE production SET qty=:new_partsprod WHERE \
-                            name=:name AND size=:size AND color=:color", name=part, size=size, color=color, new_partsprod=new_partsprod)
+                    db.execute("UPDATE nail_production SET qty=%s WHERE \
+                            name=%s AND size=%s AND color=%s", (part, size, color, new_partsprod))
+                    conn.commit()
+
+        cur.close()
 
         templates = gather_templates(conn)
-        build_production(templates, db)
+        build_production(conn, templates)
+
         flash(f"Sucessfully created {qty} {size} {color} {part}")
         return redirect(f'/parts/{color}')
 
@@ -667,13 +526,17 @@ def parts(part):
 def items():
     if request.method == 'GET':
 
-        items = db.execute("SELECT * FROM items ORDER BY size DESC, name ASC, qty DESC")
+        cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+        cur.execute("SELECT * FROM nail_items ORDER BY size DESC, name ASC, qty DESC")
+        items = fetchDict(cur)
         templates = gather_templates(conn)
+        cur.close()
 
         if not 'recent_item' in session :
             session['recent_item'] = 'None'
-            print("not recent item")
+            print("session['recent_item'] = 'None'")
         print(f"loading items{session}")
+
         return render_template('items.html', templates=templates, items=items, recent=session['recent_item'])
 
     # Upon POSTing form submission
@@ -854,7 +717,7 @@ def items():
                             item=item, size=size, a=a, b=b, c=c, qty=new_qty)
 
         templates = gather_templates(conn)
-        build_production(templates, db)
+        build_production(conn, templates)
 
         flash(f"Added to items inventory: {qty} {size} {item} ({a}, {b}, {c})")
 
@@ -1036,7 +899,7 @@ def projections():
 
             print("Existing projection updated.")
         
-        build_production(templates, db)
+        build_production(conn, templates)
 
         return redirect('/projections')
 
@@ -1048,7 +911,7 @@ def production():
 
     # Query for current cycle's projections
     templates = gather_templates(conn)
-    build_production(templates, db)
+    build_production(conn, templates)
     
     flash(f"Projections (re)calculated.")
     return redirect("/projections")
@@ -1156,8 +1019,20 @@ def shipping():
 def admin():
 
     templates = gather_templates(conn)
-    cycles = db.execute("SELECT * FROM cycles")
-    users = db.execute("SELECT username, last_login FROM users ORDER BY last_login DESC")
+
+    cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+
+    cur.execute("SELECT * FROM nail_cycles")
+    cycles = fetchDict(cur)
+
+    cur.execute("SELECT username, last_login FROM nail_users ORDER BY last_login DESC")
+    users = fetchDict(cur)
+
+    cur.close()
+
+    print("TEST prints to check the formatting")
+    print(cycles)
+    print(users)
 
     return render_template('admin.html', templates=templates, cycles=cycles, users=users)
 
@@ -1172,6 +1047,11 @@ def config(path):
 
     # On POST
     else:
+        
+        if path == 'migrate-users':
+            status = migrate_users(conn, db)
+            flash(status)
+            return redirect("/admin")
 
         if path == 'restore':
             resultsItem = restore_items(conn)
@@ -1281,81 +1161,20 @@ def config(path):
 
             if file and allowed_file(file.filename):
                 filename_user = secure_filename(file.filename) # User supplied filenames kept
-                filename = 'temp.csv'
+                filename = 'event.csv'
                 print(f"filename:{filename}")
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-                with open('static/uploads/temp.csv', 'r') as csvfile:
+                results = restore_event(conn, event)
 
-                    csv_reader = csv.reader(csvfile)
-    
-                    total = 0
-                    added = 0
-                    skipped = 0
-                    errors = ''
-                    err_lines = []
+                flash(f"""Processed {results['added']}/{results['total']} items from "{filename_user}" into database for event \
+                    "{results['cycle_name']['0']['name']}." {results['skipped']} failures on lines {results['err_lines']} {results['errors']}""")
 
-                    values = []
-
-                    next(csv_reader)
-                    for row in csv_reader:
-                        total += 1
-    
-                        # SKU exists
-                        if row[2]:
-                            sku = parse_sku(row[2])
-                            item = generate_item(templates, sku)
-
-                            if 'error' in item.keys():
-                                skipped += 1
-                                err_lines.append(total + 1)
-                                errors = f"{item['error']}"
-                                continue
-
-                                # flash(f"SKU Error: {item['error']}")
-                                # return redirect('/admin') # harsh error handling
-
-                            print(f"Item from production:{item}")
-
-                        else:
-                            skipped += 1
-                            err_lines.append(total + 1)
-
-                        values.append([])
-                        values[added].append(item['item'])
-                        values[added].append(item['size'])
-                        values[added].append(item['a'])
-                        values[added].append(item['b'])
-                        values[added].append(item['c'])
-                        values[added].append(row[7]) # quantity
-                        values[added].append(event) # event cycle number
-                        values[added].append(sku['sku'])
-                        print(f"values:{values}")
-                        added += 1
-
-                    values = sql_cat(values)
-
-                    # TODO ensure no duplicate SKUs
-                    db.execute("DELETE FROM projections WHERE cycle=:event", event=event)
-                    db.execute(f"INSERT INTO projections (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES {values}")
-
-                cycle_name = db.execute("SELECT name FROM cycles WHERE id=:event", event=event)
-
-                flash(f"""Processed {added}/{total} items from "{filename_user}" into database for event "{cycle_name[0]['name']}." {skipped} failures on lines {err_lines} {errors}""")
+            else:
+                flash("Unknown file type error.")
+                return redirect('/admin')
 
             return redirect('/admin')
-
-
-
-            # # Read loterias.csv into a SQL table
-            # with open(file, 'r') as csvfile:
-
-            #     csv_reader = csv.reader(csvfile)
-
-            #     for row in csv_reader:
-            #         print(f"row:")
-            #         # db.execute("INSERT INTO loterias (nombre, a, b, c, backs) VALUES (:nombre, :a, :b, :c, :backs)", \
-            #         #                 nombre=row[0], a=row[1], b=row[2], c=row[3], backs=row[4])
 
 
         if path == 'import-inventory':

@@ -1,3 +1,4 @@
+from asyncio import gather
 import os
 import csv
 import psycopg2
@@ -6,7 +7,6 @@ import datetime
 
 from dotenv import load_dotenv
 load_dotenv()
-
 
 # # Setup PostgreSQL database connection
 # conn = ''
@@ -31,13 +31,21 @@ def tupleToDict(tuple_in):
         result.append(dict(row._asdict()))
     return result
 
-def quick_execute_dict(conn, query): # TODO delete if unused
-    cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
-    cur.execute(f"{query}")
+def fetchDict(cur):
     result = tupleToDict(cur.fetchall())
-    conn.commit()
-    cur.close()
+    print(f"fetchDict returning:\n{result}")
+    return result
 
+def execDict(conn, query):
+    cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+    if query.split[0] != "SELECT":
+        err = "Usage error, execDict query must be SELECT"
+        print(err)
+        return err
+    cur.execute(f"{query}")
+    result = fetchDict(cur)
+    print(f"execDict returning:\n{result}")
+    cur.close()
     return result
 
 def gather_templates(conn):
@@ -313,6 +321,37 @@ def initialize_database(conn):
     conn.commit()
     cur.close()
 
+def migrate_users(conn, db):
+    # Migrates users from CS50 "db" to psycopg2 "conn"
+    try:
+        # get old users
+        users = db.execute("SELECT * FROM users")
+        users_formatted = []
+        i = 0
+        for user in users:
+            users_formatted.append([])
+            for col in user.values():
+                users_formatted[i].append(col)
+            i += 1
+
+        print(users)
+
+        # add new users
+        cur = conn.cursor()
+        query = "INSERT INTO nail_users (id, username, password, created_on, last_login) VALUES %s"
+        psycopg2.extras.execute_values (
+            cur, query, users_formatted, template=None, page_size=100 
+        )
+        conn.commit()
+        cur.close()
+        status = f"Migrated {i} users."
+
+    except Exception as e:
+        status = f"Unable to migrate. {e}"
+    
+    return status
+
+
 def restore_items(conn):
     from helpers import parse_sku
     cur = conn.cursor()
@@ -324,7 +363,8 @@ def restore_items(conn):
         total = 0
         skipped = 0
 
-        deleted = cur.execute("DELETE FROM nail_items RETURNING *;") # TODO test returning
+        deleted = cur.execute("DELETE FROM nail_items RETURNING *;") # TODO test returning here and on restore_parts()
+        print(f"TEST for the RETURNING sql word, deleted=\n{deleted}")
 
         next(csv_reader)
         for row in csv_reader:
@@ -350,7 +390,6 @@ def restore_items(conn):
         "total":total
     }
     return results
-
 
 def restore_parts(conn):
     from helpers import parse_skulet
@@ -391,4 +430,85 @@ def restore_parts(conn):
     }
     return results
 
+
+def restore_event(conn, event):
+    from helpers import parse_sku, generate_item
+
+    cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+
+    templates = gather_templates(conn)
+
+    with open('static/uploads/event.csv', 'r') as csvfile:
+
+        csv_reader = csv.reader(csvfile)
+
+        total = 0
+        added = 0
+        skipped = 0
+        errors = ''
+        err_lines = []
+
+        values = []
+
+        next(csv_reader)
+        for row in csv_reader:
+            total += 1
+
+            # SKU exists
+            if row[2]:
+                sku = parse_sku(row[2])
+                item = generate_item(templates, sku)
+
+                if 'error' in item.keys():
+                    skipped += 1
+                    err_lines.append(total + 1)
+                    errors = f"{item['error']}"
+                    continue
+
+                    # flash(f"SKU Error: {item['error']}")
+                    # return redirect('/admin') # harsh error handling
+
+                print(f"Item from production:{item}")
+
+            else:
+                skipped += 1
+                err_lines.append(total + 1)
+
+            values.append([])
+            values[added].append(item['item'])
+            values[added].append(item['size'])
+            values[added].append(item['a'])
+            values[added].append(item['b'])
+            values[added].append(item['c'])
+            values[added].append(row[7]) # quantity
+            values[added].append(event) # event cycle number
+            values[added].append(sku['sku'])
+            print(f"values:{values}")
+            added += 1
+
+        # values = sql_cat(values) # TODO delete this once functional with
+
+        # TODO ensure no duplicate SKUs
+        cur.execute("DELETE FROM nail_projections WHERE cycle=%s", (event,))
+        query = "INSERT INTO nail_projections (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES %s"
+        psycopg2.extras.execute_values (
+            cur, query, values, template=None, page_size=100 
+        )
+
+        cur.execute("SELECT name FROM nail_cycles WHERE id=%s", (event,))
+        cycle_name = fetchDict(cur)
+
+        conn.commit()
+        cur.close()
+
+        results = {
+            'added':added,
+            'total':total,
+            'skipped':skipped,
+            'err_lines':err_lines,
+            'errors':errors,
+            'cycle_name':cycle_name
+        }
+
+    return results
 

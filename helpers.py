@@ -47,7 +47,6 @@ def sql_cat(lists):
     return string
 
 
-
 def parse_sku(sku):
     # turns SKU into object with integers
 
@@ -72,7 +71,6 @@ def parse_sku(sku):
     return parsed
 
 
-
 def parse_skulet(sku):
     # turns SKU into object with integers
 
@@ -95,9 +93,7 @@ def parse_skulet(sku):
     return parsed
 
 
-
-
-def build_production(conn, templates, db):
+def build_production(conn, templates):
 
     cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
@@ -498,21 +494,27 @@ def build_production(conn, templates, db):
     # Wipe production
     cur.execute("DELETE FROM nail_production")
 
+    print(f"trying to insert to queue:\n{queue}")
+
     # New Part Production
     if queue:
-        query = "INSERT INTO nail_production (name, qty) VALUES %s"
+        query = "INSERT INTO nail_production (name, size, color, qty) VALUES %s"
         psycopg2.extras.execute_values (
             cur, query, queue, template=None, page_size=100 
         )
 
-    data = ((1, 2), (3, 4), (5, 6), (7, 8))
-    query = "INSERT INTO foo (a, b) VALUES %s"
-    psycopg2.extras.execute_values (
-        cur, query, data, template=None, page_size=100 
-    )
-
     conn.commit()
     cur.close()
+
+    # Test (works)
+    # data = ((1, 2), (3, 4), (5, 6), (7, 8))
+    # query = "INSERT INTO foo (a, b) VALUES %s"
+    # psycopg2.extras.execute_values (
+    #     cur, query, data, template=None, page_size=100 
+    # )
+
+    # conn.commit()
+    # cur.close()
 
     # tmp = {
     #     'projections': total_projections,
@@ -538,22 +540,203 @@ def build_production(conn, templates, db):
 
     print(progress)
     return progress
-        
 
 
+def build_totals(production, templates):            
 
-# #pseudocode to describe core function of CS50 python library
-# # https://github.com/cs50/python-cs50/blob/main/src/cs50/sql.py
+    # Build totals arrays
+    totals = []
+    grand_total = 0
 
-# def execute(query, *args):
+    # print(f"totals:{totals}")
+    # Build empty table
+    for i in range(len(templates['sizes'])):
 
-#     cur = conn.cursor()
-#     cur.execute(f'"{query}", {args}')
-#     conn.commit()
-#     cur.close
-#     return 0
+        # Make a list to hold each sizes's color array
+        totals.append([])
+        # print(f"totals:{totals}")
 
-# def append_args(args):
-#     arg = ''
-#     for arg in args:
-#         arg = f""
+        for j in range(len(templates['colors'])):
+
+            # Make a list to hold the color totoals
+            totals[i].append([])
+            # print(f"totals:{totals}")
+            
+            totals[i][j] = 0
+
+        # Append one more for backs
+        totals[i].append(0)
+        # print(f"totals:{totals}")
+
+    # print(f"Built totals table: {totals}")
+
+    # Loop through each production row, adding color totals
+    for row in production:
+        # print("row in production")
+
+        # Loop sizes for a match
+        for i in range(len(templates['sizes'])):
+
+            # Size match found
+            if templates['sizes'][i]['shortname'] == row['size']:
+                # print("match size")
+
+                # For each color within the size
+                for j in range(len(templates['colors'])):
+
+                    # Sanitize "None" into ''
+                    if row['color'] == None:
+                        row['color'] = ''
+
+                    # print(f"comparing {templates['colors'][j]['name']} {row['color']}")
+                    if templates['colors'][j]['name'] in row['color']:
+                        # print("match color")
+
+                        totals[i][j] += row['qty']
+                        grand_total += row['qty']
+
+                #TODO update get exact match instead of text search for Backs
+                # For the back of that size
+                if 'Backs' in row['name']:
+
+                    totals[i][len(templates['colors'])] += row['qty']
+                    grand_total += row['qty']
+
+    data = {
+        'totals':totals,
+        'grand_total':grand_total
+    }
+
+    return data
+
+
+def generate_item(templates, sku):
+    # Intakes a dictionary object with parts sku, replaces number skus with words
+
+    named = {}
+
+    # SKU > Loteria name
+    for loteria in templates['loterias']:
+        if loteria['sku'] == sku['item']:
+            named['item'] = loteria['nombre']
+
+    # SKU > Loteria name (shirts)
+    for loteria in templates['shirts']:
+        if loteria['sku'] == sku['item']:
+            named['item'] = loteria['nombre']
+
+    # SKU > A color name
+    for color in templates['colors']:
+        if color['sku'] == sku['a']:
+            named['a'] = color['name']
+
+    # SKU > B color name
+    for color in templates['colors']:
+        if color['sku'] == sku['b']:
+            named['b'] = color['name']
+
+    # SKU > C color name
+    for color in templates['colors']:
+        if color['sku'] == sku['c']:
+            named['c'] = color['name']
+
+    if sku['c'] == 0:
+        named['c'] = ''
+
+    # Type
+    for type in templates['types']:
+        if type['sku'] == sku['type']:
+            named['type'] = type['name']
+
+    # SKU > size name
+    for size in templates['sizes']:
+        if size['sku'] == sku['size']:
+            named['size'] = size['shortname']
+    
+    if 'size' not in named.keys():
+        named['error'] = 'SKU Error: Invalid size number.'
+    
+    return named
+
+
+def generate_sku(templates, item):
+    # from names
+
+    # TODO use this for error checking
+    valid = {
+        'name': False,
+        'a': False,
+        'b': False,
+        'c': False,
+        'size': False,
+        'type': False
+    }
+    print(f"valid:{valid}")
+
+    # Loteria name > SKU
+    for loteria in templates['loterias']:
+        if loteria['nombre'] in item['name']:
+            sku = str(loteria['sku']).zfill(2)
+            print(f"matched {loteria['nombre']} to {item['name']}. SKU:{sku}")
+            valid['name'] = True
+
+    # Loteria name > SKU (for shirts)
+    for loteria in templates['shirts']:
+        if loteria['nombre'] in item['name']:
+            sku = str(loteria['sku']).zfill(2)
+            print(f"matched {loteria['nombre']} to {item['name']}. SKU:{sku}")
+            valid['name'] = True
+
+    # A color name > SKU
+    for color in templates['colors']:
+        if color['name'] in item['a_color']:
+            sku = sku + str(color['sku']).zfill(2)
+            print(f"matched {color['name']} to {item['a_color']}. SKU:{sku}")
+            valid['a'] = True
+
+    # B color name > SKU
+    for color in templates['colors']:
+        if color['name'] in item['b_color']:
+            sku = sku + str(color['sku']).zfill(2)
+            print(f"matched {color['name']} to {item['b_color']}. SKU:{sku}")
+            valid['b'] = True
+
+    # C color name > SKU
+    if item['c_color']:
+        for color in templates['colors']:
+            if color['name'] in item['c_color']:
+                sku = sku + str(color['sku']).zfill(2)
+                print(f"matched {color['name']} to {item['c_color']}. SKU:{sku}")
+                valid['c'] = True
+
+    else:
+        print("no c_color given")
+        sku = sku + str(00).zfill(2)
+        valid['c'] = True
+
+    # TODO replace with simpler if/else?
+    try:
+        print(80 * "X")
+        for type in templates['types']:
+            print(f"{type['name']}{item['type']}")
+            if type['name'] == item['type']:
+                print(type['sku'])
+                type_num = type['sku']
+    
+    except:
+        type_num = 0 # Laser Cuts do not specify their type, default to 0
+
+    finally:
+        sku = sku + str(type_num).zfill(2)
+
+    # Size name > SKU
+    for size in templates['sizes']:
+        if size['shortname'] in item['size']:
+            sku = sku + str(size['sku']).zfill(2)
+            print(f"matched {size['longname']} to {item['size']}. SKU:{sku}")
+            valid['size'] = True
+
+    print(f"valid:{valid}")
+
+    return sku
+
