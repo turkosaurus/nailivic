@@ -8,7 +8,6 @@ import shopify
 import json
 import psycopg2
 import psycopg2.extras
-from cs50 import SQL
 from flask import Flask, redirect, render_template, request, session, url_for, flash, send_from_directory, Markup
 from flask_session import Session
 from tempfile import mkdtemp
@@ -18,8 +17,8 @@ from werkzeug.exceptions import default_exceptions, HTTPException, InternalServe
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
-from helpers import sql_cat, parse_sku, parse_skulet, build_production, build_totals, generate_item, generate_sku
-from database import migrate_users, restore_event, restore_parts, fetchDict, gather_templates, initialize_database, setup_loterias, restore_items, restore_parts
+from helpers import allowed_file, parse_sku, build_production, build_totals, generate_item, generate_sku
+from database import migrate_users, restore_event, restore_parts, fetchDict, gather_templates, drop_tables, initialize_database, setup_loterias, restore_items, restore_parts
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -36,6 +35,7 @@ event: renamed cycles for clarity
 
 
 ###### CONFIGURATION ######
+
 # Initialize Flask App Ojbect
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
@@ -57,27 +57,8 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 app.config['UPLOAD_FOLDER'] = os.getenv('PWD') + "/static/uploads"
 app.config['BACKUPS'] = os.getenv('PWD') + "/static/backups"
-ALLOWED_EXTENSIONS = {'csv'}
 
 Session(app)
-
-# Configure Heroku Postgres database
-db = SQL(os.getenv('DATABASE_URL'))
-
-# Setup PostgreSQL database connection
-conn = None
-# Testing
-if int(os.getenv('FLASK_DEBUG')) == 1: # Testing DB until migration
-    print("Connecting to Turkosaurus database...", end="")
-    conn = psycopg2.connect(os.getenv('HEROKU_POSTGRESQL_BLUE_URL'))
-    print("connected.")
-# Production
-else:
-    # conn = psycopg2.connect(os.getenv(''))    # TODO v1.1 add prodution URL
-    print("Connecting to Nalivic PRODUCTION database...", end="")
-if conn == None:
-    print("failed to connect to database.")
-
 
 # Import Authorized User List
 authusers = []
@@ -86,9 +67,64 @@ authusers.append(os.getenv('USERB'))
 authusers.append(os.getenv('USERC'))
 
 
-###### FUNCTIONS ######
+###### DATABASE ######
 
-## I/O
+# Setup PostgreSQL database connection
+conn = None
+dev = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
+prod = os.getenv('DATABASE_URL') # TODO, update migrate_users to use this
+
+# Testing
+if int(os.getenv('FLASK_DEBUG')) == 1: # Testing DB until migration
+    print("Connecting to Turkosaurus database...", end="")
+    conn = psycopg2.connect(dev)
+    # cur = conn.cursor()
+    print("connected.")
+
+    if os.getenv('COLD_START') == 0:
+
+        try:
+            print("Dropping old tables...", end="")
+            drop_tables(conn)
+            print("done.")
+
+            print("Setting up tables...", end="")
+            initialize_database(conn)
+            print("Tables setup.")
+
+            print("Restoring items...", end="")
+            restore_items(conn)
+            print("done.")
+
+            print("Restoring parts...", end="")
+            restore_parts(conn)
+            print("done.")
+
+            print("Loading event projections...", end="")
+            restore_event(conn, 1)
+            print("done.")
+
+            print("Migrating users from production database...", end="")
+            migrate_users(conn)
+            print("done.")
+
+        except Exception as e:
+            print(e)
+
+    # conn.commit()
+    # cur.close()
+    print("App ready.")
+
+# Production
+else:
+    print("Connecting to Nalivic PRODUCTION database...", end="")
+    # conn = psycopg2.connect(prod) # TODO uncomment when prod database is established
+    print("connected.")
+
+if conn == None:
+    print("failed to connect to database.")
+
+###### FUNCTIONS ######
 
 def login_required(f):
     """
@@ -103,102 +139,6 @@ def login_required(f):
     return decorated_function
 
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-
-
-
-###### QUEUE ######
-
-# These functions produce production table, calculating projections less inventory
-# Negative values can dequeue items
-
-# Unused. Testing revealed that the CS50 opens a new connection for each transaction. 
-# Migration to native psychopg implementation would allow proper tuple-ization rather than contenation.
-def Xsql_cat(lists):
-    # print(f"before:{lists}")
-    for i in range(len(lists)):
-        lists[i] = tuple(lists[i])
-    # print(f"after:{lists}")
-
-
-    # for list in lists:
-    #     lists[list] = tuple(list)
-
-    return lists
-
-
-
-
-# @app.route('/shopifytest', methods=['GET', 'POST'])
-# @login_required
-# def test():
-    
-#     # Establish connection to Shopify
-#     # https://shopify.github.io/shopify_python_api/
-#     api_version = "2022-01"
-#     shopify_apikey = os.getenv('SHOPIFY_API')
-#     shopify_password = os.getenv('SHOPIFY_PASSWORD')
-#     shop_url = "https://%s:%s@nailivic-studios.myshopify.com/admin" % (shopify_apikey, shopify_password)
-#     shopify.ShopifyResource.set_site(shop_url)
-#     shop = shopify.Shop.current
-
-    
-#     # Fuck it we'll do it live
-
-#     route = f"admin/api/{api_version}/products.json"
-#     # route = f"admin/api/{api_version}/inventory_items.json?"
-#     # route = f"admin/products.json"
-#     base_url = f"https://{shopify_apikey}:{shopify_password}@nailivic-studios.myshopify.com/{route}"
-
-#     r = requests.get(base_url)
-#     print(f"r:{r}")
-#     # print(f"r:{r.content}")
-
-#     content = json.loads(r.content)
-#     # print(f"content:{content}")
-
-#     content = content['products']
-
-#     extracted_data = []
-#     for i in content:
-        
-#         data = [i['id'], i['title'], i['variants'][0]['sku'], i['variants'][0]['inventory_quantity']]
-#         extracted_data.append(data)
-
-#     print(f"extracted_data:{extracted_data}")
-
-
-
-#     return render_template("error.html", errmsg=extracted_data)
-
-
-
-
-    # print(f"r:{r.json()['products'][0]['vendor']}")
-
-    # inventory_item_id = 270107000204
-    # product = shopify.InventoryItem(api_version, inventory_item_id)
-    # print(f'RESULTS:{product}')
-
-
-    # sku = 270107000204
-    # product = shopify.InventoryItem(api_version, '*')
-    # print(f'RESULTS:{product}')
-
-
-    # return redirect("/admin")
-
-
-
-
-
-
-
-
 ###### MAIN ROUTES ######
 @app.route('/', methods=['GET'])
 @login_required
@@ -209,21 +149,30 @@ def dashboard():
 
         cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
-        # Identify current cycle
+        # Identify current cycle and retrieve data
         cur.execute("SELECT * FROM nail_cycles WHERE current='TRUE'")
         cycle = fetchDict(cur)
-        if not cycle:
-            data = cur.execute("SELECT * FROM nail_cycles")
-            data = fetchDict(cur)
-            if not data:
-                # Seed table with Default Event
-                time = datetime.datetime.utcnow().isoformat()
-                cur.execute("INSERT INTO nail_cycles (id, name, created_on, current) VALUES ('1', 'Default Event', %s, 'TRUE')", (time,))
 
-            else:
-                cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=1")
-            cur.execute("SELECT * FROM nail_cycles WHERE current='TRUE'")
-            cycle = fetchDict(cur)
+        if not cycle:
+            # set default as active
+            try:
+                cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=1 RETURNING *") 
+                cycle = fetchDict(cur)
+                conn.commit()
+            except Exception as e:
+                print(f"Default Event exception: {e}")
+                data = cur.execute("SELECT * FROM nail_cycles")
+                data = fetchDict(cur)
+                if not data:
+                    # Seed table with Default Event
+                    time = datetime.datetime.utcnow().isoformat()
+                    cur.execute("INSERT INTO nail_cycles (id, name, created_on, current) VALUES ('Default Event', %s, 'TRUE')", (time,))
+                    cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=1")
+                    conn.commit()
+
+                else:
+                    cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=1")
+                    conn.commit()
 
         # Query for relevant data
         cur.execute("SELECT username from nail_users WHERE id=%s", (session["user_id"],))
@@ -265,6 +214,7 @@ def dashboard():
 
         time = datetime.datetime.utcnow().isoformat()
 
+        cur.close()
         return render_template('index.html',
             templates=templates,
             production=production,
@@ -358,12 +308,13 @@ def parts(part):
             cur.execute("SELECT * FROM nail_boxused ORDER BY qty DESC")
             boxused = fetchDict(cur)
 
+            cur.close()
+
             cur_color = {
                 'name': 'boxes',
                 'emoji': '📦'
             }
 
-            cur.close()
             return render_template('boxes.html', cur_color=cur_color, templates=templates, boxes=boxes, boxprod=boxprod, boxused=boxused, box_prod_total=box_prod_total)
 
         else:
@@ -428,7 +379,7 @@ def parts(part):
                                 name=%s AND size=%s", (part, size))
                     conn.commit()
                 else:
-                    cur.execute("UPDATE nail_parts SET qty=:qty WHERE \
+                    cur.execute("UPDATE nail_parts SET qty=%s WHERE \
                                 name=%s AND size=%s", (new_qty, part, size))
                     conn.commit()
                 print(f"Existing {size} {part} inventory quantity updated from {onhand[0]['qty']} to {new_qty}.")
@@ -453,8 +404,8 @@ def parts(part):
 
                 # Update entry to new depleted quantity after accouting for newly produced parts
                 else:
-                    cur.execute("UPDATE nail_production SET qty=:new_partsprod WHERE \
-                            name=%s AND size=%s", (part, size, new_partsprod))
+                    cur.execute("UPDATE nail_production SET qty=%s WHERE \
+                            name=%s AND size=%s", (new_partsprod, part, size))
                     conn.commit()
 
         # PARTS WITH COLORS
@@ -509,7 +460,7 @@ def parts(part):
                 # Update entry to new depleted quantity after accouting for newly produced parts
                 else:
                     cur.execute("UPDATE nail_production SET qty=%s WHERE \
-                            name=%s AND size=%s AND color=%s", (part, size, color, new_partsprod))
+                            name=%s AND size=%s AND color=%s", (new_partsprod, part, size, color))
                     conn.commit()
 
         cur.close()
@@ -604,6 +555,7 @@ def items():
         # Superfulous c value is given
         else:
             if ctest[0]['c'] == '':
+                session['recent_item']['c'] = 'None'
                 flash('Invalid entry. Color C not required for this item.')
                 return redirect('/items')
 
@@ -927,14 +879,14 @@ def projections():
                 if updated < 1:
                     cur.execute("DELETE FROM nail_projections WHERE \
                         name=%s AND size=%s AND a_color=%s AND b_color=%s AND c_color=%s \
-                        AND cycle=:cycle", \
+                        AND cycle=%s", \
                         (item, size, a, b, c, cycle))
                     conn.commit()
 
                 else:
                     cur.execute("UPDATE nail_projections SET qty=%s WHERE \
                         name=%s AND size=%s AND a_color=%s AND b_color=%s AND c_color=%s \
-                        AND cycle=:cycle", \
+                        AND cycle=%s", \
                         (updated, item, size, a, b, c, cycle))
                     conn.commit()
 
@@ -991,7 +943,7 @@ def box():
                 conn.commit()
 
             else:
-                cur.execute("UPDATE nail_boxes SET qty=:qty WHERE name=%s", (qty_onhand, name))
+                cur.execute("UPDATE nail_boxes SET qty=%s WHERE name=%s", (qty_onhand, name))
                 conn.commit()
 
         ## Make a new box invetory entry
@@ -1112,7 +1064,7 @@ def config(path):
     else:
         
         if path == 'migrate-users':
-            status = migrate_users(conn, db)
+            status = migrate_users(conn)
             flash(status)
             return redirect("/admin")
 
@@ -1193,7 +1145,7 @@ def config(path):
                 # Create new Cycle
                 cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
                 time = datetime.datetime.utcnow().isoformat()
-                cur.execute("INSERT INTO cycles (name, created_on, current) VALUES (%s, %s, 'FALSE')", (name, time))
+                cur.execute("INSERT INTO nail_cycles (name, created_on, current) VALUES (%s, %s, 'FALSE')", (name, time))
                 conn.commit()
                 cur.close()
                 flash(f'Created new event "{name}"')
@@ -1488,8 +1440,8 @@ def config(path):
 
             cycle = request.form.get("cycle")
             cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
-            cur.execute("UPDATE cycles SET current='FALSE'")
-            cur.execute("UPDATE cycles SET current='TRUE' WHERE id=%s RETURNING name", (cycle,))
+            cur.execute("UPDATE nail_cycles SET current='FALSE'")
+            cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=%s RETURNING name", (cycle,))
             conn.commit()
             event = fetchDict(cur)
             cur.close()
@@ -1543,7 +1495,7 @@ def config(path):
                 active = fetchDict(cur)
                 cycle = active[0]['id']
 
-                cur.execute("DELETE FROM nail_projections where cycle=:cycle", cycle=cycle)
+                cur.execute("DELETE FROM nail_projections where cycle=%s", (cycle,))
                 removed = fetchDict(cur)
                 message = message + str(removed) + " items removed from current event projections.\n"
 
@@ -1792,3 +1744,67 @@ def logout():
 
     # Redirect user to login form
     return redirect("/")
+
+
+
+
+
+# @app.route('/shopifytest', methods=['GET', 'POST'])
+# @login_required
+# def test():
+    
+#     # Establish connection to Shopify
+#     # https://shopify.github.io/shopify_python_api/
+#     api_version = "2022-01"
+#     shopify_apikey = os.getenv('SHOPIFY_API')
+#     shopify_password = os.getenv('SHOPIFY_PASSWORD')
+#     shop_url = "https://%s:%s@nailivic-studios.myshopify.com/admin" % (shopify_apikey, shopify_password)
+#     shopify.ShopifyResource.set_site(shop_url)
+#     shop = shopify.Shop.current
+
+    
+#     # Fuck it we'll do it live
+
+#     route = f"admin/api/{api_version}/products.json"
+#     # route = f"admin/api/{api_version}/inventory_items.json?"
+#     # route = f"admin/products.json"
+#     base_url = f"https://{shopify_apikey}:{shopify_password}@nailivic-studios.myshopify.com/{route}"
+
+#     r = requests.get(base_url)
+#     print(f"r:{r}")
+#     # print(f"r:{r.content}")
+
+#     content = json.loads(r.content)
+#     # print(f"content:{content}")
+
+#     content = content['products']
+
+#     extracted_data = []
+#     for i in content:
+        
+#         data = [i['id'], i['title'], i['variants'][0]['sku'], i['variants'][0]['inventory_quantity']]
+#         extracted_data.append(data)
+
+#     print(f"extracted_data:{extracted_data}")
+
+
+
+#     return render_template("error.html", errmsg=extracted_data)
+
+
+
+
+    # print(f"r:{r.json()['products'][0]['vendor']}")
+
+    # inventory_item_id = 270107000204
+    # product = shopify.InventoryItem(api_version, inventory_item_id)
+    # print(f'RESULTS:{product}')
+
+
+    # sku = 270107000204
+    # product = shopify.InventoryItem(api_version, '*')
+    # print(f'RESULTS:{product}')
+
+
+    # return redirect("/admin")
+

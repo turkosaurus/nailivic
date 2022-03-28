@@ -8,21 +8,6 @@ import datetime
 from dotenv import load_dotenv
 load_dotenv()
 
-# # Setup PostgreSQL database connection
-# conn = ''
-# try:
-#     # Testing
-#     if int(os.getenv('FLASK_DEBUG')) == 1: # Testing DB until migration
-#         print("Connecting to Turkosaurus database ...", end="")
-#         conn = psycopg2.connect(os.getenv('HEROKU_POSTGRESQL_BLUE_URL'))
-#         print("connected.")
-#     # Production
-#     else:
-#         print("Connecting to PRODUCTION environment...", end="")
-# except:
-#     print("unable to connect.")
-#     conn = "Unable to connect."
-
 # FUNCTIONS #
 
 def tupleToDict(tuple_in):
@@ -31,10 +16,16 @@ def tupleToDict(tuple_in):
         result.append(dict(row._asdict()))
     return result
 
+
 def fetchDict(cur):
-    result = tupleToDict(cur.fetchall())
-    print(f"fetchDict returning:\n{result}")
-    return result
+    try:
+        result = tupleToDict(cur.fetchall())
+        print(f"fetchDict returning:\n{result}")
+        return result
+    except Exception as e:
+        print(f"Fetch error {e}")
+        return None
+
 
 def execDict(conn, query):
     cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
@@ -47,6 +38,7 @@ def execDict(conn, query):
     print(f"execDict returning:\n{result}")
     cur.close()
     return result
+
 
 def gather_templates(conn):
 
@@ -81,11 +73,12 @@ def gather_templates(conn):
 
     return response
 
+
 def setup_loterias(conn):
 
     with open('static/uploads/loterias.csv', 'r') as csvfile:
 
-        print('Reading loterias.csv...')
+        print('reading loterias.csv...', end='')
         csv_reader = csv.reader(csvfile)
 
         cur = conn.cursor()
@@ -111,17 +104,15 @@ def setup_loterias(conn):
         cur.close()
         return counter
 
-def initialize_database(conn):
-    print("Creating new tables...")
-    cur = conn.cursor()
 
+def drop_tables(conn):
+    cur = conn.cursor()
     cur.execute("DROP TABLE IF EXISTS \
         nail_colors, \
         nail_sizes, \
         nail_lotierias, \
         nail_shirts, \
         nail_types, \
-        nail_users, \
         nail_parts, \
         nail_items, \
         nail_boxes, \
@@ -132,10 +123,17 @@ def initialize_database(conn):
         nail_cycles \
         ")
         # nail_users, \
+    conn.commit()
+    cur.close
+
+
+def initialize_database(conn):
+    print("initialize_database()...", end='')
+    cur = conn.cursor()
 
     try:
         setup_loterias(conn)
-        print("Loterias setup from loterias.csv")
+        print("loterias setup.")
     except Exception as e:
         print("Error writing to database from loterias.csv. File may be missing.")
         print(e)
@@ -304,7 +302,7 @@ def initialize_database(conn):
 
     # Create table: cycles
     cur.execute("CREATE TABLE IF NOT EXISTS nail_cycles ( \
-        id SERIAL NOT NULL, \
+        id SERIAL UNIQUE NOT NULL, \
         name VARCHAR (255), \
         created_on TIMESTAMP, \
         current BOOL \
@@ -316,12 +314,18 @@ def initialize_database(conn):
     if not event_data:
         # Seed table with Default Event
         time = datetime.datetime.utcnow().isoformat()
-        cur.execute("INSERT INTO nail_cycles (id, name, created_on, current) VALUES ('1', 'Default Event', %(time)s, 'TRUE')", {'time':time})
+        cur.execute("INSERT INTO nail_cycles (name, created_on, current) VALUES ('Default Event', %s, 'TRUE')", (time,))
 
     conn.commit()
     cur.close()
 
-def migrate_users(conn, db):
+
+def migrate_users(conn):
+
+    from cs50 import SQL
+    # Configure Heroku Postgres database
+    db = SQL(os.getenv('DATABASE_URL'))
+
     # Migrates users from CS50 "db" to psycopg2 "conn"
     try:
         # get old users
@@ -333,8 +337,6 @@ def migrate_users(conn, db):
             for col in user.values():
                 users_formatted[i].append(col)
             i += 1
-
-        print(users)
 
         # add new users
         cur = conn.cursor()
@@ -390,6 +392,7 @@ def restore_items(conn):
         "total":total
     }
     return results
+
 
 def restore_parts(conn):
     from helpers import parse_skulet

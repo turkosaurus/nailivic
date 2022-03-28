@@ -1,50 +1,14 @@
 import psycopg2
 import psycopg2.extras
 from dotenv import load_dotenv
-
 from database import tupleToDict
 load_dotenv()
 
-# Configure Heroku Postgres database
-# db = SQL(os.getenv('DATABASE_URL'))
+ALLOWED_EXTENSIONS = {'csv'}
 
-def sql_cat(lists):
-    # Takes list of lists and converts them into SQL compatible string concatenations
-    # Which is a terrible thing that should never be done, but is forced by lack of INSERTMANY in CS50
-    # and is mitigated by only being applied on internal data, and escaping some characters
-    # TODO convert all SQL calls to psychopg3
-
-    # Converts arrays:
-    # [[foo, bar], [baz, bat]]
-    # into strings:
-    # (foo, bar), (baz, bat) 
-
-    string = ''
-
-    for list in lists:
-        string += '('
-
-        for value in list:
-            # All the words coming in should be
-            # only from the database, this is 
-            # a precautionary step
-            if isinstance(value, str):
-                value = value.replace('-', '')
-                value = value.replace("'", '')
-                value = value.replace("\\", '')
-                value = value.replace('"', '')
-            string += f"'{value}', "
-            # string += ', '
-
-        # Remove the last 2 chars
-        string = string[:-2]
-        string = string + '), '
-
-    # Remove the last 2 chars
-    string = string[:-2]
-
-    print(string)
-    return string
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def parse_sku(sku):
@@ -323,7 +287,6 @@ def build_production(conn, templates):
 
                         # print("MAKING NEW BACK")
 
-
                         # Add a new list for the part to be made
                         queue.append([])
                         # name
@@ -338,8 +301,7 @@ def build_production(conn, templates):
                         i += 1
 
     print('*' * 80)
-    print("PODUCTION QUEUE BUILT, REMOVING EXISTING ITEMS INVENTORY")
-    print("BEFORE")
+    print("PODUCTION QUEUE BUILT WITH ITEMS, NOW REMOVING EXISTING PARTS INVENTORY")
     # print(len(queue))
     # print(queue)
 
@@ -348,16 +310,19 @@ def build_production(conn, templates):
 
         progress['parts_projection'] += int(q[3])
 
-        # print(f"q:{q}")
+        print("---")
+        print(f"q:{q}")
+
         for part in parts:
 
+            print(f"{part['name']} {part['size']} {part['color']}")
             # Matching part found in inventory
             if part['name'] == q[0] and \
                 part['size'] == q[1] and \
-                part['color'] == q[2]:
+                ((part['color'] == q[2]) or (part['color'] == None and q[2] == '')):
 
-                print(f"Matched {part['name']} {part['size']} {part['color']}")
-                print(f"Matched {q[0]} {q[1]} {q[2]}")
+                print("Matches")
+                print(f"{q[0]} {q[1]} {q[2]}")
                 print(f"Need {q[3]}, have {part['qty']}")
 
                 if int(q[3]) > part['qty']:
@@ -398,10 +363,9 @@ def build_production(conn, templates):
                 print(f"Need {q[3]}, have {part['qty']}")
                 print(f"---")
 
-            # else:
-            #     print(f"{part}")
-            #     print(f"UNMATCHED: {part['name']} {part['size']} {part['color']}")
-            #     print(f"UNMATCHED {q[0]} {q[1]} {q[2]}")
+            else:
+                print(f"{q[0]} {q[1]} {q[2]}")
+                print("Does not match")
 
 
     print("---")
