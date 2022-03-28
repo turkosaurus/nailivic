@@ -18,7 +18,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from helpers import allowed_file, parse_sku, build_production, build_totals, generate_item, generate_sku
-from database import migrate_users, restore_event, restore_parts, fetchDict, gather_templates, drop_tables, initialize_database, setup_loterias, restore_items, restore_parts
+from database import migrate_users, migrate_events, restore_event, restore_parts, fetchDict, gather_templates, drop_tables, initialize_database, setup_loterias, restore_items, restore_parts
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -78,15 +78,16 @@ prod = os.getenv('DATABASE_URL') # TODO, update migrate_users to use this
 if int(os.getenv('FLASK_DEBUG')) == 1: # Testing DB until migration
     print("Connecting to Turkosaurus database...", end="")
     conn = psycopg2.connect(dev)
+
     # cur = conn.cursor()
     print("connected.")
 
-    if os.getenv('COLD_START') == 0:
+    if int(os.getenv('COLD_START')) == 1:
 
         try:
             print("Dropping old tables...", end="")
             drop_tables(conn)
-            print("done.")
+            print("deleted.")
 
             print("Setting up tables...", end="")
             initialize_database(conn)
@@ -104,8 +105,12 @@ if int(os.getenv('FLASK_DEBUG')) == 1: # Testing DB until migration
             restore_event(conn, 1)
             print("done.")
 
-            print("Migrating users from production database...", end="")
-            migrate_users(conn)
+            # print("Migrating users from production database...", end="")
+            # migrate_users(conn)
+            # print("done.")
+
+            print("Migrating events...", end="")
+            migrate_events(conn)
             print("done.")
 
         except Exception as e:
@@ -117,8 +122,8 @@ if int(os.getenv('FLASK_DEBUG')) == 1: # Testing DB until migration
 
 # Production
 else:
-    print("Connecting to Nalivic PRODUCTION database...", end="")
-    # conn = psycopg2.connect(prod) # TODO uncomment when prod database is established
+    print("Connecting to Nalivic database...", end="")
+    conn = psycopg2.connect(prod) # TODO uncomment when prod database is established
     print("connected.")
 
 if conn == None:
@@ -1062,6 +1067,11 @@ def config(path):
 
     # On POST
     else:
+
+        if path == 'migrate-events':
+            status = migrate_events(conn)
+            flash(status)
+            return redirect("/admin")
         
         if path == 'migrate-users':
             status = migrate_users(conn)
@@ -1073,6 +1083,7 @@ def config(path):
             resultsParts = restore_parts(conn)
             flash(f"Items:{resultsItem} Parts{resultsParts}")
             return redirect("/admin")
+
 
 
         # if path == 'gather-templates-new': # TODO delete (for testing only)
@@ -1698,17 +1709,20 @@ def login():
         cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
         # Query database for username
-        cur.execute("SELECT * FROM nail_users WHERE username = %s",
-                          (request.form.get("username"),))
+        username = request.form.get("username")
+        cur.execute("SELECT * FROM nail_users WHERE username=%s", (username,))
         rows = fetchDict(cur)
+        print(rows)
 
         # Ensure username exists
         if len(rows) != 1:
+            cur.close()
             flash("Username not found.")
             return redirect('/login')
 
         # Ensure username exists and password is correct
         if not check_password_hash(rows[0]["password"], request.form.get("password")):
+            cur.close()
             flash("Incorrect password.")
             return redirect('/login')
 

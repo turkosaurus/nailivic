@@ -354,6 +354,55 @@ def migrate_users(conn):
     return status
 
 
+def migrate_events(conn):
+
+    cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+
+    # get old cycles
+    cur.execute("SELECT name, created_on FROM nail_cycles")
+    cycles = fetchDict(cur)
+    cycles_formatted = []
+    i = 0
+    for cycle in cycles:
+        cycles_formatted.append([])
+        for col in cycle.values():
+            cycles_formatted[i].append(col)
+        i += 1
+
+    # get old projections
+    cur.execute("SELECT * FROM nail_projections")
+    projections = fetchDict(cur)
+    projections_formatted = []
+    i = 0
+    for projection in projections:
+        projections_formatted.append([])
+        for col in projection.values():
+            projections_formatted[i].append(col)
+        i += 1
+
+    # add new cycles
+    print("cycles formatted")
+    print(cycles_formatted)
+    query = "INSERT INTO nail_cycles (name, created_on) VALUES %s"
+    psycopg2.extras.execute_values (
+        cur, query, cycles_formatted, template=None, page_size=100 
+    )
+    status = f"Migrated {i} cycles."
+
+    # add new projections
+    print("projetions formatted")
+    print(projections_formatted)
+    query = "INSERT INTO nail_projections (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES %s"
+    psycopg2.extras.execute_values (
+        cur, query, projections_formatted, template=None, page_size=100 
+    )
+    conn.commit()
+    cur.close()
+    status = f"Migrated {i} projections."
+    
+    return status
+
+
 def restore_items(conn):
     from helpers import parse_sku
     cur = conn.cursor()
