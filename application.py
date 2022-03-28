@@ -590,7 +590,7 @@ def build_production(templates):
             # Matching part found in inventory
             if part['name'] == q[0] and \
                 part['size'] == q[1] and \
-                part['color'] == q[2]:
+                ((part['color'] == q[2]) or (part['color'] == None and q[2] == '')):
 
                 print(f"Matched {part['name']} {part['size']} {part['color']}")
                 print(f"Need {q[3]}, have {part['qty']}")
