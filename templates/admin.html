@@ -250,7 +250,7 @@ Admin -
                     {% endif %}
                 {% endfor %}
                 
-                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Wipe</button>
+                <button type="submit" class="btn btn-danger btn-sm" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Wipe</button>
             </form>
             
             <br>
@@ -374,7 +374,7 @@ Admin -
                     <label class="form-check-label" for="colors">Colors</label>
                 </div> -->
 
-                <button type="submit" disabled class="btn btn-danger btn-sm btn-block" onclick="return confirm('Are you sure?')">Recreate Tables</button>
+                <button type="submit" disabled class="btn btn-danger btn-sm btn-block" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Recreate Tables</button>
             </form>
 
             <br>
@@ -385,7 +385,7 @@ Admin -
                     <label class="form-check-label" for="colors">Colors</label>
                 </div> -->
 
-                <button type="submit" class="btn btn-danger btn-sm btn-block" onclick="return confirm('Are you sure?')">Initialize Database</button>
+                <button type="submit" class="btn btn-danger btn-sm btn-block" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Initialize Database</button>
             </form>
 
             <br>
@@ -407,7 +407,7 @@ Admin -
                     <label class="form-check-label" for="colors">Colors</label>
                 </div> -->
 
-                <button type="submit" class="btn btn-danger btn-sm btn-block" onclick="return confirm('Are you sure?')">Restore Inventory</button>
+                <button type="submit" class="btn btn-danger btn-sm btn-block" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Restore Inventory</button>
             </form>
 
             <br>
@@ -418,7 +418,7 @@ Admin -
                     <label class="form-check-label" for="colors">Colors</label>
                 </div> -->
 
-                <button type="submit" class="btn btn-danger btn-sm btn-block" onclick="return confirm('Are you sure?')">Migrate Users</button>
+                <button type="submit" class="btn btn-danger btn-sm btn-block" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Migrate Users</button>
             </form>
 
             <br>
@@ -429,7 +429,7 @@ Admin -
                     <label class="form-check-label" for="colors">Colors</label>
                 </div> -->
 
-                <button type="submit" class="btn btn-danger btn-sm btn-block" onclick="return confirm('Are you sure?')">Migrate Events</button>
+                <button type="submit" class="btn btn-danger btn-sm btn-block" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Migrate Events</button>
             </form>
 
             <br>

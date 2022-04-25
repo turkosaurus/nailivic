@@ -1,4 +1,4 @@
-from asyncio import gather
+# from asyncio import gather
 import os
 import csv
 import psycopg2
@@ -20,7 +20,8 @@ def tupleToDict(tuple_in):
 def fetchDict(cur):
     try:
         result = tupleToDict(cur.fetchall())
-        print(f"fetchDict returning:\n{result}")
+        if int(os.getenv('FLASK_DEBUG')) == 1: # Testing DB until migration
+            print(f"fetchDict returning:\n{result}")
         return result
     except Exception as e:
         print(f"Fetch error {e}")
@@ -151,7 +152,7 @@ def initialize_database(conn):
 
     # Colors
     cur.execute("CREATE TABLE IF NOT EXISTS nail_colors ( \
-        sku SERIAL NOT NULL, \
+        sku INTEGER, \
         name VARCHAR ( 255 ), \
         emoji VARCHAR ( 255 ), \
         cssname VARCHAR ( 255 ) \

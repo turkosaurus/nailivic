@@ -66,6 +66,7 @@ authusers.append(os.getenv('USERA'))
 authusers.append(os.getenv('USERB'))
 authusers.append(os.getenv('USERC'))
 
+database_initialized = 0
 
 ###### DATABASE ######
 
@@ -76,13 +77,15 @@ prod = os.getenv('DATABASE_URL') # TODO, update migrate_users to use this
 
 # Testing
 if int(os.getenv('FLASK_DEBUG')) == 1: # Testing DB until migration
-    print("Connecting to Turkosaurus database...", end="")
+    print("Starting in DEBUG. Connecting to Turkosaurus database...", end="")
     conn = psycopg2.connect(dev)
 
     # cur = conn.cursor()
     print("connected.")
 
-    if int(os.getenv('COLD_START')) == 1:
+    if int(os.getenv('COLD_START')) == 1 and database_initialized == 0:
+        print("Initiating COLD_START.")
+        database_initialized += 1
 
         try:
             print("Dropping old tables...", end="")
@@ -116,9 +119,13 @@ if int(os.getenv('FLASK_DEBUG')) == 1: # Testing DB until migration
         except Exception as e:
             print(e)
 
+    else:
+        print("Starting with database as is.")
+
+
     # conn.commit()
     # cur.close()
-    print("App ready.")
+    print("Test environment ready.")
 
 # Production
 else:
@@ -128,6 +135,8 @@ else:
 
 if conn == None:
     print("failed to connect to database.")
+
+
 
 ###### FUNCTIONS ######
 
@@ -507,8 +516,8 @@ def items():
 
         cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
-        # if c == "None":
-        #     c = ''
+        if c == "None":
+            c = ''
 
         # Force boolean state
         if deplete != 'true':
@@ -681,7 +690,7 @@ def items():
                     conn.commit()
                 else:
                     cur.execute("UPDATE nail_items SET qty=%s WHERE name=%s AND size=%s AND a_color=%s AND b_color=%s", \
-                            (item, size, a, b, new_qty))
+                            (new_qty, item, size, a, b))
                     conn.commit()
 
             else:
@@ -691,7 +700,7 @@ def items():
                     conn.commit()
                 else:
                     cur.execute("UPDATE nail_items SET qty=%s WHERE name=%s AND size=%s AND a_color=%s AND b_color=%s AND c_color=%s", \
-                            (item, size, a, b, c, new_qty))
+                            (new_qty, item, size, a, b, c))
                     conn.commit()
 
         templates = gather_templates(conn)

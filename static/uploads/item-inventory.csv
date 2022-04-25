@@ -1,17 +1,3 @@
 sku,name,size,a_color,b_color,c_color,d_unused,qty
 270102000001,El Corazon,S,black,red,,,2
 270302000001,El Corazon,S,TQ,red,,,2
-520105050001,La Calavera,S,black,green,green,,3
-520102020001,La Calavera,S,black,red,red,,4
-360302020001,El Pulpo,S,TQ,red,red,,2
-360103030001,El Pulpo,S,black,TQ,TQ,,2
-220103030001,La Bota,S,black,TQ,TQ,,1
-060204030001,La Sirena,S,red,yellow,TQ,,1
-060104050001,La Sirena,S,black,yellow,green,,2
-060102020001,La Sirena,S,black,red,red,,2
-060102050001,La Sirena,S,black,red,green,,3
-270203000001,El Corazon,S,red,TQ,,,7
-270203000001,El Corazon,S,red,TQ,,,7
-270102000001,El Corazon,S,black,red,,,2
-270302000001,El Corazon,S,TQ,red,,,2
-360102020001,El Pulpo,S,black,red,red,,1
