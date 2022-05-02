@@ -1,0 +1,6 @@
+name,size,sku,a_color,b_color,c_color,d_unused,qty,cycle
+La Dama,S,030102000001,black,red,,,6,32
+La Dama,S,030103000001,black,TQ,,,6,32
+El Corazon,S,270102000001,black,red,,,8,32
+El Corazon,S,270203000001,red,TQ,,,10,32
+El Corazon,S,270302000001,TQ,red,,,4,32

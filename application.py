@@ -18,7 +18,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from helpers import allowed_file, parse_sku, build_production, build_totals, generate_item, generate_sku
-from database import migrate_users, migrate_events, restore_event, restore_parts, fetchDict, gather_templates, drop_tables, initialize_database, setup_loterias, restore_items, restore_parts
+from database import migrate_users, migrate_events, restore_event, fetchDict, gather_templates, drop_tables, initialize_database, setup_loterias, restore_items, restore_parts
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -66,7 +66,6 @@ authusers.append(os.getenv('USERA'))
 authusers.append(os.getenv('USERB'))
 authusers.append(os.getenv('USERC'))
 
-database_initialized = 0
 
 ###### DATABASE ######
 
@@ -76,56 +75,10 @@ dev = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
 prod = os.getenv('DATABASE_URL') # TODO, update migrate_users to use this
 
 # Testing
-if int(os.getenv('FLASK_DEBUG')) == 1: # Testing DB until migration
+if os.getenv('FLASK_ENV') == 'development': # Testing DB until migration
     print("Starting in DEBUG. Connecting to Turkosaurus database...", end="")
     conn = psycopg2.connect(dev)
-
-    # cur = conn.cursor()
     print("connected.")
-
-    if int(os.getenv('COLD_START')) == 1 and database_initialized == 0:
-        print("Initiating COLD_START.")
-        database_initialized += 1
-
-        try:
-            print("Dropping old tables...", end="")
-            drop_tables(conn)
-            print("deleted.")
-
-            print("Setting up tables...", end="")
-            initialize_database(conn)
-            print("Tables setup.")
-
-            print("Restoring items...", end="")
-            restore_items(conn)
-            print("done.")
-
-            print("Restoring parts...", end="")
-            restore_parts(conn)
-            print("done.")
-
-            print("Loading event projections...", end="")
-            restore_event(conn, 1)
-            print("done.")
-
-            # print("Migrating users from production database...", end="")
-            # migrate_users(conn)
-            # print("done.")
-
-            print("Migrating events...", end="")
-            migrate_events(conn)
-            print("done.")
-
-        except Exception as e:
-            print(e)
-
-    else:
-        print("Starting with database as is.")
-
-
-    # conn.commit()
-    # cur.close()
-    print("Test environment ready.")
 
 # Production
 else:
@@ -137,8 +90,7 @@ if conn == None:
     print("failed to connect to database.")
 
 
-
-###### FUNCTIONS ######
+###### APP FUNCTIONS ######
 
 def login_required(f):
     """
@@ -1063,7 +1015,12 @@ def admin():
     print(cycles)
     print(users)
 
-    return render_template('admin.html', templates=templates, cycles=cycles, users=users)
+    if os.getenv('FLASK_ENV') == "development":
+        development = True
+    else:
+        development = False
+
+    return render_template('admin.html', templates=templates, cycles=cycles, users=users, development=development)
 
 
 @app.route('/admin/<path>', methods=['GET', 'POST'])
@@ -1109,9 +1066,10 @@ def config(path):
 
 
         if path == 'initialize-database':
+            drop_tables(conn)
             initialize_database(conn)
 
-            flash("Tables setup complete.")
+            flash("Database reset and initialized.")
             return redirect("/admin")
 
         # Setup loterias
@@ -1238,7 +1196,7 @@ def config(path):
 
                 if file and allowed_file(file.filename):
                     filename_user = secure_filename(file.filename) # User supplied filenames kept
-                    filename = 'item-inventory.csv'
+                    filename = 'items_inventory.csv'
                     print(f"filename:{filename}")
                     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
@@ -1270,7 +1228,7 @@ def config(path):
 
                 if file and allowed_file(file.filename):
                     filename_user = secure_filename(file.filename) # User supplied filenames kept
-                    filename = 'part-inventory.csv'
+                    filename = 'parts_inventory.csv'
                     print(f"filename:{filename}")
                     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
@@ -1721,7 +1679,7 @@ def login():
         username = request.form.get("username")
         cur.execute("SELECT * FROM nail_users WHERE username=%s", (username,))
         rows = fetchDict(cur)
-        print(rows)
+        # print(rows)
 
         # Ensure username exists
         if len(rows) != 1:

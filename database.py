@@ -1,4 +1,3 @@
-# from asyncio import gather
 import os
 import csv
 import psycopg2
@@ -8,7 +7,7 @@ import datetime
 from dotenv import load_dotenv
 load_dotenv()
 
-# FUNCTIONS #
+# HELPERS #
 
 def tupleToDict(tuple_in):
     result = []
@@ -20,8 +19,8 @@ def tupleToDict(tuple_in):
 def fetchDict(cur):
     try:
         result = tupleToDict(cur.fetchall())
-        if int(os.getenv('FLASK_DEBUG')) == 1: # Testing DB until migration
-            print(f"fetchDict returning:\n{result}")
+        if os.getenv('FLASK_ENV') == "development": # Testing DB until migration
+            print(f"fetchDict() returning:\n{result}")
         return result
     except Exception as e:
         print(f"Fetch error {e}")
@@ -40,6 +39,7 @@ def execDict(conn, query):
     cur.close()
     return result
 
+# TEMPLATES #
 
 def gather_templates(conn):
 
@@ -105,6 +105,7 @@ def setup_loterias(conn):
         cur.close()
         return counter
 
+# DATABASE #
 
 def drop_tables(conn):
     cur = conn.cursor()
@@ -139,7 +140,6 @@ def initialize_database(conn):
         print("Error writing to database from loterias.csv. File may be missing.")
         print(e)
 
-
     # Users
     cur.execute("CREATE TABLE IF NOT EXISTS nail_users ( \
         id SERIAL NOT NULL, \
@@ -148,7 +148,6 @@ def initialize_database(conn):
         created_on TIMESTAMP, \
         last_login TIMESTAMP \
         )")
-
 
     # Colors
     cur.execute("CREATE TABLE IF NOT EXISTS nail_colors ( \
@@ -175,7 +174,9 @@ def initialize_database(conn):
     color_data = cur.fetchall()
     if not color_data:
         for i in range(len(colors)):
-            cur.execute("INSERT INTO nail_colors (sku, name, emoji, cssname) VALUES (%s, %s, %s, %s)", ((i+1), colors[i][0], colors[i][1], colors[i][2]))
+            cur.execute("INSERT INTO nail_colors (sku, name, emoji, cssname) VALUES (%s, %s, %s, %s)", \
+            ((i+1), colors[i][0], colors[i][1], colors[i][2]))
+    print("Colors setup.")
 
     # Sizes
     cur.execute("CREATE TABLE IF NOT EXISTS nail_sizes ( \
@@ -183,6 +184,7 @@ def initialize_database(conn):
         shortname VARCHAR ( 255 ), \
         longname VARCHAR ( 255 ) \
         )")
+    print("Size table setup.")
 
     cur.execute("SELECT * FROM nail_sizes")
     size_data = cur.fetchall()
@@ -190,7 +192,7 @@ def initialize_database(conn):
         sizes = [['S', 'small'], ['M', 'medium'], ['L', 'large'], ['XL', 'XL'], ['2XL','2XL']]
         for i in range(len(sizes)):
             cur.execute("INSERT INTO nail_sizes (sku, shortname, longname) VALUES (%s, %s, %s)", ((i+1), sizes[i][0] , sizes[i][1]))
-
+    print("Size table populated.")
 
     # Create table: recent
     # cur.execute("CREATE TABLE IF NOT EXISTS nail_recent ( \
@@ -210,6 +212,7 @@ def initialize_database(conn):
         color VARCHAR ( 255 ), \
         qty INTEGER \
         )")
+    print("Parts table setup.")
 
     # Items
     cur.execute("CREATE TABLE IF NOT EXISTS nail_items ( \
@@ -220,12 +223,14 @@ def initialize_database(conn):
         c_color VARCHAR ( 255 ), \
         qty INTEGER \
         )")
+    print("Items table setup.")
 
     # Types
     cur.execute("CREATE TABLE IF NOT EXISTS nail_types ( \
         name VARCHAR ( 255 ), \
         sku INTEGER \
         )")
+    print("Products table setup.")
 
     types = [
         ['Laser Cut', '0'],
@@ -241,6 +246,7 @@ def initialize_database(conn):
     if not types_data:
         for i in range(len(types)):
             cur.execute("INSERT INTO nail_types (name, sku) VALUES (%s, %s)", (types[i][0], types[i][1]))
+    print("Products table setup.")
 
     # Shirts
     # Reformat these tables to be more relational with types, depending on business needs
@@ -252,6 +258,7 @@ def initialize_database(conn):
         backs VARCHAR ( 255 ), \
         sku INTEGER \
         )")
+    print("Shirts table setup.")
 
     shirts = [
         ['ReSister', '55']
@@ -261,7 +268,7 @@ def initialize_database(conn):
     if not shirts_data:
         for i in range(len(shirts)):
             cur.execute("INSERT INTO nail_shirts (nombre, sku) VALUES (%s, %s)", (shirts[i][0], shirts[i][1]))
-
+    print("Shirts table populated.")
 
     # Create table: boxes
     cur.execute("CREATE TABLE IF NOT EXISTS nail_boxes ( \
@@ -320,6 +327,8 @@ def initialize_database(conn):
     conn.commit()
     cur.close()
 
+
+# MIGRATE #
 
 def migrate_users(conn):
 
@@ -404,11 +413,18 @@ def migrate_events(conn):
     return status
 
 
+# RESTORE #
+
 def restore_items(conn):
     from helpers import parse_sku
     cur = conn.cursor()
 
-    with open('static/uploads/item-inventory.csv', 'r') as csvfile:
+    if os.getenv('FLASK_ENV') == 'development':
+        inventory = 'static/backups/test_items_inventory.csv'
+    else:
+        inventory = 'static/backups/items_inventory.csv'
+
+    with open(f'{inventory}', 'r') as csvfile:
 
         csv_reader = csv.reader(csvfile)
 
@@ -416,7 +432,7 @@ def restore_items(conn):
         skipped = 0
 
         deleted = cur.execute("DELETE FROM nail_items RETURNING *;") # TODO test returning here and on restore_parts()
-        print(f"TEST for the RETURNING sql word, deleted=\n{deleted}")
+        print(f"TEST for the RETURNING sql word, items deleted=\n{deleted}")
 
         next(csv_reader)
         for row in csv_reader:
@@ -448,7 +464,12 @@ def restore_parts(conn):
     from helpers import parse_skulet
     cur = conn.cursor()
 
-    with open('static/uploads/part-inventory.csv', 'r') as csvfile:
+    if os.getenv('FLASK_ENV') == 'development':
+        inventory = 'static/backups/test_parts_inventory.csv'
+    else:
+        inventory = 'static/backups/parts_inventory.csv'
+
+    with open(f'{inventory}', 'r') as csvfile:
 
         csv_reader = csv.reader(csvfile)
 
@@ -456,6 +477,7 @@ def restore_parts(conn):
         skipped = 0
 
         deleted = cur.execute("DELETE FROM nail_parts RETURNING *;") # TODO test returning
+        print(f"TEST for the RETURNING sql word, parts deleted=\n{deleted[0]}")
 
         next(csv_reader)
         for row in csv_reader:
@@ -486,12 +508,15 @@ def restore_parts(conn):
 
 def restore_event(conn, event):
     from helpers import parse_sku, generate_item
-
     cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
-
     templates = gather_templates(conn)
 
-    with open('static/uploads/event.csv', 'r') as csvfile:
+    if os.getenv('FLASK_ENV') == 'development':
+        event = 'backups/backup_projections.csv'
+    else:
+        event = 'static/uploads/event.csv'
+
+    with open(f'static/uploads/event.csv', 'r') as csvfile:
 
         csv_reader = csv.reader(csvfile)
 

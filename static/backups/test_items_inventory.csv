@@ -1,0 +1,6 @@
+sku,name,size,a_color,b_color,c_color,d_unused,qty
+410102030001,La Rosa,S,black,red,TQ,,2
+410102020001,La Rosa,S,black,red,red,,2
+410103030001,La Rosa,S,black,TQ,TQ,,2
+270203000001,El Corazon,S,red,TQ,,,4
+410203030001,La Rosa,S,red,TQ,TQ,,1
