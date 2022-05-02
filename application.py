@@ -1045,27 +1045,14 @@ def config(path):
             return redirect("/admin")
 
         if path == 'restore':
+            restore_event(conn, 1)
             resultsItem = restore_items(conn)
             resultsParts = restore_parts(conn)
             flash(f"Items:{resultsItem} Parts{resultsParts}")
             return redirect("/admin")
 
 
-
-        # if path == 'gather-templates-new': # TODO delete (for testing only)
-
-        #     print(f"templates")
-        #     templates = gather_templates(conn)
-        #     print(templates)
-
-        #     print(f"new_templates")
-        #     new_templates = gather_templates_new(conn)
-        #     print(new_templates)
-
-        #     return redirect("/admin")
-
-
-        if path == 'initialize-database':
+        if path == 'reinitialize-database':
             drop_tables(conn)
             initialize_database(conn)
 
@@ -1372,7 +1359,7 @@ def config(path):
                 cycle = request.form.get("backup-items")
                 templates = gather_templates(conn)
 
-                # BACKUP PARTS
+                # BACKUP ITEMS
                 # Create new csv file
                 with open('static/backups/items_inventory.csv', 'w') as csvfile:
 
@@ -1382,7 +1369,7 @@ def config(path):
                     # Pull all items data
                     cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
                     cur.execute("SELECT * FROM nail_items")
-                    parts = fetchDict(cur)
+                    items = fetchDict(cur)
                     cur.close()
 
                     # Write headers
@@ -1473,9 +1460,12 @@ def config(path):
                 active = fetchDict(cur)
                 cycle = active[0]['id']
 
-                cur.execute("DELETE FROM nail_projections where cycle=%s", (cycle,))
+                cur.execute("DELETE FROM nail_projections where cycle=%s RETURNING qty", (cycle,))
                 removed = fetchDict(cur)
-                message = message + str(removed) + " items removed from current event projections.\n"
+                total = 0
+                for product in removed:
+                    total += product['qty']
+                message = message + str(total) + " items removed from current event projections.\n"
 
                 cur.execute("DELETE FROM nail_production")
                 removed = fetchDict(cur)

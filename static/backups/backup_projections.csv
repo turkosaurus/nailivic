@@ -1,7 +1,5 @@
 name,size,sku,a_color,b_color,c_color,d_unused,qty,cycle
-La Dama,S,030102000001,black,red,,,6,1
-La Dama,S,030103000001,black,TQ,,,6,1
-El Corazon,S,270102000001,black,red,,,8,1
-El Corazon,S,270203000001,red,TQ,,,10,1
-El Corazon,S,270302000001,TQ,red,,,4,1
-El Corazon,S,270103000001,black,TQ,,,4,1
+La Dama,S,030102000001,black,red,,,3,1
+La Sirena,M,060304050002,TQ,yellow,green,,3,1
+El Corazon,S,270102000001,black,red,,,3,1
+El Musico,L,320607000003,purple,white,,,1,1

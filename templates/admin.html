@@ -98,42 +98,6 @@ Admin -
 
     <div class="row">
 
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            
-            <h4>Create New</h4>
-            <div class="form-group">
-                <form action="/admin/new-event" method="post">            
-                    <!-- Name -->
-                    <div class="form-group">
-                        <!-- <label for="name"></label> -->
-                        <input type="text" placeholder="Event Name" class="form-control" name="name" id="name">            
-                        <!-- <small id="" class="form-text text-muted">
-                            Creates a new empty event.
-                        </small> -->                    
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-sm">Make Event</button>
-                    <br>
-                </form>
-            </div>
-            <br>
-
-            <h4>Delete Event</h4>
-            <form action="/admin/delete-event" method="post">
-                <!-- Name -->
-                <div class="form-group">
-                    <!-- <label for="cycle-id"></label> -->
-                    <select class="form-control" name="cycle-id" id="cycle-id">
-                        {% for cycle in cycles %}
-                        <option title="Created on: {{ cycle.created_on }}" value="{{ cycle.id }}">#{{ cycle.id }} {{ cycle.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete event and all associated projections?')">Delete</button>
-            </form>
-            <br>
-        </div>
-
-
         <div class="col-lg-5 col-md-12 col-sm-12">
             <h4>Import Projections<h4>
                 <form method="POST" action="/admin/import-event" enctype="multipart/form-data">                
@@ -193,6 +157,42 @@ Admin -
             </form>
             <br>
         </div>
+
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            
+            <h4>Create New</h4>
+            <div class="form-group">
+                <form action="/admin/new-event" method="post">            
+                    <!-- Name -->
+                    <div class="form-group">
+                        <!-- <label for="name"></label> -->
+                        <input type="text" placeholder="Event Name" class="form-control" name="name" id="name">            
+                        <!-- <small id="" class="form-text text-muted">
+                            Creates a new empty event.
+                        </small> -->                    
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">Make Event</button>
+                    <br>
+                </form>
+            </div>
+            <br>
+
+            <h4>Delete Event</h4>
+            <form action="/admin/delete-event" method="post">
+                <!-- Name -->
+                <div class="form-group">
+                    <!-- <label for="cycle-id"></label> -->
+                    <select class="form-control" name="cycle-id" id="cycle-id">
+                        {% for cycle in cycles %}
+                        <option title="Created on: {{ cycle.created_on }}" value="{{ cycle.id }}">#{{ cycle.id }} {{ cycle.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete event and all associated projections?')">Delete</button>
+            </form>
+            <br>
+        </div>
+
         
         <br>
     </div>
@@ -213,48 +213,6 @@ Admin -
     </div>
     
     <div class="row">        
-
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <form action="/admin/wipe" method="post">
-                <h4>
-                    Wipe Inventory
-                </h4>
-
-                <div class="form-group form-check">
-                    <input type="checkbox" class="form-check-input" name="wipe-items" id="wipe-items" value="true">
-                    <label class="form-check-label" for="wipe-items">Items</label>
-                </div>
-                
-                <div class="form-group form-check">
-                    <input type="checkbox" class="form-check-input" name="wipe-parts" id="wipe-parts" value="true">
-                    <label class="form-check-label" for="wipe-parts">Parts</label>
-                </div>
-                
-                <div class="form-group form-check">
-                    <input type="checkbox" class="form-check-input" name="wipe-boxes" id="wipe-boxes" value="true">
-                    <label class="form-check-label" for="wipe-boxes">Boxes</label>
-                </div>
-                
-                <div class="form-group form-check">
-                    <input type="checkbox" class="form-check-input" name="wipe-usedboxes" id="wipe-usedboxes" value="true">
-                    <label class="form-check-label" for="wipe-usedboxes">Used Boxes</label>
-                </div>
-
-                {% for cycle in cycles %}
-                    {% if cycle.current %}
-                        <div class="form-group form-check">
-                            <input type="checkbox" class="form-check-input" name="wipe-projections" id="wipe-projections" value="true">
-                            <label class="form-check-label" for="wipe-projections">Projections for "{{ cycle.name }}"</label>
-                        </div>
-                    {% else %}
-                    {% endif %}
-                {% endfor %}
-                
-                <button type="submit" class="btn btn-danger btn-sm" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Wipe</button>
-            </form>
-            
-            <br>
-        </div>
 
         <div class="col-lg-5 col-md-12 col-sm-12">
             <h4>
@@ -309,6 +267,49 @@ Admin -
             </form>
             <br>
         </div>
+
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <form action="/admin/wipe" method="post">
+                <h4>
+                    Wipe Inventory
+                </h4>
+
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="wipe-items" id="wipe-items" value="true">
+                    <label class="form-check-label" for="wipe-items">Items</label>
+                </div>
+                
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="wipe-parts" id="wipe-parts" value="true">
+                    <label class="form-check-label" for="wipe-parts">Parts</label>
+                </div>
+                
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="wipe-boxes" id="wipe-boxes" value="true">
+                    <label class="form-check-label" for="wipe-boxes">Boxes</label>
+                </div>
+                
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" name="wipe-usedboxes" id="wipe-usedboxes" value="true">
+                    <label class="form-check-label" for="wipe-usedboxes">Used Boxes</label>
+                </div>
+
+                {% for cycle in cycles %}
+                    {% if cycle.current %}
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" name="wipe-projections" id="wipe-projections" value="true">
+                            <label class="form-check-label" for="wipe-projections">Projections for "{{ cycle.name }}"</label>
+                        </div>
+                    {% else %}
+                    {% endif %}
+                {% endfor %}
+                
+                <button type="submit" class="btn btn-danger btn-sm" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Wipe</button>
+            </form>
+            
+            <br>
+        </div>
+
         
         <!-- <div class="col-lg-3 col-md-6 col-sm-12">
             <h4>
@@ -369,39 +370,29 @@ Admin -
             <h4>
                 Setup Database
             </h4>
-            <form action="/admin/setup-tables" method="post">
+            <!-- <form action="/admin/setup-tables" method="post"> -->
 
                 <!-- <div class="form-group form-check">
                     <input type="checkbox" class="form-check-input" name="colors" id="colors" value="true">
                     <label class="form-check-label" for="colors">Colors</label>
                 </div> -->
 
-                <button type="submit" disabled class="btn btn-danger btn-sm btn-block" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Recreate Tables</button>
+                <!-- <button type="submit" disabled class="btn btn-danger btn-sm btn-block" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Reset Tables</button>
             </form>
 
-            <br>
+            <br> -->
 
-            <form action="/admin/initialize-database" method="post">
+            <form action="/admin/reinitialize-database" method="post">
                 <!-- <div class="form-group form-check">
                     <input type="checkbox" class="form-check-input" name="colors" id="colors" value="true">
                     <label class="form-check-label" for="colors">Colors</label>
                 </div> -->
 
-                <button type="submit" class="btn btn-danger btn-sm btn-block" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Initialize Database</button>
+                <button type="submit" class="btn btn-danger btn-sm btn-block" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Reinitialize Database</button>
             </form>
 
             <br>
 
-            <form action="/admin/gather-templates-new" method="post">
-                <!-- <div class="form-group form-check">
-                    <input type="checkbox" class="form-check-input" name="colors" id="colors" value="true">
-                    <label class="form-check-label" for="colors">Colors</label>
-                </div> -->
-
-                <button type="submit" class="btn btn-danger btn-sm btn-block">Test Templates</button>
-            </form>
-
-            <br>
 
             <form action="/admin/restore" method="post">
                 <!-- <div class="form-group form-check">
@@ -420,7 +411,7 @@ Admin -
                     <label class="form-check-label" for="colors">Colors</label>
                 </div> -->
 
-                <button type="submit" class="btn btn-danger btn-sm btn-block" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Migrate Users</button>
+                <button disabled type="submit" class="btn btn-danger btn-sm btn-block" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Migrate Users</button>
             </form>
 
             <br>
@@ -431,7 +422,7 @@ Admin -
                     <label class="form-check-label" for="colors">Colors</label>
                 </div> -->
 
-                <button type="submit" class="btn btn-danger btn-sm btn-block" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Migrate Events</button>
+                <button disabled type="submit" class="btn btn-danger btn-sm btn-block" onclick="let action = this.innerHTML; return confirm(`Are you sure you want to ${action}?`)">Migrate Events</button>
             </form>
 
             <br>

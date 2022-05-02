@@ -431,8 +431,9 @@ def restore_items(conn):
         total = 0
         skipped = 0
 
-        deleted = cur.execute("DELETE FROM nail_items RETURNING *;") # TODO test returning here and on restore_parts()
-        print(f"TEST for the RETURNING sql word, items deleted=\n{deleted}")
+        cur.execute("DELETE FROM nail_items RETURNING *;")
+        deleted = len(cur.fetchall())
+        print(f"{deleted} items deleted.")
 
         next(csv_reader)
         for row in csv_reader:
@@ -476,8 +477,9 @@ def restore_parts(conn):
         total = 0
         skipped = 0
 
-        deleted = cur.execute("DELETE FROM nail_parts RETURNING *;") # TODO test returning
-        print(f"TEST for the RETURNING sql word, parts deleted=\n{deleted[0]}")
+        cur.execute("DELETE FROM nail_parts RETURNING *;")
+        deleted = len(cur.fetchall())
+        print(f"{deleted} parts deleted.")
 
         next(csv_reader)
         for row in csv_reader:
@@ -512,11 +514,11 @@ def restore_event(conn, event):
     templates = gather_templates(conn)
 
     if os.getenv('FLASK_ENV') == 'development':
-        event = 'backups/backup_projections.csv'
+        file = 'static/backups/backup_projections.csv'
     else:
-        event = 'static/uploads/event.csv'
+        file = 'static/uploads/event.csv'
 
-    with open(f'static/uploads/event.csv', 'r') as csvfile:
+    with open(f'{file}', 'r') as csvfile:
 
         csv_reader = csv.reader(csvfile)
 
