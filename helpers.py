@@ -165,6 +165,11 @@ def build_production(conn, templates):
                     print(f"Checking parts inventory for {loteria['a']}, {loteria['b']}, {loteria['c']}, {loteria['backs']}")
                     # print(qtys)
 
+
+                    print("queue")
+                    print(queue)
+
+
                 # Add A
                     # Update existing entry or make new
                     found_existing = False
@@ -275,17 +280,18 @@ def build_production(conn, templates):
                     # Update existing entry
                     found_existing = False
                     for line in queue:
+                        print(line)
                         if line[0] == loteria['backs'] and \
                             line[1] == projection['size']:
 
                             line[3] = int(line[3]) + qtys['backs']
 
                             found_existing = True
-                            # print("FOUND EXISTING BACK")
+                            print("FOUND EXISTING BACK")
 
                     if found_existing == False:
 
-                        # print("MAKING NEW BACK")
+                        print("MAKING NEW BACK")
 
                         # Add a new list for the part to be made
                         queue.append([])
@@ -300,6 +306,13 @@ def build_production(conn, templates):
         
                         i += 1
 
+
+
+                    print("queue")
+                    print(queue)
+                    print("---")
+
+
     print('*' * 80)
     print("PODUCTION QUEUE BUILT WITH ITEMS, NOW REMOVING EXISTING PARTS INVENTORY")
     # print(len(queue))
@@ -307,7 +320,8 @@ def build_production(conn, templates):
 
     # Subtract existing parts from queue
     for q in queue:
-
+        # q = ['Frida Flowers', 'S', 'red', '2']
+        print(f"Adding to parts projection: {q[3]} from {q}")
         progress['parts_projection'] += int(q[3])
 
         print("---")
@@ -315,14 +329,17 @@ def build_production(conn, templates):
 
         for part in parts:
 
-            print(f"{part['name']} {part['size']} {part['color']}")
+            print(f"{part['name']} {part['size']} {part['color']} (part)")
             # Matching part found in inventory
             if part['name'] == q[0] and \
                 part['size'] == q[1] and \
-                ((part['color'] == q[2]) or (part['color'] == None and q[2] == '')):
+                ((part['color'] == q[2]) or (part['color'] == None)):
+
+
+
 
                 print("Matches")
-                print(f"{q[0]} {q[1]} {q[2]}")
+                print(f"{q[0]} {q[1]} {q[2]} (q)")
                 print(f"Need {q[3]}, have {part['qty']}")
 
                 if int(q[3]) > part['qty']:
@@ -364,8 +381,9 @@ def build_production(conn, templates):
                 print(f"---")
 
             else:
-                print(f"{q[0]} {q[1]} {q[2]}")
                 print("Does not match")
+                print(f"{q[0]} {q[1]} {q[2]} (q)")
+                print("---")
 
 
     print("---")

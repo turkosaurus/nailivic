@@ -330,7 +330,7 @@ def initialize_database(conn):
 
 # MIGRATE #
 
-def migrate_users(conn):
+def migrate_users(conn, source):
 
     from cs50 import SQL
     # Configure Heroku Postgres database

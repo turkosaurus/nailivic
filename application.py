@@ -2,6 +2,7 @@ from difflib import restore
 import os
 import requests
 # import urllib.parse
+import time
 import datetime
 import csv
 import shopify
@@ -65,20 +66,23 @@ authusers = []
 authusers.append(os.getenv('USERA'))
 authusers.append(os.getenv('USERB'))
 authusers.append(os.getenv('USERC'))
-
+print(f"Authusers{authusers}")
 
 ###### DATABASE ######
 
 # Setup PostgreSQL database connection
 conn = None
-dev = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
-prod = os.getenv('DATABASE_URL') # TODO, update migrate_users to use this
+prod = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
+dev = os.getenv('HEROKU_POSTGRESQL_PURPLE_URL')
 
 # Testing
 if os.getenv('FLASK_ENV') == 'development': # Testing DB until migration
     print("Starting in DEBUG. Connecting to Turkosaurus database...", end="")
     conn = psycopg2.connect(dev)
     print("connected.")
+
+    cur = conn.cursor()
+
 
 # Production
 else:
@@ -88,6 +92,13 @@ else:
 
 if conn == None:
     print("failed to connect to database.")
+
+# Cold Start Initialization
+if int(os.getenv('COLD_START')) == 1:
+    print("Dropping Tables and Initializing Database...", end="")
+    drop_tables(conn)
+    initialize_database(conn)
+    print("done.")
 
 
 ###### APP FUNCTIONS ######
@@ -106,6 +117,7 @@ def login_required(f):
 
 
 ###### MAIN ROUTES ######
+
 @app.route('/', methods=['GET'])
 @login_required
 def dashboard():
@@ -1003,7 +1015,7 @@ def admin():
 
     cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
-    cur.execute("SELECT * FROM nail_cycles")
+    cur.execute("SELECT * FROM nail_cycles ORDER BY id ASC")
     cycles = fetchDict(cur)
 
     cur.execute("SELECT username, last_login FROM nail_users ORDER BY last_login DESC")
