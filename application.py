@@ -1678,8 +1678,13 @@ def login():
 
         # Query database for username
         username = request.form.get("username")
-        cur.execute("SELECT * FROM nail_users WHERE username=%s", (username,))
-        rows = fetchDict(cur)
+
+        try:
+            cur.execute("SELECT * FROM nail_users WHERE username=%s", (username,))
+            rows = fetchDict(cur)
+        except psycopg2.Error as e:
+            print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
+            if conn: conn.rollback()
         # print(rows)
 
         # Ensure username exists
