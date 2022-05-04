@@ -1673,19 +1673,24 @@ def login():
             flash("Password required.")
             return redirect('/login')
 
-        print(conn)
-        cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+        try:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+        except psycopg2.Error as e:
+            print(f"Error:{e}")
+            # print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
+            if conn: conn.rollback()
 
         # Query database for username
         username = request.form.get("username")
 
         try:
             cur.execute("SELECT * FROM nail_users WHERE username=%s", (username,))
-            rows = fetchDict(cur)
         except psycopg2.Error as e:
-            print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
+            print(f"Error:{e}")
+            # print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
             if conn: conn.rollback()
         # print(rows)
+        rows = fetchDict(cur)
 
         # Ensure username exists
         if len(rows) != 1:
