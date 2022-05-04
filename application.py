@@ -71,8 +71,8 @@ authusers.append(os.getenv('USERC'))
 
 # Setup PostgreSQL database connection
 conn = None
-prod = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
-dev = os.getenv('HEROKU_POSTGRESQL_PURPLE_URL')
+dev = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
+prod = os.getenv('HEROKU_POSTGRESQL_PURPLE_URL')
 
 # Testing
 if os.getenv('FLASK_ENV') == 'development': # Testing DB until migration
