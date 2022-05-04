@@ -66,7 +66,6 @@ authusers = []
 authusers.append(os.getenv('USERA'))
 authusers.append(os.getenv('USERB'))
 authusers.append(os.getenv('USERC'))
-print(f"Authusers{authusers}")
 
 ###### DATABASE ######
 
@@ -81,13 +80,12 @@ if os.getenv('FLASK_ENV') == 'development': # Testing DB until migration
     conn = psycopg2.connect(dev)
     print("connected.")
 
-    cur = conn.cursor()
-
+    # cur = conn.cursor()
 
 # Production
 else:
     print("Connecting to Nalivic database...", end="")
-    conn = psycopg2.connect(prod) # TODO uncomment when prod database is established
+    conn = psycopg2.connect(prod)
     print("connected.")
 
 if conn == None:
