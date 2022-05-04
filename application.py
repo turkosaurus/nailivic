@@ -93,12 +93,12 @@ else:
 if conn == None:
     print("failed to connect to database.")
 
-# Cold Start Initialization
-if int(os.getenv('COLD_START')) == 1:
-    print("Dropping Tables and Initializing Database...", end="")
-    drop_tables(conn)
-    initialize_database(conn)
-    print("done.")
+# # Cold Start Initialization
+# if int(os.getenv('COLD_START')) == 1:
+#     print("Dropping Tables and Initializing Database...", end="")
+#     drop_tables(conn)
+#     initialize_database(conn)
+#     print("done.")
 
 
 ###### APP FUNCTIONS ######
