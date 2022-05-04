@@ -76,7 +76,7 @@ dev = os.getenv('HEROKU_POSTGRESQL_PURPLE_URL')
 
 # Testing
 if os.getenv('FLASK_ENV') == 'development': # Testing DB until migration
-    print("Starting in DEBUG. Connecting to Turkosaurus database...", end="")
+    print("Starting in DEBUG. Connecting to DEVELOPMENT database...", end="")
     conn = psycopg2.connect(dev)
     print("connected.")
 
@@ -84,7 +84,7 @@ if os.getenv('FLASK_ENV') == 'development': # Testing DB until migration
 
 # Production
 else:
-    print("Connecting to Nalivic database...", end="")
+    print("Connecting to PRODUCTION database...", end="")
     conn = psycopg2.connect(prod)
     print("connected.")
 
@@ -1673,6 +1673,7 @@ def login():
             flash("Password required.")
             return redirect('/login')
 
+        print(conn)
         cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
         # Query database for username
