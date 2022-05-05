@@ -75,24 +75,23 @@ conn = None
 dev = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
 prod = os.getenv('HEROKU_POSTGRESQL_PURPLE_URL')
 
-if os.fork() == 0:
 
-    # Testing
-    if os.getenv('FLASK_ENV') == 'development':
-        print("Starting in DEBUG. Connecting to DEVELOPMENT database...", end="")
-        conn = psycopg2.connect(dev)
-        print("connected.")
+# Testing
+if os.getenv('FLASK_ENV') == 'development':
+    print("Starting in DEBUG. Connecting to DEVELOPMENT database...", end="")
+    conn = psycopg2.connect(dev)
+    print("connected.")
 
-        # cur = conn.cursor()
+    # cur = conn.cursor()
 
-    # Production
-    else:
-        print("Connecting to PRODUCTION database...", end="")
-        conn = psycopg2.connect(prod)
-        print("connected.")
+# Production
+else:
+    print("Connecting to PRODUCTION database...", end="")
+    conn = psycopg2.connect(prod)
+    print("connected.")
 
-    if conn == None:
-        print("failed to connect to database.")
+if conn == None:
+    print("failed to connect to database.")
 
 # # Cold Start Initialization
 # if int(os.getenv('COLD_START')) == 1:
