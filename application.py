@@ -34,6 +34,7 @@ cycle: a single event or series of events, used for creating projections
 event: renamed cycles for clarity
 """
 
+# print(f"Fork: {os.fork()}")
 
 ###### CONFIGURATION ######
 
@@ -74,22 +75,24 @@ conn = None
 dev = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
 prod = os.getenv('HEROKU_POSTGRESQL_PURPLE_URL')
 
-# Testing
-if os.getenv('FLASK_ENV') == 'development': # Testing DB until migration
-    print("Starting in DEBUG. Connecting to DEVELOPMENT database...", end="")
-    conn = psycopg2.connect(dev)
-    print("connected.")
+if os.fork() == 0:
 
-    # cur = conn.cursor()
+    # Testing
+    if os.getenv('FLASK_ENV') == 'development':
+        print("Starting in DEBUG. Connecting to DEVELOPMENT database...", end="")
+        conn = psycopg2.connect(dev)
+        print("connected.")
 
-# Production
-else:
-    print("Connecting to PRODUCTION database...", end="")
-    conn = psycopg2.connect(prod)
-    print("connected.")
+        # cur = conn.cursor()
 
-if conn == None:
-    print("failed to connect to database.")
+    # Production
+    else:
+        print("Connecting to PRODUCTION database...", end="")
+        conn = psycopg2.connect(prod)
+        print("connected.")
+
+    if conn == None:
+        print("failed to connect to database.")
 
 # # Cold Start Initialization
 # if int(os.getenv('COLD_START')) == 1:
