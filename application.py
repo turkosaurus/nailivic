@@ -88,7 +88,7 @@ if os.getenv('FLASK_ENV') == 'development':
 # Production
 else:
     print("Connecting to PRODUCTION database...", end="")
-    conn = psycopg2.connect(og)
+    conn = psycopg2.connect(prod)
     print("connected.")
 
 if conn == None:
@@ -98,6 +98,7 @@ if conn == None:
 cur = conn.cursor()
 cur.execute("ROLLBACK")
 conn.commit()
+cur.close()
 
 # # Cold Start Initialization
 # if int(os.getenv('COLD_START')) == 1:
