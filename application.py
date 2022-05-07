@@ -72,6 +72,7 @@ authusers.append(os.getenv('USERC'))
 
 # Setup PostgreSQL database connection
 conn = None
+og = os.getenv('DATABASE_URL')
 dev = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
 prod = os.getenv('HEROKU_POSTGRESQL_PURPLE_URL')
 
@@ -87,7 +88,7 @@ if os.getenv('FLASK_ENV') == 'development':
 # Production
 else:
     print("Connecting to PRODUCTION database...", end="")
-    conn = psycopg2.connect(prod)
+    conn = psycopg2.connect(og)
     print("connected.")
 
 if conn == None:
@@ -1675,22 +1676,25 @@ def login():
             flash("Password required.")
             return redirect('/login')
 
-        try:
-            cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
-        except psycopg2.Error as e:
-            print(f"Error:{e}")
-            # print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
-            if conn: conn.rollback()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+
+        # try:
+        #     cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+        # except psycopg2.Error as e:
+        #     print(f"Error:{e}")
+        #     # print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
+        #     if conn: conn.rollback()
 
         # Query database for username
         username = request.form.get("username")
 
-        try:
-            cur.execute("SELECT * FROM nail_users WHERE username=%s", (username,))
-        except psycopg2.Error as e:
-            print(f"Error:{e}")
-            # print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
-            if conn: conn.rollback()
+        cur.execute("SELECT * FROM nail_users WHERE username=%s", (username,))
+        # try:
+        #     cur.execute("SELECT * FROM nail_users WHERE username=%s", (username,))
+        # except psycopg2.Error as e:
+        #     print(f"Error:{e}")
+        #     # print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
+        #     if conn: conn.rollback()
         # print(rows)
         rows = fetchDict(cur)
 
