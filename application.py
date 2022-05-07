@@ -94,6 +94,11 @@ else:
 if conn == None:
     print("failed to connect to database.")
 
+
+cur = conn.cursor()
+cur.execute("ROLLBACK")
+conn.commit()
+
 # # Cold Start Initialization
 # if int(os.getenv('COLD_START')) == 1:
 #     print("Dropping Tables and Initializing Database...", end="")
