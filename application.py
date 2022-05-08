@@ -238,8 +238,8 @@ def reconnect(conn):
 
 @app.route('/', methods=['GET'])
 @login_required
-# @reconnect
 def dashboard():
+    reconnect(conn)
 
     if request.method == 'GET':
         print("--- / ---")
@@ -1779,6 +1779,7 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
+    reconnect(conn)
 
     # Forget any user_id
     session.clear()
