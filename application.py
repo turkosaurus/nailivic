@@ -120,6 +120,14 @@ try:
 except (Exception, psycopg2.DatabaseError) as error:
     print("Error while connecting to PostgreSQL", error)
 
+
+while True:
+    print(f"conn.closed:{conn.closed}")
+    if conn.closed != 0:
+        print()
+        conn = postgreSQL_pool.getconn()
+    break
+
 print(conn)
 print(postgreSQL_pool)
 
