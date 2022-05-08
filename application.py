@@ -1,4 +1,4 @@
-from difflib import restore
+# from difflib import restore
 import os
 import requests
 # import urllib.parse
@@ -135,11 +135,7 @@ def dashboard():
         cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
         # Identify current cycle and retrieve data
-        try: # TODO remove this temp test
-            cur.execute("SELECT * FROM nail_cycles WHERE current='TRUE'")
-        except Exception as e:
-            cur.execute("ROLLBACK")
-            cur.execute("SELECT * FROM nail_cycles WHERE current='TRUE'")
+        cur.execute("SELECT * FROM nail_cycles WHERE current='TRUE'")
         cycle = fetchDict(cur)
 
         if not cycle:
