@@ -19,8 +19,8 @@ def tupleToDict(tuple_in):
 def fetchDict(cur):
     try:
         result = tupleToDict(cur.fetchall())
-        if os.getenv('FLASK_ENV') == "development": # Testing DB until migration
-            print(f"fetchDict() returning:\n{result}")
+        # if os.getenv('FLASK_ENV') == "development": # Testing DB until migration
+        #     print(f"fetchDict() returning:\n{result}")
         return result
     except Exception as e:
         print(f"Fetch error {e}")

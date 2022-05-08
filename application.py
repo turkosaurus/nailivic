@@ -135,7 +135,11 @@ def dashboard():
         cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
         # Identify current cycle and retrieve data
-        cur.execute("SELECT * FROM nail_cycles WHERE current='TRUE'")
+        try: # TODO remove this temp test
+            cur.execute("SELECT * FROM nail_cycles WHERE current='TRUE'")
+        except Exception as e:
+            cur.execute("ROLLBACK")
+            cur.execute("SELECT * FROM nail_cycles WHERE current='TRUE'")
         cycle = fetchDict(cur)
 
         if not cycle:
@@ -1730,7 +1734,6 @@ def login():
             return redirect("/admin")
 
         else:
-            cur.close()
             # Redirect user to home page
             return redirect("/")
 
