@@ -124,9 +124,16 @@ else:
 
 
 conn = psycopg2.connect(db)
-conn.set_session(autocommit=True)
+# conn.set_session(autocommit=True)
 
 print(f"conn={conn}")
+
+
+def check_conn():
+    if conn.close != 0:
+        conn = psycopg2.connect(db)
+
+
 
 # psycopg2.extras.wait_select(conn)
 
@@ -181,10 +188,13 @@ def login_required(f):
     return decorated_function
 
 
+
+
 ###### MAIN ROUTES ######
 
 @app.route('/', methods=['GET'])
 @login_required
+@check_conn
 def dashboard():
 
     if request.method == 'GET':
@@ -1074,6 +1084,7 @@ def shipping():
 ###### ADMINISTRATION ######
 @app.route('/admin', methods=['GET'])
 @login_required
+@check_conn
 def admin():
 
     templates = gather_templates(conn)
@@ -1102,6 +1113,7 @@ def admin():
 
 @app.route('/admin/<path>', methods=['GET', 'POST'])
 @login_required
+@check_conn
 def config(path):
 
     if request.method == 'GET':
