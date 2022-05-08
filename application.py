@@ -88,7 +88,7 @@ else:
     print("Connecting to PRODUCTION database...", end="")
     db = prod
 
-
+# def dbConnect():
 # https://pynative.com/psycopg2-python-postgresql-connection-pooling/
 try:
     postgreSQL_pool = psycopg2.pool.ThreadedConnectionPool(1, 20, db)
@@ -120,15 +120,26 @@ try:
 except (Exception, psycopg2.DatabaseError) as error:
     print("Error while connecting to PostgreSQL", error)
 
+# dbConnect()
 
-while conn.closed != 0:
-    print(f"conn.closed:{conn.closed}")
-    print()
-    conn = postgreSQL_pool.getconn()
-    # continue
+print(f"conn={conn}")
 
-print(conn)
-print(postgreSQL_pool)
+psycopg2.extras.wait_select(conn)
+
+
+# foo = psycopg2.extensions.get_wait_callback()
+# psycopg2.extensions.set_wait_callback(psycopg2.extras.wait_select)
+
+
+
+# while conn.closed != 0:
+#     print(f"conn.closed:{conn.closed}")
+#     print()
+#     conn = postgreSQL_pool.getconn()
+#     # continue
+
+# print(conn)
+# print(postgreSQL_pool)
 
 # finally:
 #     # closing database connection.
