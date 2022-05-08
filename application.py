@@ -129,10 +129,18 @@ conn = psycopg2.connect(db)
 print(f"conn={conn}")
 
 
-def check_conn():
-    if conn.close != 0:
-        conn = psycopg2.connect(db)
-
+# def check_conn(f, conn):
+#     # https://medium.com/@nguyenkims/python-decorator-and-flask-3954dd186cda
+#     @wraps(f, conn)
+#     def wrap(conn):
+#         print(f"Checking connection for {f}...", end="")
+#         if conn.close != 0:
+#             conn = psycopg2.connect(db)
+#             print("reconnected.")
+#         else:
+#             print("already connected.")
+#         return f
+#     return wrap
 
 
 # psycopg2.extras.wait_select(conn)
@@ -190,11 +198,47 @@ def login_required(f):
 
 
 
+    # print(f"Checking connection...", end="")
+    # if conn.close != 0:
+    #     conn = psycopg2.connect(db)
+    #     print("reconnected.")
+    # else:
+    #     print("already connected.")
+
+# def reconnect(conn):
+#     @wraps(conn)
+#     def decorated_functionB(*args, **kwargs):
+#         print(args[0])
+#         print(kwargs)
+#         # conn = kwargs['conn']
+#         print(f"Checking connection for {conn}...", end="")
+#         print(f"conn.close={conn.close}...", end="")
+#         if conn.close != 0:
+#             conn = psycopg2.connect(db)
+#             print("reconnected.")
+#         else:
+#             print("already connected.")
+#         return fun(*args, **kwargs)
+#     return decorated_functionB
+
+
+def reconnect(conn):
+    print(f"Checking database connection...", end="")
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT 1")
+        print("already connected.")
+    except:
+        conn = psycopg2.connect(db)
+        print("reconnected.")
+    return 0
+
+
 ###### MAIN ROUTES ######
 
 @app.route('/', methods=['GET'])
 @login_required
-@check_conn
+# @reconnect
 def dashboard():
 
     if request.method == 'GET':
@@ -1084,8 +1128,8 @@ def shipping():
 ###### ADMINISTRATION ######
 @app.route('/admin', methods=['GET'])
 @login_required
-@check_conn
 def admin():
+    reconnect(conn)
 
     templates = gather_templates(conn)
 
@@ -1113,7 +1157,7 @@ def admin():
 
 @app.route('/admin/<path>', methods=['GET', 'POST'])
 @login_required
-@check_conn
+# @reconnect
 def config(path):
 
     if request.method == 'GET':
