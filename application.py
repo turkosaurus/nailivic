@@ -88,43 +88,47 @@ else:
     print("Connecting to PRODUCTION database...", end="")
     db = prod
 
-# def dbConnect():
-# https://pynative.com/psycopg2-python-postgresql-connection-pooling/
-try:
-    postgreSQL_pool = psycopg2.pool.ThreadedConnectionPool(1, 20, db)
-    if (postgreSQL_pool):
-        print("Connection pool created successfully")
+# # def dbConnect():
+# # https://pynative.com/psycopg2-python-postgresql-connection-pooling/
+# try:
+#     postgreSQL_pool = psycopg2.pool.ThreadedConnectionPool(1, 20, db)
+#     if (postgreSQL_pool):
+#         print("Connection pool created successfully")
 
-    # Use getconn() to Get Connection from connection pool
-    conn = postgreSQL_pool.getconn(autocommit=True)
+#     # Use getconn() to Get Connection from connection pool
+#     conn = postgreSQL_pool.getconn()
 
-    if (conn):
-        print("Successfully received connection from connection pool.")
-
-
-        # cur = conn.cursor()
-        # cur.execute("select * from mobile")
-        # mobile_records = cur.fetchall()
-
-        # print("Displaying rows from mobile table")
-        # for row in mobile_records:
-        #     print(row)
-
-        # cur.close()
-
-        # Use this method to release the connection object and send back to connection pool
-        # postgreSQL_pool.putconn(conn)
-        # print("Put away a PostgreSQL connection")
+#     if (conn):
+#         print("Successfully received connection from connection pool.")
 
 
-except (Exception, psycopg2.DatabaseError) as error:
-    print("Error while connecting to PostgreSQL", error)
+#         # cur = conn.cursor()
+#         # cur.execute("select * from mobile")
+#         # mobile_records = cur.fetchall()
+
+#         # print("Displaying rows from mobile table")
+#         # for row in mobile_records:
+#         #     print(row)
+
+#         # cur.close()
+
+#         # Use this method to release the connection object and send back to connection pool
+#         # postgreSQL_pool.putconn(conn)
+#         # print("Put away a PostgreSQL connection")
+
+
+# except (Exception, psycopg2.DatabaseError) as error:
+#     print("Error while connecting to PostgreSQL", error)
 
 # dbConnect()
 
+
+conn = psycopg2.connect(db)
+conn.set_session(autocommit=True)
+
 print(f"conn={conn}")
 
-psycopg2.extras.wait_select(conn)
+# psycopg2.extras.wait_select(conn)
 
 
 # foo = psycopg2.extensions.get_wait_callback()
