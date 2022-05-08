@@ -96,7 +96,7 @@ try:
         print("Connection pool created successfully")
 
     # Use getconn() to Get Connection from connection pool
-    conn = postgreSQL_pool.getconn()
+    conn = postgreSQL_pool.getconn(autocommit=True)
 
     if (conn):
         print("Successfully received connection from connection pool.")
