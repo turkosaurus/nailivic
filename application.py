@@ -91,7 +91,7 @@ else:
 
 # https://pynative.com/psycopg2-python-postgresql-connection-pooling/
 try:
-    postgreSQL_pool = psycopg2.pool.SimpleConnectionPool(1, 20, db)
+    postgreSQL_pool = psycopg2.pool.ThreadedConnectionPool(1, 20, db)
     if (postgreSQL_pool):
         print("Connection pool created successfully")
 
@@ -99,7 +99,7 @@ try:
     conn = postgreSQL_pool.getconn()
 
     if (conn):
-        print("successfully recived connection from connection pool ")
+        print("Successfully received connection from connection pool.")
 
 
         # cur = conn.cursor()
@@ -119,6 +119,9 @@ try:
 
 except (Exception, psycopg2.DatabaseError) as error:
     print("Error while connecting to PostgreSQL", error)
+
+print(conn)
+print(postgreSQL_pool)
 
 # finally:
 #     # closing database connection.
