@@ -9,6 +9,7 @@ import shopify
 import json
 import psycopg2
 import psycopg2.extras
+from psycopg2 import pool
 from flask import Flask, redirect, render_template, request, session, url_for, flash, send_from_directory, Markup
 from flask_session import Session
 from tempfile import mkdtemp
@@ -80,25 +81,57 @@ prod = os.getenv('HEROKU_POSTGRESQL_PURPLE_URL')
 # Testing
 if os.getenv('FLASK_ENV') == 'development':
     print("Starting in DEBUG. Connecting to DEVELOPMENT database...", end="")
-    conn = psycopg2.connect(dev)
-    print("connected.")
-
-    # cur = conn.cursor()
+    db = dev
 
 # Production
 else:
     print("Connecting to PRODUCTION database...", end="")
-    conn = psycopg2.connect(prod)
-    print("connected.")
-
-if conn == None:
-    print("failed to connect to database.")
+    db = prod
 
 
-cur = conn.cursor()
-cur.execute("ROLLBACK")
-conn.commit()
-cur.close()
+# https://pynative.com/psycopg2-python-postgresql-connection-pooling/
+try:
+    postgreSQL_pool = psycopg2.pool.SimpleConnectionPool(1, 20, db)
+    if (postgreSQL_pool):
+        print("Connection pool created successfully")
+
+    # Use getconn() to Get Connection from connection pool
+    conn = postgreSQL_pool.getconn()
+
+    if (conn):
+        print("successfully recived connection from connection pool ")
+
+
+        # cur = conn.cursor()
+        # cur.execute("select * from mobile")
+        # mobile_records = cur.fetchall()
+
+        # print("Displaying rows from mobile table")
+        # for row in mobile_records:
+        #     print(row)
+
+        # cur.close()
+
+        # Use this method to release the connection object and send back to connection pool
+        # postgreSQL_pool.putconn(conn)
+        # print("Put away a PostgreSQL connection")
+
+
+except (Exception, psycopg2.DatabaseError) as error:
+    print("Error while connecting to PostgreSQL", error)
+
+# finally:
+#     # closing database connection.
+#     # use closeall() method to close all the active connection if you want to turn of the application
+#     if postgreSQL_pool:
+#         postgreSQL_pool.closeall
+#     print("PostgreSQL connection pool is closed")
+
+
+# cur = conn.cursor()
+# cur.execute("ROLLBACK")
+# conn.commit()
+# cur.close()
 
 # # Cold Start Initialization
 # if int(os.getenv('COLD_START')) == 1:
