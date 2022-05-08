@@ -227,6 +227,9 @@ def reconnect(conn):
     try:
         cur = conn.cursor()
         cur.execute("SELECT 1")
+        result = cur.fetchall()
+        if not result:
+            raise Exception
         print("already connected.")
     except:
         conn = psycopg2.connect(db)
