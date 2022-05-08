@@ -1783,6 +1783,7 @@ def register():
 def login():
     """Log user in"""
     reconnect(conn)
+    print(conn)
 
     # Forget any user_id
     session.clear()
@@ -1800,6 +1801,7 @@ def login():
             flash("Password required.")
             return redirect('/login')
 
+        print(conn)
         cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
         # try:
