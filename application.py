@@ -1,7 +1,7 @@
 # from difflib import restore
 import os
 import requests
-# import urllib.parse
+# import urllib.parse 
 import time
 import datetime
 import csv
@@ -10,7 +10,7 @@ import json
 import psycopg2
 import psycopg2.extras
 from psycopg2 import pool
-from flask import Flask, redirect, render_template, request, session, url_for, flash, send_from_directory, Markup
+from flask import Flask, redirect, render_template, request, session, url_for, flash, send_from_directory, Markup, g
 from flask_session import Session
 from tempfile import mkdtemp
 from functools import wraps
@@ -60,6 +60,7 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 app.config['UPLOAD_FOLDER'] = os.getenv('PWD') + "/static/uploads"
 app.config['BACKUPS'] = os.getenv('PWD') + "/static/backups"
+
 
 Session(app)
 
@@ -123,10 +124,36 @@ else:
 # dbConnect()
 
 
-conn = psycopg2.connect(db)
-# conn.set_session(autocommit=True)
 
-print(f"conn={conn}")
+
+
+# app.config['postgreSQL_pool'] = psycopg2.pool.SimpleConnectionPool(1, 20, db)
+
+# # https://gist.github.com/vulcan25/55ce270d76bf78044d067c51e23ae5ad
+# def get_conn():
+#     print ('GETTING CONN')
+#     if 'db' not in g:
+#         g.db = app.config['postgreSQL_pool'].getconn()
+#     return g.db
+
+
+# @app.teardown_appcontext
+# def close_conn(e):
+#     print('CLOSING CONN')
+#     db = g.pop('db', None)
+#     if db is not None:
+#         app.config['postgreSQL_pool'].putconn(db)
+
+
+# # cur = conn.cursor()
+
+
+
+
+# # conn = psycopg2.connect(db)
+# # conn.set_session(autocommit=True)
+
+# print(f"conn={conn}")
 
 
 # def check_conn(f, conn):
@@ -205,12 +232,10 @@ def login_required(f):
     # else:
     #     print("already connected.")
 
-# def reconnect(conn):
-#     @wraps(conn)
+# def reconnect(fun):
+#     @wraps(fun)
 #     def decorated_functionB(*args, **kwargs):
-#         print(args[0])
-#         print(kwargs)
-#         # conn = kwargs['conn']
+#         conn = get_conn()
 #         print(f"Checking connection for {conn}...", end="")
 #         print(f"conn.close={conn.close}...", end="")
 #         if conn.close != 0:
@@ -222,19 +247,19 @@ def login_required(f):
 #     return decorated_functionB
 
 
-def reconnect(conn):
-    print(f"Checking database connection...", end="")
-    try:
-        cur = conn.cursor()
-        cur.execute("SELECT 1")
-        result = cur.fetchall()
-        if not result:
-            raise Exception
-        print("already connected.")
-    except:
-        conn = psycopg2.connect(db)
-        print("reconnected.")
-    return 0
+# def reconnect(conn):
+#     print(f"Checking database connection...", end="")
+#     try:
+#         cur = conn.cursor()
+#         cur.execute("SELECT 1")
+#         result = cur.fetchall()
+#         if not result:
+#             raise Exception
+#         print("already connected.")
+#     except:
+#         conn = psycopg2.connect(db)
+#         print("reconnected.")
+#     return 0
 
 
 ###### MAIN ROUTES ######
@@ -242,7 +267,7 @@ def reconnect(conn):
 @app.route('/', methods=['GET'])
 @login_required
 def dashboard():
-    reconnect(conn)
+    # reconnect(conn)
 
     if request.method == 'GET':
         print("--- / ---")
@@ -1132,19 +1157,24 @@ def shipping():
 @app.route('/admin', methods=['GET'])
 @login_required
 def admin():
-    reconnect(conn)
+    # conn = get_conn()
+    # reconnect(conn)
 
-    templates = gather_templates(conn)
+    # https://www.psycopg.org/docs/usage.html
+    with psycopg2.connect(db) as conn:
+        with conn.cursor() as cur:
 
-    cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+            templates = gather_templates(conn)
 
-    cur.execute("SELECT * FROM nail_cycles ORDER BY id ASC")
-    cycles = fetchDict(cur)
+            cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
-    cur.execute("SELECT username, last_login FROM nail_users ORDER BY last_login DESC")
-    users = fetchDict(cur)
+            cur.execute("SELECT * FROM nail_cycles ORDER BY id ASC")
+            cycles = fetchDict(cur)
 
-    cur.close()
+            cur.execute("SELECT username, last_login FROM nail_users ORDER BY last_login DESC")
+            users = fetchDict(cur)
+
+            cur.close()
 
     print("TEST prints to check the formatting")
     print(cycles)
@@ -1782,8 +1812,7 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
-    reconnect(conn)
-    print(conn)
+    # conn = get_conn()
 
     # Forget any user_id
     session.clear()
@@ -1791,67 +1820,71 @@ def login():
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # Ensure username was submitted
-        if not request.form.get("username"):
-            flash("Username required.")
-            return redirect('/login')
+        # https://www.psycopg.org/docs/usage.html
+        with psycopg2.connect(db) as conn:
+            with conn.cursor() as cur:
 
-        # Ensure password was submitted
-        elif not request.form.get("password"):
-            flash("Password required.")
-            return redirect('/login')
+                # Ensure username was submitted
+                if not request.form.get("username"):
+                    flash("Username required.")
+                    return redirect('/login')
 
-        print(conn)
-        cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+                # Ensure password was submitted
+                elif not request.form.get("password"):
+                    flash("Password required.")
+                    return redirect('/login')
 
-        # try:
-        #     cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
-        # except psycopg2.Error as e:
-        #     print(f"Error:{e}")
-        #     # print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
-        #     if conn: conn.rollback()
+                print(conn)
+                cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
-        # Query database for username
-        username = request.form.get("username")
+                # try:
+                #     cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+                # except psycopg2.Error as e:
+                #     print(f"Error:{e}")
+                #     # print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
+                #     if conn: conn.rollback()
 
-        cur.execute("SELECT * FROM nail_users WHERE username=%s", (username,))
-        # try:
-        #     cur.execute("SELECT * FROM nail_users WHERE username=%s", (username,))
-        # except psycopg2.Error as e:
-        #     print(f"Error:{e}")
-        #     # print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
-        #     if conn: conn.rollback()
-        # print(rows)
-        rows = fetchDict(cur)
+                # Query database for username
+                username = request.form.get("username")
 
-        # Ensure username exists
-        if len(rows) != 1:
-            cur.close()
-            flash("Username not found.")
-            return redirect('/login')
+                cur.execute("SELECT * FROM nail_users WHERE username=%s", (username,))
+                # try:
+                #     cur.execute("SELECT * FROM nail_users WHERE username=%s", (username,))
+                # except psycopg2.Error as e:
+                #     print(f"Error:{e}")
+                #     # print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
+                #     if conn: conn.rollback()
+                # print(rows)
+                rows = fetchDict(cur)
 
-        # Ensure username exists and password is correct
-        if not check_password_hash(rows[0]["password"], request.form.get("password")):
-            cur.close()
-            flash("Incorrect password.")
-            return redirect('/login')
+                # Ensure username exists
+                if len(rows) != 1:
+                    cur.close()
+                    flash("Username not found.")
+                    return redirect('/login')
 
-        # Remember which user has logged in
-        session["user_id"] = rows[0]["id"]
+                # Ensure username exists and password is correct
+                if not check_password_hash(rows[0]["password"], request.form.get("password")):
+                    cur.close()
+                    flash("Incorrect password.")
+                    return redirect('/login')
 
-        # Update "last_login"
-        time = datetime.datetime.utcnow().isoformat()
-        cur.execute("UPDATE nail_users SET last_login=%s WHERE id=%s", (time, session["user_id"]))
-        conn.commit()
-        cur.close()
+                # Remember which user has logged in
+                session["user_id"] = rows[0]["id"]
 
-        # Send developer directly to Admin
-        if request.form.get("username") == 'Turkosaurus':
-            return redirect("/admin")
+                # Update "last_login"
+                time = datetime.datetime.utcnow().isoformat()
+                cur.execute("UPDATE nail_users SET last_login=%s WHERE id=%s", (time, session["user_id"]))
+                conn.commit()
+                cur.close()
 
-        else:
-            # Redirect user to home page
-            return redirect("/")
+                # Send developer directly to Admin
+                if request.form.get("username") == 'Turkosaurus':
+                    return redirect("/admin")
+
+                else:
+                    # Redirect user to home page
+                    return redirect("/")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
