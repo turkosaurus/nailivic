@@ -75,8 +75,8 @@ authusers.append(os.getenv('USERC'))
 # Setup PostgreSQL database connection
 conn = None
 og = os.getenv('DATABASE_URL')
-dev = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
-prod = os.getenv('HEROKU_POSTGRESQL_PURPLE_URL')
+dev = os.getenv('HEROKU_POSTGRESQL_PURPLE_URL')
+prod = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
 
 
 # Testing
@@ -88,117 +88,6 @@ if os.getenv('FLASK_ENV') == 'development':
 else:
     print("Connecting to PRODUCTION database...", end="")
     db = prod
-
-# # def dbConnect():
-# # https://pynative.com/psycopg2-python-postgresql-connection-pooling/
-# try:
-#     postgreSQL_pool = psycopg2.pool.ThreadedConnectionPool(1, 20, db)
-#     if (postgreSQL_pool):
-#         print("Connection pool created successfully")
-
-#     # Use getconn() to Get Connection from connection pool
-#     conn = postgreSQL_pool.getconn()
-
-#     if (conn):
-#         print("Successfully received connection from connection pool.")
-
-
-#         # cur = conn.cursor()
-#         # cur.execute("select * from mobile")
-#         # mobile_records = cur.fetchall()
-
-#         # print("Displaying rows from mobile table")
-#         # for row in mobile_records:
-#         #     print(row)
-
-#         # cur.close()
-
-#         # Use this method to release the connection object and send back to connection pool
-#         # postgreSQL_pool.putconn(conn)
-#         # print("Put away a PostgreSQL connection")
-
-
-# except (Exception, psycopg2.DatabaseError) as error:
-#     print("Error while connecting to PostgreSQL", error)
-
-# dbConnect()
-
-
-
-
-
-# app.config['postgreSQL_pool'] = psycopg2.pool.SimpleConnectionPool(1, 20, db)
-
-# # https://gist.github.com/vulcan25/55ce270d76bf78044d067c51e23ae5ad
-# def get_conn():
-#     print ('GETTING CONN')
-#     if 'db' not in g:
-#         g.db = app.config['postgreSQL_pool'].getconn()
-#     return g.db
-
-
-# @app.teardown_appcontext
-# def close_conn(e):
-#     print('CLOSING CONN')
-#     db = g.pop('db', None)
-#     if db is not None:
-#         app.config['postgreSQL_pool'].putconn(db)
-
-
-# # cur = conn.cursor()
-
-
-
-
-# # conn = psycopg2.connect(db)
-# # conn.set_session(autocommit=True)
-
-# print(f"conn={conn}")
-
-
-# def check_conn(f, conn):
-#     # https://medium.com/@nguyenkims/python-decorator-and-flask-3954dd186cda
-#     @wraps(f, conn)
-#     def wrap(conn):
-#         print(f"Checking connection for {f}...", end="")
-#         if conn.close != 0:
-#             conn = psycopg2.connect(db)
-#             print("reconnected.")
-#         else:
-#             print("already connected.")
-#         return f
-#     return wrap
-
-
-# psycopg2.extras.wait_select(conn)
-
-
-# foo = psycopg2.extensions.get_wait_callback()
-# psycopg2.extensions.set_wait_callback(psycopg2.extras.wait_select)
-
-
-
-# while conn.closed != 0:
-#     print(f"conn.closed:{conn.closed}")
-#     print()
-#     conn = postgreSQL_pool.getconn()
-#     # continue
-
-# print(conn)
-# print(postgreSQL_pool)
-
-# finally:
-#     # closing database connection.
-#     # use closeall() method to close all the active connection if you want to turn of the application
-#     if postgreSQL_pool:
-#         postgreSQL_pool.closeall
-#     print("PostgreSQL connection pool is closed")
-
-
-# cur = conn.cursor()
-# cur.execute("ROLLBACK")
-# conn.commit()
-# cur.close()
 
 # # Cold Start Initialization
 # if int(os.getenv('COLD_START')) == 1:
@@ -221,45 +110,6 @@ def login_required(f):
             return redirect("/login")
         return f(*args, **kwargs)
     return decorated_function
-
-
-
-
-    # print(f"Checking connection...", end="")
-    # if conn.close != 0:
-    #     conn = psycopg2.connect(db)
-    #     print("reconnected.")
-    # else:
-    #     print("already connected.")
-
-# def reconnect(fun):
-#     @wraps(fun)
-#     def decorated_functionB(*args, **kwargs):
-#         conn = get_conn()
-#         print(f"Checking connection for {conn}...", end="")
-#         print(f"conn.close={conn.close}...", end="")
-#         if conn.close != 0:
-#             conn = psycopg2.connect(db)
-#             print("reconnected.")
-#         else:
-#             print("already connected.")
-#         return fun(*args, **kwargs)
-#     return decorated_functionB
-
-
-# def reconnect(conn):
-#     print(f"Checking database connection...", end="")
-#     try:
-#         cur = conn.cursor()
-#         cur.execute("SELECT 1")
-#         result = cur.fetchall()
-#         if not result:
-#             raise Exception
-#         print("already connected.")
-#     except:
-#         conn = psycopg2.connect(db)
-#         print("reconnected.")
-#     return 0
 
 
 ###### MAIN ROUTES ######
