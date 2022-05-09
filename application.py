@@ -267,95 +267,98 @@ def login_required(f):
 @app.route('/', methods=['GET'])
 @login_required
 def dashboard():
-    # reconnect(conn)
 
-    if request.method == 'GET':
-        print("--- / ---")
+    # https://www.psycopg.org/docs/usage.html
+    with psycopg2.connect(db) as conn:
+        with conn.cursor() as cur:
 
-        cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+            if request.method == 'GET':
+                print("--- / ---")
 
-        # Identify current cycle and retrieve data
-        cur.execute("SELECT * FROM nail_cycles WHERE current='TRUE'")
-        cycle = fetchDict(cur)
+                cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
-        if not cycle:
-            # set default as active
-            try:
-                cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=1 RETURNING *") 
+                # Identify current cycle and retrieve data
+                cur.execute("SELECT * FROM nail_cycles WHERE current='TRUE'")
                 cycle = fetchDict(cur)
-                conn.commit()
-            except Exception as e:
-                print(f"Default Event exception: {e}")
-                data = cur.execute("SELECT * FROM nail_cycles")
-                data = fetchDict(cur)
-                if not data:
-                    # Seed table with Default Event
-                    time = datetime.datetime.utcnow().isoformat()
-                    cur.execute("INSERT INTO nail_cycles (id, name, created_on, current) VALUES ('Default Event', %s, 'TRUE')", (time,))
-                    cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=1")
-                    conn.commit()
+
+                if not cycle:
+                    # set default as active
+                    try:
+                        cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=1 RETURNING *") 
+                        cycle = fetchDict(cur)
+                        conn.commit()
+                    except Exception as e:
+                        print(f"Default Event exception: {e}")
+                        data = cur.execute("SELECT * FROM nail_cycles")
+                        data = fetchDict(cur)
+                        if not data:
+                            # Seed table with Default Event
+                            time = datetime.datetime.utcnow().isoformat()
+                            cur.execute("INSERT INTO nail_cycles (id, name, created_on, current) VALUES ('Default Event', %s, 'TRUE')", (time,))
+                            cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=1")
+                            conn.commit()
+
+                        else:
+                            cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=1")
+                            conn.commit()
+
+                # Query for relevant data
+                cur.execute("SELECT username from nail_users WHERE id=%s", (session["user_id"],))
+                user = fetchDict(cur)
+
+                templates = gather_templates(conn)
+
+                progress = build_production(conn, templates)
+
+                cur.execute("SELECT * FROM nail_production ORDER BY size DESC, name DESC, color DESC")
+                production = fetchDict(cur)
+
+                data = build_totals(production, templates)
+                print(f"data:{data}")
+                totals = data['totals']
+                grand_total = data['grand_total']
+
+                cur.execute("SELECT sum(qty) FROM nail_boxprod")
+                boxprod = fetchDict(cur)
+
+                if boxprod[0]['sum'] is not None:
+                    grand_total += boxprod[0]['sum']
+                    totals[0].append(boxprod[0]['sum'])
 
                 else:
-                    cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=1")
-                    conn.commit()
+                    # Append zero when none
+                    totals[0].append(0)
 
-        # Query for relevant data
-        cur.execute("SELECT username from nail_users WHERE id=%s", (session["user_id"],))
-        user = fetchDict(cur)
+                print(f"totals:{totals}")
 
-        templates = gather_templates(conn)
+                cur.execute("SELECT sum(qty) FROM nail_projections WHERE cycle=(SELECT id FROM nail_cycles WHERE current='TRUE')")
+                projection_totals = fetchDict(cur)
+                cur.execute("SELECT sum(qty) FROM nail_items")
+                item_totals = fetchDict(cur)
+                cur.execute("SELECT sum(qty) FROM nail_parts")
+                part_totals = fetchDict(cur)
+                cur.execute("SELECT sum(qty) FROM nail_production")
+                production_totals = fetchDict(cur)
 
-        progress = build_production(conn, templates)
+                time = datetime.datetime.utcnow().isoformat()
 
-        cur.execute("SELECT * FROM nail_production ORDER BY size DESC, name DESC, color DESC")
-        production = fetchDict(cur)
+                cur.close()
+                return render_template('index.html',
+                    templates=templates,
+                    production=production,
+                    user=user,
+                    item_totals=item_totals,
+                    part_totals=part_totals,
+                    projection_totals = projection_totals,
+                    production_totals = production_totals,
+                    totals=totals,
+                    cycle=cycle,
+                    time=time,
+                    progress=progress,
+                    grand_total=grand_total)
 
-        data = build_totals(production, templates)
-        print(f"data:{data}")
-        totals = data['totals']
-        grand_total = data['grand_total']
-
-        cur.execute("SELECT sum(qty) FROM nail_boxprod")
-        boxprod = fetchDict(cur)
-
-        if boxprod[0]['sum'] is not None:
-            grand_total += boxprod[0]['sum']
-            totals[0].append(boxprod[0]['sum'])
-
-        else:
-            # Append zero when none
-            totals[0].append(0)
-
-        print(f"totals:{totals}")
-
-        cur.execute("SELECT sum(qty) FROM nail_projections WHERE cycle=(SELECT id FROM nail_cycles WHERE current='TRUE')")
-        projection_totals = fetchDict(cur)
-        cur.execute("SELECT sum(qty) FROM nail_items")
-        item_totals = fetchDict(cur)
-        cur.execute("SELECT sum(qty) FROM nail_parts")
-        part_totals = fetchDict(cur)
-        cur.execute("SELECT sum(qty) FROM nail_production")
-        production_totals = fetchDict(cur)
-
-        time = datetime.datetime.utcnow().isoformat()
-
-        cur.close()
-        return render_template('index.html',
-            templates=templates,
-            production=production,
-            user=user,
-            item_totals=item_totals,
-            part_totals=part_totals,
-            projection_totals = projection_totals,
-            production_totals = production_totals,
-            totals=totals,
-            cycle=cycle,
-            time=time,
-            progress=progress,
-            grand_total=grand_total)
-
-    else:
-        return redirect("/")
+            else:
+                return redirect("/")
 
 
 @app.route('/parts/<part>', methods=['GET', 'POST'])
@@ -1761,52 +1764,56 @@ def register():
     # Process submitted form responses on POST
     else:
 
-        # Error Checking
-        # Ensure username was submitted
-        if not request.form.get("username"):
-            flash("Username required.")
-            return redirect('/register')
+        # https://www.psycopg.org/docs/usage.html
+        with psycopg2.connect(db) as conn:
+            with conn.cursor() as cur:
 
-        # Ensure password was submitted
-        if not request.form.get("password"):
-            flash("Password required.")
-            return redirect('/register')
+                # Error Checking
+                # Ensure username was submitted
+                if not request.form.get("username"):
+                    flash("Username required.")
+                    return redirect('/register')
 
-        # Ensure password and password confirmation match
-        if request.form.get("password") != request.form.get("passwordconfirm"):
-            flash("Passwords must match.")
-            return redirect('/register')
+                # Ensure password was submitted
+                if not request.form.get("password"):
+                    flash("Password required.")
+                    return redirect('/register')
 
-        # Ensure minimum password length
-        if len(request.form.get("password")) < 8:
-            flash("Password must be at least 8 characters.")
-            return redirect('/register')
+                # Ensure password and password confirmation match
+                if request.form.get("password") != request.form.get("passwordconfirm"):
+                    flash("Passwords must match.")
+                    return redirect('/register')
 
-        # Store the hashed username and password
-        username = request.form.get("username")
-        hashedpass = generate_password_hash(request.form.get("password"))
+                # Ensure minimum password length
+                if len(request.form.get("password")) < 8:
+                    flash("Password must be at least 8 characters.")
+                    return redirect('/register')
 
-        if username not in authusers:
-            flash("Unauthorized user.")
-            return redirect('/register')
+                # Store the hashed username and password
+                username = request.form.get("username")
+                hashedpass = generate_password_hash(request.form.get("password"))
 
-        # Check if username is already taken
-        cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
-        cur.execute("SELECT username FROM nail_users WHERE username LIKE %s", (username,))
-        taken = fetchDict(cur)
-        if not taken:
-            # Add the username
-            time = datetime.datetime.utcnow().isoformat()
-            cur.execute("INSERT INTO nail_users (username, password, created_on) VALUES (%s, %s, %s)",
-                        (username, hashedpass, time))
-            conn.commit()
-            cur.close()
-            return redirect("/")
+                if username not in authusers:
+                    flash("Unauthorized user.")
+                    return redirect('/register')
 
-        else:
-            cur.close()
-            flash("Username invalid or already taken.")
-            return redirect('/register')
+                # Check if username is already taken
+                cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+                cur.execute("SELECT username FROM nail_users WHERE username LIKE %s", (username,))
+                taken = fetchDict(cur)
+                if not taken:
+                    # Add the username
+                    time = datetime.datetime.utcnow().isoformat()
+                    cur.execute("INSERT INTO nail_users (username, password, created_on) VALUES (%s, %s, %s)",
+                                (username, hashedpass, time))
+                    conn.commit()
+                    cur.close()
+                    return redirect("/")
+
+                else:
+                    cur.close()
+                    flash("Username invalid or already taken.")
+                    return redirect('/register')
 
 
 @app.route("/login", methods=["GET", "POST"])
