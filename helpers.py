@@ -145,6 +145,8 @@ def build_production(conn, templates):
 
                 print (f"{item['qty']} {item['size']} {item['name']} {item['a_color']}/{item['b_color']}/{item['c_color']} already in inventory")
 
+        projectionItems = projections
+
         # Add to production all parts that existing items inventory does not satisfy
         if projection['qty'] > 0:
 

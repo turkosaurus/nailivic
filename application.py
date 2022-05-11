@@ -119,6 +119,8 @@ def login_required(f):
 def dashboard():
 
     # https://www.psycopg.org/docs/usage.html
+    # Note: this could be done with decorators
+        # https://pythonise.com/series/learning-flask/custom-flask-decorators
     with psycopg2.connect(db) as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor) as cur:
 

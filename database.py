@@ -300,8 +300,20 @@ def initialize_database(conn):
         sku BIGINT \
         )")
 
-    # Create table: production
-    cur.execute("CREATE TABLE IF NOT EXISTS nail_production ( \
+    # Create table: production (items)
+    cur.execute("CREATE TABLE IF NOT EXISTS nail_queueItems ( \
+        name VARCHAR ( 255 ) NOT NULL, \
+        size VARCHAR ( 255 ) NOT NULL, \
+        a_color VARCHAR ( 255 ), \
+        b_color VARCHAR ( 255 ), \
+        c_color VARCHAR ( 255 ), \
+        qty INTEGER, \
+        cycle INTEGER, \
+        sku BIGINT \
+        )")
+
+    # Create table: production (parts)
+    cur.execute("CREATE TABLE IF NOT EXISTS nail_queueParts ( \
         name VARCHAR ( 255 ) NOT NULL, \
         size VARCHAR ( 255 ) NOT NULL, \
         color VARCHAR ( 255 ), \
