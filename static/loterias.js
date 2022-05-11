@@ -13,14 +13,22 @@ function updateNames(templateData) {
         if (itemSelection.value == templates.loterias[i].nombre) {
             colorA.innerHTML = templates.loterias[i].a
             colorB.innerHTML = templates.loterias[i].b
-            if (templates.loterias[i].c == '') {
-                colorC.innerHTML = '-'
 
+            // Change the ColorC heading to "-"
+            if (templates.loterias[i].c == '') {
+                colorC.innerHTML = '-';
+
+                // Unselect all ColorC radios
+                for (let i in templates.colors) {
+                    if (templates.colors[i].sku <= 7) { // don't include extended colors
+                        let selection = document.getElementById(`${templates.colors[i].name}c`);
+                        selection.checked = false;
+                    }
+                }
             } else {
                 colorC.innerHTML = templates.loterias[i].c
             }
         }
-        console.log(templates.loterias[i]);
     }
 }
 
