@@ -145,8 +145,6 @@ def build_production(conn, templates):
 
                 print (f"{item['qty']} {item['size']} {item['name']} {item['a_color']}/{item['b_color']}/{item['c_color']} already in inventory")
 
-        projectionItems = projections
-
         # Add to production all parts that existing items inventory does not satisfy
         if projection['qty'] > 0:
 
@@ -320,6 +318,36 @@ def build_production(conn, templates):
     # print(len(queue))
     # print(queue)
 
+
+
+    # Populate Items Queue
+    # projectionItems = projections
+    print(projections)
+
+    # Remove cycle and sku
+    projectionItems = []
+    i = 0
+    for item in projections:
+        print(f"projectionItems={projectionItems}")
+        projectionItems.append([])
+        j = 0
+        for attribute in item.values():
+            if j < 6: # dont add cycle or sku
+                projectionItems[i].append(attribute)
+            j += 1
+        i += 1
+
+    # Item Production
+    cur.execute("DELETE FROM nail_queueItems")
+
+    if projectionItems:
+        query = "INSERT INTO nail_queueItems (name, size, a_color, b_color, c_color, qty) VALUES %s"
+        psycopg2.extras.execute_values (
+            cur, query, projectionItems, template=None, page_size=100 
+        )
+
+
+
     # Subtract existing parts from queue
     for q in queue:
         # q = ['Frida Flowers', 'S', 'red', '2']
@@ -476,13 +504,13 @@ def build_production(conn, templates):
         )
     
     # Wipe production
-    cur.execute("DELETE FROM nail_production")
+    cur.execute("DELETE FROM nail_queueParts")
 
     print(f"trying to insert to queue:\n{queue}")
 
     # New Part Production
     if queue:
-        query = "INSERT INTO nail_production (name, size, color, qty) VALUES %s"
+        query = "INSERT INTO nail_queueParts (name, size, color, qty) VALUES %s"
         psycopg2.extras.execute_values (
             cur, query, queue, template=None, page_size=100 
         )

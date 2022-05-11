@@ -162,7 +162,7 @@ def dashboard():
 
                 progress = build_production(conn, templates)
 
-                cur.execute("SELECT * FROM nail_production ORDER BY size DESC, name DESC, color DESC")
+                cur.execute("SELECT * FROM nail_queueParts ORDER BY size DESC, name DESC, color DESC")
                 production = fetchDict(cur)
 
                 data = build_totals(production, templates)
@@ -189,7 +189,7 @@ def dashboard():
                 item_totals = fetchDict(cur)
                 cur.execute("SELECT sum(qty) FROM nail_parts")
                 part_totals = fetchDict(cur)
-                cur.execute("SELECT sum(qty) FROM nail_production")
+                cur.execute("SELECT sum(qty) FROM nail_queueParts")
                 production_totals = fetchDict(cur)
 
                 time = datetime.datetime.utcnow().isoformat()
@@ -240,7 +240,7 @@ def parts(part):
                     part_like = cur_color['name']
                     part_like = '%' + part
                     # part_like = part
-                    cur.execute("SELECT * FROM nail_production WHERE color LIKE %s \
+                    cur.execute("SELECT * FROM nail_queueParts WHERE color LIKE %s \
                         ORDER BY qty DESC", (part_like,))
                     productions = fetchDict(cur)
 
@@ -262,7 +262,7 @@ def parts(part):
                         'emoji': '🍑'
                     }
 
-                    cur.execute("SELECT * FROM nail_production WHERE name LIKE '%Backs' ORDER BY qty DESC")
+                    cur.execute("SELECT * FROM nail_queueParts WHERE name LIKE '%Backs' ORDER BY qty DESC")
                     productions = fetchDict(cur)
                     cur.execute("SELECT * FROM nail_parts WHERE name LIKE '%Backs' ORDER BY size DESC, qty DESC")
                     inventory = fetchDict(cur)
@@ -370,7 +370,7 @@ def parts(part):
                     # Update production queue
                 
                     # Identify matching part that is already in production
-                    cur.execute("SELECT qty FROM nail_production WHERE \
+                    cur.execute("SELECT qty FROM nail_queueParts WHERE \
                                     name=%s AND size=%s", (part, size))
                     parts_inprod = fetchDict(cur)
 
@@ -381,13 +381,13 @@ def parts(part):
 
                         # Remove entry because <0
                         if new_partsprod < 1:
-                            cur.execute("DELETE FROM nail_production WHERE \
+                            cur.execute("DELETE FROM nail_queueParts WHERE \
                                     name=%s AND size=%s", (part, size))
                             conn.commit()
 
                         # Update entry to new depleted quantity after accouting for newly produced parts
                         else:
-                            cur.execute("UPDATE nail_production SET qty=%s WHERE \
+                            cur.execute("UPDATE nail_queueParts SET qty=%s WHERE \
                                     name=%s AND size=%s", (new_partsprod, part, size))
                             conn.commit()
 
@@ -426,7 +426,7 @@ def parts(part):
                     # Update production queue
                 
                     # Identify matching part that is already in production
-                    cur.execute("SELECT qty FROM nail_production WHERE \
+                    cur.execute("SELECT qty FROM nail_queueParts WHERE \
                                     name=%s AND size=%s AND color=%s", (part, size, color))
                     parts_inprod = fetchDict(cur)
 
@@ -437,12 +437,12 @@ def parts(part):
 
                         # Remove entry because <0
                         if new_partsprod < 1:
-                            cur.execute("DELETE FROM nail_production WHERE \
+                            cur.execute("DELETE FROM nail_queueParts WHERE \
                                     name=%s AND size=%s AND color=%s", (part, size, color))
                             conn.commit()
                         # Update entry to new depleted quantity after accouting for newly produced parts
                         else:
-                            cur.execute("UPDATE nail_production SET qty=%s WHERE \
+                            cur.execute("UPDATE nail_queueParts SET qty=%s WHERE \
                                     name=%s AND size=%s AND color=%s", (new_partsprod, part, size, color))
                             conn.commit()
 
@@ -463,11 +463,15 @@ def items():
         with conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor) as cur:
 
             if request.method == 'GET':
+                
+                templates = gather_templates(conn)
+                results = build_production(conn, templates)
 
                 # cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+                cur.execute("SELECT * FROM nail_queueItems ORDER BY size DESC, name DESC, qty DESC")
+                queue = fetchDict(cur)
                 cur.execute("SELECT * FROM nail_items ORDER BY size DESC, name ASC, qty DESC")
                 items = fetchDict(cur)
-                templates = gather_templates(conn)
                 cur.close()
 
                 if not 'recent_item' in session :
@@ -475,7 +479,7 @@ def items():
                     print("session['recent_item'] = 'None'")
                 print(f"loading items{session}")
 
-                return render_template('items.html', templates=templates, items=items, recent=session['recent_item'])
+                return render_template('items.html', templates=templates, items=items, queue=queue, recent=session['recent_item'])
 
             # Upon POSTing form submission
             else:
@@ -1507,7 +1511,7 @@ def config(path):
                         total += product['qty']
                     message = message + str(total) + " items removed from current event projections.\n"
 
-                    cur.execute("DELETE FROM nail_production")
+                    cur.execute("DELETE FROM nail_queueParts")
                     removed = fetchDict(cur)
                     message = message + str(removed) + " parts removed from current event laser queue.\n"
 

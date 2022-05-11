@@ -197,6 +197,48 @@ Items
     <br>
 
     <div class="row">
+        <div class="col">
+            <h2>Items Queue</h2>
+            <p>
+                <a href='items#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"></a> <a href='/items#navbartop'>return to top</a>
+            </p>
+            <table class="table table-sm table-dark table-hover">
+                <thead>
+                    <tr>
+                        <td>name</td>
+                        <td>size</td>
+                        <td>a</td>
+                        <td>b</td>
+                        <td>c</td>
+                        <td>qty</td>
+                    </tr>    
+                </thead>
+                    <tbody>
+                        {% for item in queue %}
+                            <tr>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.size }}</td>
+                                <td>{{ item.a_color }}</td>
+                                <td>{{ item.b_color }}</td>
+                                {% if item.c_color is not none %}
+                                    <td>{{ item.c_color }}</td>
+                                {% else %}
+                                    <td></td>
+                                {% endif %}
+                                <td>{{ item.qty }}</td>
+                            </tr>    
+                        {% endfor %}
+                    </tbody>
+            </table>
+            <p>
+                <a href='items#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"></a> <a href='/items#navbartop'>return to top</a>
+            </p>
+        </div>
+    </div>
+
+
+
+    <div class="row">
         <!-- Items on Hand -->
         <div class="col">
             <h2>Items Inventory</h2>

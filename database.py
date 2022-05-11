@@ -121,7 +121,8 @@ def drop_tables(conn):
         nail_boxprod, \
         nail_boxused, \
         nail_projections, \
-        nail_production, \
+        nail_queueParts, \
+        nail_queueItems, \
         nail_cycles \
         ")
         # nail_users, \
