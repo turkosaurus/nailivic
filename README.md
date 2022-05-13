@@ -44,12 +44,19 @@ Producing parts and making items and boxes updates the laser production queue in
 #### accessibility
 - complete checklist
 #### automate
-- database backup and migration
 - alerts and logging
 - test backups and alerts
 
 
 # Version History
+
+## v1.2.0
+- added items queue
+
+## v1.1.0
+- migrated all database queries to `psycopg2` for performance
+- modularized code with `helpers.py`, and `database.py`
+- added seperate test data and procedures
 
 ## v1.0.0
 - progress bars for production objectives 

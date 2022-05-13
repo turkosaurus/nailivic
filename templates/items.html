@@ -13,11 +13,11 @@ Items
 
     <hr>
 
-    <!-- Add Item to Projections -->
+    <!-- Add Item to Items Inventory -->
     <div class="row">
         <div class="col">
 
-            <form action="/items" method="post" autocomplete="on">
+            <form action="/items" method="post">
                 <div class="row">
                     <div class="col">
                         <br>
@@ -205,12 +205,14 @@ Items
             <table class="table table-sm table-dark table-hover">
                 <thead>
                     <tr>
-                        <td>name</td>
-                        <td>size</td>
-                        <td>a</td>
-                        <td>b</td>
-                        <td>c</td>
-                        <td>qty</td>
+                        <td style="width:25%">name</td>
+                        <td style="width:10%">size</td>
+                        <td style="width:10%">a</td>
+                        <td style="width:10%">b</td>
+                        <td style="width:10%">c</td>
+                        <td style="width:10%">qty</td>
+                        <td style="width:10%">+/-</td>
+                        <td style="width:15%"></td>
                     </tr>    
                 </thead>
                     <tbody>
@@ -226,6 +228,31 @@ Items
                                     <td></td>
                                 {% endif %}
                                 <td>{{ item.qty }}</td>
+                                <form action="/items" method="POST">
+                                    <input type="hidden" name="item" id="item" value="{{ item.name }}">
+                                    <input type="hidden" name="size" id="size" value="{{ item.size }}">
+                                    <input type="hidden" name="color_a" id="{{ item.a_color }}a" value="{{ item.a_color }}">
+                                    <input type="hidden" name="color_b" id="{{ item.b_color }}a" value="{{ item.b_color }}">
+                                    {% if item.c_color is not none %}
+                                        <input type="hidden" name="color_c" id="{{ item.c_color }}a" value="{{ item.c_color }}">
+                                    {% endif %}
+                                    <td>
+                                        <input class="form-control form-control-sm" type="number" step="1" name="qty" id="qty">                                    
+                                    </td>
+                                    <td>
+                                        <button type="submit" class="btn btn-sm btn-block btn-primary">Make</button>
+                                        <div class="form-check">
+                                            <small>
+                                                {% if recent.deplete == 'false' %}
+                                                    <input class="form-check-input" type="checkbox" value="true" id="deplete" name="deplete">                
+                                                {% else %}
+                                                    <input class="form-check-input" type="checkbox" value="true" id="deplete" name="deplete" checked>
+                                                {% endif %}
+                                                    <label class="form-check-label" for="deplete">Deplete</label>
+                                            </small>
+                                        </div>
+                                    </td>
+                                </form>
                             </tr>    
                         {% endfor %}
                     </tbody>
@@ -242,18 +269,20 @@ Items
         <!-- Items on Hand -->
         <div class="col">
             <h2>Items Inventory</h2>
-            <p>
+            <!-- <p>
                 <a href='items#navbartop'><img src='static/arrow-circle-up-solid.svg' width="35rem"></a> <a href='/items#navbartop'>return to top</a>
-            </p>
+            </p> -->
             <table class="table table-sm table-dark table-hover">
                 <thead>
                     <tr>
-                        <td>name</td>
-                        <td>size</td>
-                        <td>a</td>
-                        <td>b</td>
-                        <td>c</td>
-                        <td>qty</td>
+                        <td style="width:25%">name</td>
+                        <td style="width:10%">size</td>
+                        <td style="width:10%">a</td>
+                        <td style="width:10%">b</td>
+                        <td style="width:10%">c</td>
+                        <td style="width:10%">qty</td>
+                        <td style="width:10%">+/-</td>
+                        <td style="width:15%"></td>
                     </tr>    
                 </thead>
                     <tbody>
@@ -269,7 +298,22 @@ Items
                                     <td></td>
                                 {% endif %}
                                 <td>{{ item.qty }}</td>
-                            </tr>    
+                                <form action="/items" method="POST">
+                                    <input type="hidden" name="item" id="item" value="{{ item.name }}">
+                                    <input type="hidden" name="size" id="size" value="{{ item.size }}">
+                                    <input type="hidden" name="color_a" id="{{ item.a_color }}a" value="{{ item.a_color }}">
+                                    <input type="hidden" name="color_b" id="{{ item.b_color }}a" value="{{ item.b_color }}">
+                                    {% if item.c_color is not none %}
+                                        <input type="hidden" name="color_c" id="{{ item.c_color }}a" value="{{ item.c_color }}">
+                                    {% endif %}
+                                    <td>
+                                        <input class="form-control form-control-sm" type="number" step="1" name="qty" id="qty">                                    
+                                    </td>
+                                    <td>
+                                        <button type="submit" class="btn btn-sm btn-block btn-primary">Adjust</button>
+                                    </td>
+                                </form>
+                            </tr>
                         {% endfor %}
                     </tbody>
             </table>
