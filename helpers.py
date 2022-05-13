@@ -328,14 +328,15 @@ def build_production(conn, templates):
     projectionItems = []
     i = 0
     for item in projections:
-        print(f"projectionItems={projectionItems}")
-        projectionItems.append([])
-        j = 0
-        for attribute in item.values():
-            if j < 6: # dont add cycle or sku
-                projectionItems[i].append(attribute)
-            j += 1
-        i += 1
+        if item['qty'] > 0:
+            print(f"projectionItems={projectionItems}")
+            projectionItems.append([])
+            j = 0
+            for attribute in item.values():
+                if j < 6: # dont add cycle or sku
+                    projectionItems[i].append(attribute)
+                j += 1
+            i += 1
 
     # Item Production
     cur.execute("DELETE FROM nail_queueItems")
