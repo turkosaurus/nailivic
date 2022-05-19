@@ -308,7 +308,6 @@ def parts(part):
 
             # Upon POSTing form submission
             else:
-                # cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
                 part = request.form.get("part")
                 size = request.form.get("size")
@@ -749,7 +748,7 @@ def projections():
                     session['recent_projection'] = 'None'
 
                 # Select projections from current cycle only
-                cur.execute("SELECT * FROM nail_projections WHERE cycle=%s ORDER BY size ASC, name DESC, qty DESC", (active,))
+                cur.execute("SELECT * FROM nail_projections WHERE cycle=%s ORDER BY size DESC, name DESC, qty DESC", (active,))
                 projections = fetchDict(cur)
                 cur.close()
                 return render_template('projections.html', templates=templates, projections=projections, current=current, cycles=cycles, total=total, recent=session['recent_projection'])
