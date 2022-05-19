@@ -52,6 +52,7 @@ Producing parts and making items and boxes updates the laser production queue in
 
 ## v1.2.0
 - added items queue
+- added scroll memory for long /items and /projections pages
 
 ## v1.1.0
 - migrated all database queries to `psycopg2` for performance
