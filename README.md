@@ -3,7 +3,7 @@ Inventory management and production tracking webapp
 
 ## How to Edit Locally
 ### Setup SSH
-Follow the super good instructions for [GitHub SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) to setup public and private keys, then confirm you're connected to the repo.
+Follow the instructions for [GitHub SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) to setup public and private keys, then confirm you're connected to the repo.
 
 ### Dowload the repo to your local machine
 - go to https://github.com/turkosaurus/nailivic
