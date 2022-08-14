@@ -1,6 +1,25 @@
 # Nailivic Studios
 Inventory management and production tracking webapp
 
+## How to Edit Locally
+### Setup SSH
+Follow the instructions for [GitHub SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) to setup public and private keys, then confirm you're connected to the repo.
+
+### Dowload the repo to your local machine
+- go to https://github.com/turkosaurus/nailivic
+- click on `Code` and either:
+    - open with GitHub desktop
+    - copy `git@github.com:Turkosaurus/nailivic.git`
+- ensure that the repo is copied locally, either by following desktop prompts, or by entering on the command line `git@github.com:Turkosaurus/nailivic.git`
+
+### Setup the local environment with `.env` file
+This file contains all the secrets, including database connections and authorized user lists, which are stored as local environment variables that the app can access during execution.
+
+### Run the application
+From the shell, enter `flask run`, then open the link to view the page.
+
+---
+
 ## Product Specifications:
 - Laser Production Dashboard
 - Parts Inventory (list and form)
@@ -49,6 +68,10 @@ Producing parts and making items and boxes updates the laser production queue in
 
 
 # Version History
+
+## v1.2.1 (in development)
+- bugfix: 2-color items
+- design improvements
 
 ## v1.2.0
 - added items queue
