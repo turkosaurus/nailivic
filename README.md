@@ -15,6 +15,9 @@ Follow the instructions for [GitHub SSH](https://docs.github.com/en/authenticati
 ### Setup the local environment with `.env` file
 This file contains all the secrets, including database connections and authorized user lists, which are stored as local environment variables that the app can access during execution.
 
+### Install dependencies
+`$ pip install -r requirements.txt`
+
 ### Run the application
 From the shell, enter `flask run`, then open the link to view the page.
 
