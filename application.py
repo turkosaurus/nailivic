@@ -149,7 +149,8 @@ def dashboard():
                         if not data:
                             # Seed table with Default Event
                             time = datetime.datetime.utcnow().isoformat()
-                            cur.execute("INSERT INTO nail_cycles (id, name, created_on, current) VALUES ('Default Event', %s, 'TRUE')", (time,))
+                            cur.execute("INSERT INTO nail_cycles (id, name, created_on, current) \
+                                VALUES ('Default Event', %s, 'TRUE')", (time,))
                             cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=1")
                             conn.commit()
 
@@ -165,7 +166,8 @@ def dashboard():
 
                 progress = build_production(conn, templates)
 
-                cur.execute("SELECT * FROM nail_queueParts ORDER BY size DESC, name DESC, color DESC")
+                cur.execute("SELECT * FROM nail_queueParts \
+                    ORDER BY size DESC, name DESC, color DESC")
                 production = fetchDict(cur)
 
                 data = build_totals(production, templates)
@@ -186,7 +188,8 @@ def dashboard():
 
                 print(f"totals:{totals}")
 
-                cur.execute("SELECT sum(qty) FROM nail_projections WHERE cycle=(SELECT id FROM nail_cycles WHERE current='TRUE')")
+                cur.execute("SELECT sum(qty) FROM nail_projections \
+                    WHERE cycle=(SELECT id FROM nail_cycles WHERE current='TRUE')")
                 projection_totals = fetchDict(cur)
                 cur.execute("SELECT sum(qty) FROM nail_items")
                 item_totals = fetchDict(cur)
@@ -257,7 +260,12 @@ def parts(part):
                     print(session)
 
                     cur.close()
-                    return render_template('parts.html', cur_color=cur_color, templates=templates, productions=productions, inventory=inventory, recent=session['recent_part'])
+                    return render_template('parts.html',
+                        cur_color=cur_color,
+                        templates=templates,
+                        productions=productions,
+                        inventory=inventory,
+                        recent=session['recent_part'])
 
                 if part == 'backs':
                     cur_color = {
@@ -277,7 +285,13 @@ def parts(part):
                         session['recent_part'] = 'None'
 
                     cur.close()
-                    return render_template('parts.html', cur_color=cur_color, templates=templates, part=part, productions=productions, inventory=inventory, recent=session['recent_part'])
+                    return render_template('parts.html',
+                    cur_color=cur_color,
+                    templates=templates,
+                    part=part,
+                    productions=productions,
+                    inventory=inventory,
+                    recent=session['recent_part'])
 
                 if part == 'boxes':
 
@@ -367,7 +381,8 @@ def parts(part):
                             cur.execute("UPDATE nail_parts SET qty=%s WHERE \
                                         name=%s AND size=%s", (new_qty, part, size))
                             conn.commit()
-                        print(f"Existing {size} {part} inventory quantity updated from {onhand[0]['qty']} to {new_qty}.")
+                        print(f"Existing {size} {part} inventory quantity \
+                            updated from {onhand[0]['qty']} to {new_qty}.")
 
                     # Update production queue
                 
@@ -397,7 +412,7 @@ def parts(part):
                 else:
                     # What quantity of this part already exists?
                     cur.execute("SELECT qty FROM nail_parts WHERE \
-                                        name=%s AND size=%s AND color=%s", \
+                                        name=%s AND size=%s AND color=%s",
                                         (part, size, color))
                     onhand = fetchDict(cur)
 
@@ -417,13 +432,16 @@ def parts(part):
                         new_qty = onhand[0]['qty'] + qty
                         if new_qty < 1:
                             cur.execute("DELETE FROM nail_parts WHERE \
-                                        name=%s AND size=%s AND color=%s", (part, size, color))
+                                        name=%s AND size=%s AND color=%s",
+                                        (part, size, color))
                             conn.commit()
                         else:
                             cur.execute("UPDATE nail_parts SET qty=%s WHERE \
-                                        name=%s AND size=%s AND color=%s", (new_qty, part, size, color))
+                                        name=%s AND size=%s AND color=%s",
+                                        (new_qty, part, size, color))
                             conn.commit()
-                        print(f"Existing {size} {color} {part} inventory quantity updated from {onhand[0]['qty']} to {new_qty}.")
+                        print(f"Existing {size} {color} {part} inventory quantity updated from \
+                            {onhand[0]['qty']} to {new_qty}.")
 
                     # Update production queue
                 
@@ -440,12 +458,15 @@ def parts(part):
                         # Remove entry because <0
                         if new_partsprod < 1:
                             cur.execute("DELETE FROM nail_queueParts WHERE \
-                                    name=%s AND size=%s AND color=%s", (part, size, color))
+                                    name=%s AND size=%s AND color=%s",
+                                    (part, size, color))
                             conn.commit()
-                        # Update entry to new depleted quantity after accouting for newly produced parts
+                        # Update entry to new depleted quantity 
+                        # after accouting for newly produced parts
                         else:
                             cur.execute("UPDATE nail_queueParts SET qty=%s WHERE \
-                                    name=%s AND size=%s AND color=%s", (new_partsprod, part, size, color))
+                                    name=%s AND size=%s AND color=%s",
+                                    (new_partsprod, part, size, color))
                             conn.commit()
 
                 cur.close()
@@ -470,9 +491,11 @@ def items():
                 results = build_production(conn, templates)
 
                 # cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
-                cur.execute("SELECT * FROM nail_queueItems ORDER BY size DESC, name DESC, qty DESC")
+                cur.execute("SELECT * FROM nail_queueItems \
+                    ORDER BY size DESC, name DESC, qty DESC")
                 queue = fetchDict(cur)
-                cur.execute("SELECT * FROM nail_items ORDER BY size DESC, name ASC, qty DESC")
+                cur.execute("SELECT * FROM nail_items \
+                    ORDER BY size DESC, name ASC, qty DESC")
                 items = fetchDict(cur)
                 cur.close()
 
@@ -481,7 +504,10 @@ def items():
                     print("session['recent_item'] = 'None'")
                 print(f"loading items{session}")
 
-                return render_template('items.html', templates=templates, items=items, queue=queue, recent=session['recent_item'])
+                return render_template('items.html',
+                templates=templates,
+                items=items,queue=queue,
+                recent=session['recent_item'])
 
             # Upon POSTing form submission
             else:
@@ -564,92 +590,116 @@ def items():
 
                     # Deplete backs
                     # Update inventory
-                    cur.execute("SELECT qty FROM nail_parts WHERE name=%s AND size=%s", (names[0]['backs'], size))
+                    cur.execute("SELECT qty FROM nail_parts WHERE name=%s AND size=%s",
+                    (names[0]['backs'], size))
                     backs_onhand = fetchDict(cur)
+
                     if backs_onhand:
                         print(f'backs_onhand:{backs_onhand}')
                         new_qty = backs_onhand[0]['qty'] - qty
 
                         # Remove entry if update would be cause qty to be less than 1
                         if new_qty < 1:
-                            cur.execute("DELETE FROM nail_parts WHERE name=%s AND size=%s", (names[0]['backs'], size))
+                            cur.execute("DELETE FROM nail_parts WHERE name=%s AND size=%s",
+                            (names[0]['backs'], size))
                             conn.commit()
+
                         # Update existing entry
                         else:
-                            cur.execute("UPDATE nail_parts SET qty=%s WHERE name=%s AND size=%s", (new_qty, names[0]['backs'], size))
+                            cur.execute("UPDATE nail_parts SET qty=%s WHERE name=%s AND size=%s",
+                            (new_qty, names[0]['backs'], size))
                             conn.commit()
 
                     # Deplete a
                     # Update inventory
-                    cur.execute("SELECT qty FROM nail_parts WHERE name=%s AND size=%s AND color=%s", (names[0]['a'], size, a))
+                    cur.execute("SELECT qty FROM nail_parts WHERE name=%s AND size=%s AND color=%s",
+                    (names[0]['a'], size, a))
                     a_onhand = fetchDict(cur)
+
                     if a_onhand:
                         new_qty = a_onhand[0]['qty'] - qty
 
                         # Remove entry if update would be cause qty to be less than 1
                         if new_qty < 1:
-                            cur.execute("DELETE FROM nail_parts WHERE name=%s AND size=%s AND color=%s", (names[0]['a'], size, a))
+                            cur.execute("DELETE FROM nail_parts \
+                                WHERE name=%s AND size=%s AND color=%s",
+                            (names[0]['a'], size, a))
                             conn.commit()
 
                         # Update existing entry
                         else:
-                            cur.execute("UPDATE nail_parts SET qty=%s WHERE name=%s AND size=%s AND color=%s", (new_qty, names[0]['a'], size, a))
+                            cur.execute("UPDATE nail_parts SET qty=%s \
+                                WHERE name=%s AND size=%s AND color=%s",
+                            (new_qty, names[0]['a'], size, a))
                             conn.commit()
 
                     # Deplete b
                     # Update inventory
-                    cur.execute("SELECT qty FROM nail_parts WHERE name=%s AND size=%s AND color=%s", (names[0]['b'], size, b))
+                    cur.execute("SELECT qty FROM nail_parts \
+                        WHERE name=%s AND size=%s AND color=%s",
+                    (names[0]['b'], size, b))
                     b_onhand = fetchDict(cur)
+
                     if b_onhand:
                         new_qty = b_onhand[0]['qty'] - qty
 
                         # Remove entry if update would be cause qty to be less than 1
                         if new_qty < 1:
-                            cur.execute("DELETE FROM nail_parts WHERE name=%s AND size=%s AND color=%s", (names[0]['b'], size, b))
+                            cur.execute("DELETE FROM nail_parts WHERE name=%s AND size=%s AND color=%s",
+                            (names[0]['b'], size, b))
                             conn.commit()
 
                         # Update existing entry
                         else:
-                            cur.execute("UPDATE nail_parts SET qty=%s WHERE name=%s AND size=%s AND color=%s", (new_qty, names[0]['b'], size, b))
+                            cur.execute("UPDATE nail_parts SET qty=%s WHERE name=%s AND size=%s AND color=%s",
+                            (new_qty, names[0]['b'], size, b))
                             conn.commit()
 
                     # Deplete c
                     if c:
                         # Update inventory
-                        cur.execute("SELECT qty FROM nail_parts WHERE name=%s AND size=%s AND color=%s", (names[0]['c'], size, c))
+                        cur.execute("SELECT qty FROM nail_parts WHERE name=%s AND size=%s AND color=%s",
+                        (names[0]['c'], size, c))
                         c_onhand = fetchDict(cur)
                         if c_onhand:
                             new_qty = c_onhand[0]['qty'] - qty
 
                             # Remove entry if update would be cause qty to be less than 1
                             if new_qty < 1:
-                                cur.execute("DELETE FROM nail_parts WHERE name=%s AND size=%s AND color=%s", (names[0]['c'], size, c))
+                                cur.execute("DELETE FROM nail_parts \
+                                    WHERE name=%s AND size=%s AND color=%s",
+                                (names[0]['c'], size, c))
                                 conn.commit()
 
                             # Update existing entry
                             else:
-                                cur.execute("UPDATE nail_parts SET qty=%s WHERE name=%s AND size=%s AND color=%s", (new_qty, names[0]['c'], size, c))
+                                cur.execute("UPDATE nail_parts SET qty=%s \
+                                    WHERE name=%s AND size=%s AND color=%s",
+                                (new_qty, names[0]['c'], size, c))
                                 conn.commit()
 
                 # How many items are already on hand?
                 # When c part exists, identify how many items exist in inventory
                 if c:
-                    cur.execute("SELECT qty FROM nail_items WHERE name=%s AND size=%s AND a_color=%s AND b_color=%s AND c_color=%s",
+                    cur.execute("SELECT qty FROM nail_items \
+                        WHERE name=%s AND size=%s AND a_color=%s AND b_color=%s AND c_color=%s",
                                 (item, size, a, b, c))
                     items_onhand = fetchDict(cur)
 
                 # When no c part exists, identify number of items already onhand
                 else:
-                    cur.execute("SELECT qty FROM nail_items WHERE name=%s AND size=%s AND a_color=%s AND b_color=%s",
+                    cur.execute("SELECT qty FROM nail_items \
+                        WHERE name=%s AND size=%s AND a_color=%s AND b_color=%s",
                                     (item, size, a, b))
                     items_onhand = fetchDict(cur)
                 print(f"items on hand: {items_onhand}")
 
                 # Make new item(s)
                 if not items_onhand and qty > 0:
-                    cur.execute("INSERT INTO nail_items (name, size, a_color, b_color, c_color, qty) \
-                                VALUES (%s, %s, %s, %s, %s, %s)", \
-                                        (item, size, a, b, c, qty))
+                    cur.execute("INSERT INTO nail_items \
+                        (name, size, a_color, b_color, c_color, qty) \
+                        VALUES (%s, %s, %s, %s, %s, %s)",
+                        (item, size, a, b, c, qty))
                     conn.commit()
 
                 # Update existing item quantity, deleting if new_qty == 0
@@ -663,22 +713,28 @@ def items():
 
                     if not c:
                         if new_qty <= 0:
-                            cur.execute("DELETE FROM nail_items WHERE name=%s AND size=%s AND a_color=%s AND b_color=%s", \
-                                    (item, size, a, b))
+                            cur.execute("DELETE FROM nail_items \
+                                WHERE name=%s AND size=%s AND a_color=%s AND b_color=%s",
+                                (item, size, a, b))
                             conn.commit()
                         else:
-                            cur.execute("UPDATE nail_items SET qty=%s WHERE name=%s AND size=%s AND a_color=%s AND b_color=%s", \
-                                    (new_qty, item, size, a, b))
+                            cur.execute("UPDATE nail_items SET qty=%s \
+                                WHERE name=%s AND size=%s AND a_color=%s AND b_color=%s",
+                                (new_qty, item, size, a, b))
                             conn.commit()
 
                     else:
                         if new_qty <= 0:
-                            cur.execute("DELETE FROM nail_items WHERE name=%s AND size=%s AND a_color=%s AND b_color=%s AND c_color=%s", \
-                                    (item, size, a, b, c))
+                            cur.execute("DELETE FROM nail_items \
+                                WHERE name=%s AND size=%s AND \
+                                a_color=%s AND b_color=%s AND c_color=%s",
+                                (item, size, a, b, c))
                             conn.commit()
                         else:
-                            cur.execute("UPDATE nail_items SET qty=%s WHERE name=%s AND size=%s AND a_color=%s AND b_color=%s AND c_color=%s", \
-                                    (new_qty, item, size, a, b, c))
+                            cur.execute("UPDATE nail_items SET qty=%s \
+                                WHERE name=%s AND size=%s AND \
+                                a_color=%s AND b_color=%s AND c_color=%s", \
+                                (new_qty, item, size, a, b, c))
                             conn.commit()
 
                 templates = gather_templates(conn)
@@ -711,7 +767,8 @@ def projections():
                 if not active:
                     cur.execute("SELECT id FROM nail_cycles ORDER BY id DESC LIMIT 1")
                     newest = fetchDict(cur)
-                    cur.execute("UPDATE nail_cycles SET current='true' WHERE id=%", (newest[0]['id'],))
+                    cur.execute("UPDATE nail_cycles SET current='true' \
+                        WHERE id=%", (newest[0]['id'],))
                     conn.commit()
 
                 # Capture id of active "current" cycle
@@ -750,10 +807,18 @@ def projections():
                     session['recent_projection'] = 'None'
 
                 # Select projections from current cycle only
-                cur.execute("SELECT * FROM nail_projections WHERE cycle=%s ORDER BY size DESC, name DESC, qty DESC", (active,))
+                cur.execute("SELECT * FROM nail_projections \
+                    WHERE cycle=%s ORDER BY size DESC, name DESC, qty DESC", (active,))
                 projections = fetchDict(cur)
                 cur.close()
-                return render_template('projections.html', templates=templates, projections=projections, current=current, cycles=cycles, total=total, recent=session['recent_projection'])
+
+                return render_template('projections.html',
+                templates=templates,
+                projections=projections,
+                current=current,
+                cycles=cycles,
+                total=total,
+                recent=session['recent_projection'])
 
             # Upon POSTing form submission
             else:
@@ -831,13 +896,14 @@ def projections():
                 # What quantity of this item is already in projections?
                 if not c:
                     cur.execute("SELECT qty FROM nail_projections WHERE \
-                                name=%s AND size=%s AND a_color=%s AND b_color=%s AND cycle=%s", \
+                                name=%s AND size=%s AND a_color=%s AND b_color=%s AND cycle=%s",
                                 (item, size, a, b, cycle))
                     projected = fetchDict(cur)
 
                 else:
                     cur.execute("SELECT qty FROM nail_projections WHERE \
-                                name=%s AND size=%s AND a_color=%s AND b_color=%s AND c_color=%s AND cycle=%s", \
+                                name=%s AND size=%s AND \
+                                a_color=%s AND b_color=%s AND c_color=%s AND cycle=%s",
                                 (item, size, a, b, c, cycle))
                     projected = fetchDict(cur)
 
@@ -846,8 +912,9 @@ def projections():
 
                 # None, create new entry
                 if not projected:
-                    cur.execute("INSERT INTO nail_projections (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES \
-                                (%s, %s, %s, %s, %s, %s, %s, %s)", \
+                    cur.execute("INSERT INTO nail_projections \
+                        (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES \
+                                (%s, %s, %s, %s, %s, %s, %s, %s)",
                                 (item, size, a, b, c, qty, cycle, sku))
                     conn.commit()
                     flash(f"Added to projections: {qty} {size} {item} ({a}, {b}, {c}) [{sku}]")
@@ -859,13 +926,13 @@ def projections():
                     if not c:
                         if updated < 1:
                             cur.execute("DELETE FROM nail_projections WHERE \
-                                name=%s AND size=%s AND a_color=%s AND b_color=%s AND cycle=%s", \
+                                name=%s AND size=%s AND a_color=%s AND b_color=%s AND cycle=%s",
                                 (item, size, a, b, cycle))
                             conn.commit()
 
                         else:
                             cur.execute("UPDATE nail_projections SET qty=%s WHERE \
-                                name=%s AND size=%s AND a_color=%s AND b_color=%s AND cycle=%s", \
+                                name=%s AND size=%s AND a_color=%s AND b_color=%s AND cycle=%s",
                                 (updated, item, size, a, b, cycle))
                             conn.commit()
             
@@ -874,8 +941,9 @@ def projections():
                     else:
                         if updated < 1:
                             cur.execute("DELETE FROM nail_projections WHERE \
-                                name=%s AND size=%s AND a_color=%s AND b_color=%s AND c_color=%s \
-                                AND cycle=%s", \
+                                name=%s AND size=%s AND \
+                                a_color=%s AND b_color=%s AND c_color=%s AND \
+                                cycle=%s",
                                 (item, size, a, b, c, cycle))
                             conn.commit()
 
@@ -1060,7 +1128,11 @@ def admin():
     else:
         development = False
 
-    return render_template('admin.html', templates=templates, cycles=cycles, users=users, development=development)
+    return render_template('admin.html',
+        templates=templates,
+        cycles=cycles,
+        users=users,
+        development=development)
 
 
 @app.route('/admin/<path>', methods=['GET', 'POST'])
@@ -1154,7 +1226,8 @@ def config(path):
                     # Create new Cycle
                     cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
                     time = datetime.datetime.utcnow().isoformat()
-                    cur.execute("INSERT INTO nail_cycles (name, created_on, current) VALUES (%s, %s, 'FALSE')", (name, time))
+                    cur.execute("INSERT INTO nail_cycles (name, created_on, current) \
+                        VALUES (%s, %s, 'FALSE')", (name, time))
                     conn.commit()
                     cur.close()
                     flash(f'Created new event "{name}"')
@@ -1196,8 +1269,11 @@ def config(path):
 
                     print(results)
 
-                    flash(f"""Processed {results['added']}/{results['total']} items from "{filename_user}" into database for event \
-                        "{results['cycle_name'][0]['name']}." {results['skipped']} failures on lines {results['err_lines']} {results['errors']}""")
+                    flash(f"""Processed {results['added']}/{results['total']} items \
+                        from "{filename_user}" into database for event \
+                        "{results['cycle_name'][0]['name']}." \
+                        {results['skipped']} failures on lines \
+                        {results['err_lines']} {results['errors']}""")
 
                 else:
                     flash("Unknown file type error.")
@@ -1237,7 +1313,8 @@ def config(path):
 
                         print(f'results:{results}')
 
-                        flash(f"""Deleted {results['deleted']} old inventory items. Processed "{filename_user}" into items inventory. \
+                        flash(f"""Deleted {results['deleted']} old inventory items. \
+                            Processed "{filename_user}" into items inventory. \
                             {results['skipped']}/{results['total']} failed (no SKU).""")
 
                     else:
@@ -1269,7 +1346,10 @@ def config(path):
 
                         results = restore_items()
 
-                    flash(f"""Deleted {results.deleted} old inventory parts. Processed "{filename_user}" into parts inventory. {results.skipped}/{results.total} failed (no SKU).""")
+                    flash(f"""Deleted {results.deleted} old inventory parts. \
+                        Processed "{filename_user}" into parts inventory. \
+                        {results.skipped}/{results.total} failed (no SKU).""")
+
                     return redirect('/admin')
 
                 else:
@@ -1301,7 +1381,8 @@ def config(path):
                     cur.close()
 
                     # Headers
-                    scribe.writerow(['name', 'size', 'sku', 'a_color', 'b_color', 'c_color', 'd_unused', 'qty', 'cycle'])
+                    scribe.writerow(['name', 'size', 'sku', 
+                        'a_color', 'b_color', 'c_color', 'd_unused', 'qty', 'cycle'])
 
                     for row in projections:
 
@@ -1309,13 +1390,18 @@ def config(path):
 
                         # Write projections into csv
                         print("Scribe is writing a row...")
-                        scribe.writerow([row['name'], row['size'], sku, row['a_color'], row['b_color'], row['c_color'], '', row['qty'], row['cycle']])
+                        scribe.writerow([row['name'], row['size'], sku, 
+                            row['a_color'], row['b_color'], row['c_color'], '', row['qty'], row['cycle']])
 
 
                 time = datetime.datetime.utcnow().isoformat()
                 attachname = 'backup_projections_' + cycle[0]['name'] + ' ' + time + '.csv'
 
-                return send_from_directory(app.config['BACKUPS'], filename='backup_projections.csv', attachment_filename=attachname, as_attachment=True, mimetype='text/csv')
+                return send_from_directory(app.config['BACKUPS'],
+                    filename='backup_projections.csv',
+                    attachment_filename=attachname,
+                    as_attachment=True,
+                    mimetype='text/csv')
 
 
             if path == 'backup-inventory':
@@ -1400,7 +1486,12 @@ def config(path):
                     time = datetime.datetime.utcnow().isoformat()
                     attachname = 'parts_inventory_' + time + '.csv'
 
-                    return send_from_directory(app.config['BACKUPS'], filename='parts_inventory.csv', as_attachment=True, attachment_filename=attachname, mimetype='text/csv')
+                    return send_from_directory(
+                        app.config['BACKUPS'],
+                        filename='parts_inventory.csv',
+                        as_attachment=True,
+                        attachment_filename=attachname,
+                        mimetype='text/csv')
 
                 if type == 'items':
 
@@ -1421,7 +1512,8 @@ def config(path):
                         cur.close()
 
                         # Write headers
-                        scribe.writerow(['sku', 'name', 'size', 'a_color', 'b_color', 'c_color', 'd_unused', 'qty'])
+                        scribe.writerow(['sku', 'name', 'size',
+                            'a_color', 'b_color', 'c_color', 'd_unused', 'qty'])
 
                         # Write items into csv
                         for row in items:
@@ -1429,12 +1521,18 @@ def config(path):
                             sku = generate_sku(templates, row)
 
                             print("Scribe is writing a row...")
-                            scribe.writerow([sku, row['name'], row['size'], row['a_color'], row['b_color'], row['c_color'], '', row['qty']])
+                            scribe.writerow([sku, row['name'], row['size'],
+                                row['a_color'], row['b_color'], row['c_color'], '', row['qty']])
 
                     time = datetime.datetime.utcnow().isoformat()
                     attachname = 'items_inventory_' + time + '.csv'
 
-                    return send_from_directory(app.config['BACKUPS'], filename='items_inventory.csv', as_attachment=True, attachment_filename=attachname, mimetype='text/csv')
+                    return send_from_directory(
+                        app.config['BACKUPS'],
+                        filename='items_inventory.csv',
+                        as_attachment=True,
+                        attachment_filename=attachname,
+                        mimetype='text/csv')
 
 
             if path == 'download-loterias':
@@ -1444,7 +1542,11 @@ def config(path):
                 attachname = 'loterias_' + time + '.csv'
 
                 print(f"/downloading: {file}")
-                return send_from_directory(app.config["UPLOAD_FOLDER"], file, attachment_filename=attachname, as_attachment=True)
+                return send_from_directory(
+                    app.config["UPLOAD_FOLDER"],
+                    file,
+                    attachment_filename=attachname,
+                    as_attachment=True)
 
 
         # Misc
@@ -1454,11 +1556,12 @@ def config(path):
                 cycle = request.form.get("cycle")
                 cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
                 cur.execute("UPDATE nail_cycles SET current='FALSE'")
-                cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=%s RETURNING name", (cycle,))
+                cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=%s RETURNING name",
+                    (cycle,))
                 conn.commit()
                 event = fetchDict(cur)
                 cur.close()
-                flash(f"Active event changed to {event}") # TODO confirm that RETURNING works as expected
+                flash(f"Active event changed to {event}") # TODO confirm that RETURNING works?
                 return redirect('/production')
 
 
@@ -1504,24 +1607,26 @@ def config(path):
                     # Wipe projections
 
                     # Identify current cycle
-                    cur.execute("SELECT id, name, created_on FROM nail_cycles WHERE current='TRUE'")
+                    cur.execute("SELECT id, name, created_on FROM nail_cycles \
+                        WHERE current='TRUE'")
                     active = fetchDict(cur)
                     cycle = active[0]['id']
 
-                    cur.execute("DELETE FROM nail_projections where cycle=%s RETURNING qty", (cycle,))
+                    cur.execute("DELETE FROM nail_projections \
+                        WHERE cycle=%s RETURNING qty", (cycle,))
                     removed = fetchDict(cur)
                     total = 0
                     for product in removed:
                         total += product['qty']
-                    message = message + str(total) + " items removed from current event projections.\n"
+                    message += str(total) + " items removed from current event projections.\n"
 
                     cur.execute("DELETE FROM nail_queueParts")
                     removed = fetchDict(cur)
-                    message = message + str(removed) + " parts removed from current event laser queue.\n"
+                    message += str(removed) + " parts removed from current event laser queue.\n"
 
                     cur.execute("DELETE FROM nail_boxprod")
                     removed = fetchDict(cur)
-                    message = message + str(removed) + " boxes removed from current event laser queue.\n"
+                    message += str(removed) + " boxes removed from current event laser queue.\n"
 
                 conn.commit()
                 cur.close()
@@ -1550,7 +1655,9 @@ def config(path):
                     conn.commit()
                     cur.close()
 
-                    flash(f"""Event cycle "{deleted[0]['name']}" and {projections} associated projections deleted.""")
+                    flash(f"""Event cycle "{deleted[0]['name']}" and \
+                        {projections} associated projections deleted.""")
+
                     return redirect("/admin")
 
                 else:
@@ -1683,8 +1790,9 @@ def register():
                 if not taken:
                     # Add the username
                     time = datetime.datetime.utcnow().isoformat()
-                    cur.execute("INSERT INTO nail_users (username, password, created_on) VALUES (%s, %s, %s)",
-                                (username, hashedpass, time))
+                    cur.execute("INSERT INTO nail_users (username, password, created_on) \
+                        VALUES (%s, %s, %s)",
+                        (username, hashedpass, time))
                     conn.commit()
                     cur.close()
                     return redirect("/")
@@ -1720,27 +1828,10 @@ def login():
                     flash("Password required.")
                     return redirect('/login')
 
-                # print(conn)
-                # cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
-
-                # try:
-                #     cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
-                # except psycopg2.Error as e:
-                #     print(f"Error:{e}")
-                #     # print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
-                #     if conn: conn.rollback()
-
                 # Query database for username
                 username = request.form.get("username")
 
                 cur.execute("SELECT * FROM nail_users WHERE username=%s", (username,))
-                # try:
-                #     cur.execute("SELECT * FROM nail_users WHERE username=%s", (username,))
-                # except psycopg2.Error as e:
-                #     print(f"Error:{e}")
-                #     # print(f"{type(e).__module__.removesuffix('.errors')}:{type(e).__name__}: {str(e).rstrip()}")
-                #     if conn: conn.rollback()
-                # print(rows)
                 rows = fetchDict(cur)
 
                 # Ensure username exists
@@ -1760,7 +1851,8 @@ def login():
 
                 # Update "last_login"
                 time = datetime.datetime.utcnow().isoformat()
-                cur.execute("UPDATE nail_users SET last_login=%s WHERE id=%s", (time, session["user_id"]))
+                cur.execute("UPDATE nail_users SET last_login=%s WHERE id=%s",
+                (time, session["user_id"]))
                 conn.commit()
                 cur.close()
 
