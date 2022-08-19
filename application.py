@@ -348,7 +348,7 @@ def parts(part):
                 }
 
                 if not size:
-                    
+
                     flash('Size must be specified for part')
                     return redirect(f'/parts/{color}')
 
@@ -375,7 +375,7 @@ def parts(part):
                                     (%s, %s, %s)", \
                                     (part, size, qty))
                         conn.commit()
-                        print(f"New {size} {part} entry created with qty {qty}.")                        
+                        print(f"New {size} {part} entry created with qty {qty}.")
 
                     # Update existing entry's quantity
                     else:
@@ -393,7 +393,7 @@ def parts(part):
                             updated from {onhand[0]['qty']} to {new_qty}.")
 
                     # Update production queue
-                
+
                     # Identify matching part that is already in production
                     cur.execute("SELECT qty FROM nail_queueParts WHERE \
                                     name=%s AND size=%s", (part, size))
@@ -453,7 +453,7 @@ def parts(part):
                             {onhand[0]['qty']} to {new_qty}.")
 
                     # Update production queue
-                
+
                     # Identify matching part that is already in production
                     cur.execute("SELECT qty FROM nail_queueParts WHERE \
                                     name=%s AND size=%s AND color=%s", (part, size, color))
@@ -556,17 +556,17 @@ def items():
                 ## Validation ##
 
                 # Return error if missing basic entries
-                if (size is None):
+                if size is None:
                     flash("Invalid entry. Size required.")
                     return redirect("/items")
 
-                if (a is None):
+                if a is None:
                     flash("Invalid entry. A color required.")
                     return redirect("/items")
 
-                if (b is None):
+                if b is None:
                     flash("Invalid entry. B color required.")
-                    return redirect("/items")    
+                    return redirect("/items")
 
                 # Test for appropriateness of c_color presence
                 cur.execute("SELECT c FROM nail_loterias WHERE nombre=%s", (item,))
@@ -1472,7 +1472,8 @@ def config(path):
                                 for subpart in loteria.values():
                                     print(f"subpart:{subpart}")
                                     if part['name'] == subpart:
-                                        print(f"matched:{part['name']} to {loteria['nombre']}/{subpart}")
+                                        print(f"matched:{part['name']} to \
+                                            {loteria['nombre']}/{subpart}")
                                         # Add item number
                                         sku = sku + str(loteria['sku']).zfill(2)
 
@@ -1499,16 +1500,19 @@ def config(path):
 
                                     if color['name'] in part['color']:
                                         sku = sku + str(color['sku']).zfill(2)
-                                        print(f"matched {color['name']} to {part['color']}. SKU:{sku}")
+                                        print(f"matched {color['name']} to \
+                                            {part['color']}. SKU:{sku}")
 
                             # Size name > SKU
                             for size in templates['sizes']:
                                 if size['shortname'] in part['size']:
                                     sku = sku + str(size['sku']).zfill(2)
-                                    print(f"matched {size['longname']} to {part['size']}. SKU:{sku}")
+                                    print(f"matched {size['longname']} to \
+                                        {part['size']}. SKU:{sku}")
 
                             print("Scribe is writing a part...")
-                            scribe.writerow([sku, part['name'], part['size'],  part['color'], part['qty']])
+                            scribe.writerow([sku, part['name'], part['size'],
+                                part['color'], part['qty']])
 
                     time = datetime.datetime.utcnow().isoformat()
                     attachname = 'parts_inventory_' + time + '.csv'
