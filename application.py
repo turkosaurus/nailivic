@@ -254,7 +254,7 @@ def parts(part):
                     cur.execute("SELECT * FROM nail_parts WHERE color LIKE %s \
                         ORDER BY size DESC, qty DESC", (part_like,))
                     inventory = fetchDict(cur)
-            
+
                     if not 'recent_part' in session :
                         session['recent_part'] = 'None'
                     print(session)
@@ -273,9 +273,11 @@ def parts(part):
                         'emoji': '🍑'
                     }
 
-                    cur.execute("SELECT * FROM nail_queueParts WHERE name LIKE '%Backs' ORDER BY qty DESC")
+                    cur.execute("SELECT * FROM nail_queueParts \
+                        WHERE name LIKE '%Backs' ORDER BY qty DESC")
                     productions = fetchDict(cur)
-                    cur.execute("SELECT * FROM nail_parts WHERE name LIKE '%Backs' ORDER BY size DESC, qty DESC")
+                    cur.execute("SELECT * FROM nail_parts \
+                        WHERE name LIKE '%Backs' ORDER BY size DESC, qty DESC")
                     inventory = fetchDict(cur)
 
                     print("part is a back...")
