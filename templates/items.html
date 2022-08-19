@@ -235,7 +235,10 @@ Items
                                     <input type="hidden" name="color_b" id="{{ item.b_color }}b" value="{{ item.b_color }}">
                                     {% if item.c_color is not none %}
                                         <input type="hidden" name="color_c" id="{{ item.c_color }}c" value="{{ item.c_color }}">
+                                    {% else %}
+                                        <input type="hidden" name="color_c" id="{{ item.c_color }}c" value="">
                                     {% endif %}
+
                                     <td>
                                         <input class="form-control form-control-sm" type="number" step="1" name="qty" id="qty">                                    
                                     </td>
@@ -305,8 +308,10 @@ Items
                                     <input type="hidden" name="color_b" id="{{ item.b_color }}b" value="{{ item.b_color }}">
                                     {% if item.c_color is not none %}
                                         <input type="hidden" name="color_c" id="{{ item.c_color }}c" value="{{ item.c_color }}">
+                                    {% else %}
+                                        <input type="hidden" name="color_c" id="{{ item.c_color }}c" value="">
                                     {% endif %}
-                                    <td>
+                                        <td>
                                         <input class="form-control form-control-sm" type="number" step="1" name="qty" id="qty">                                    
                                     </td>
                                     <td>

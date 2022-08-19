@@ -498,15 +498,21 @@ def items():
                 
                 templates = gather_templates(conn)
                 results = build_production(conn, templates)
+                print(f"progress results:{results}")
 
                 # cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
                 cur.execute("SELECT * FROM nail_queueItems \
-                    ORDER BY size DESC, name DESC, qty DESC")
+                    ORDER BY size DESC, name ASC, qty DESC")
                 queue = fetchDict(cur)
                 cur.execute("SELECT * FROM nail_items \
                     ORDER BY size DESC, name ASC, qty DESC")
                 items = fetchDict(cur)
                 cur.close()
+
+                print("queue")
+                print(queue)
+                print("items")
+                print(items)
 
                 if not 'recent_item' in session :
                     session['recent_item'] = 'None'
@@ -515,7 +521,8 @@ def items():
 
                 return render_template('items.html',
                 templates=templates,
-                items=items,queue=queue,
+                items=items,
+                queue=queue,
                 recent=session['recent_item'])
 
             # Upon POSTing form submission
@@ -525,12 +532,15 @@ def items():
                 a = request.form.get("color_a")
                 b = request.form.get("color_b")
                 c = request.form.get("color_c")
-                if c == "None":
-                    c = None
+                if c == None:
+                    c = ''
+                    print("*" * 8000)
+                    print(f"c:{c}")
+
                 qty = int(request.form.get("qty"))
                 deplete = request.form.get("deplete")
 
-                cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
+                # cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
                 # Force boolean state
                 if deplete != 'true':

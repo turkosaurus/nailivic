@@ -98,8 +98,9 @@ def setup_loterias(conn):
         counter = 0
         for row in csv_reader:
             counter += 1
-            cur.execute("INSERT INTO nail_loterias (sku, nombre, a, b, c, backs) VALUES (%s, %s, %s, %s, %s, %s)", \
-                            (row[0], row[1], row[2], row[3], row[4], row[5]))
+            cur.execute("INSERT INTO nail_loterias (sku, nombre, a, b, c, backs) \
+                VALUES (%s, %s, %s, %s, %s, %s)",
+                (row[0], row[1], row[2], row[3], row[4], row[5]))
 
         conn.commit()
         cur.close()
@@ -175,7 +176,8 @@ def initialize_database(conn):
     color_data = cur.fetchall()
     if not color_data:
         for i in range(len(colors)):
-            cur.execute("INSERT INTO nail_colors (sku, name, emoji, cssname) VALUES (%s, %s, %s, %s)", \
+            cur.execute("INSERT INTO nail_colors (sku, name, emoji, cssname) \
+            VALUES (%s, %s, %s, %s)",
             ((i+1), colors[i][0], colors[i][1], colors[i][2]))
     print("Colors setup.")
 
@@ -192,7 +194,8 @@ def initialize_database(conn):
     if not size_data:
         sizes = [['S', 'small'], ['M', 'medium'], ['L', 'large'], ['XL', 'XL'], ['2XL','2XL']]
         for i in range(len(sizes)):
-            cur.execute("INSERT INTO nail_sizes (sku, shortname, longname) VALUES (%s, %s, %s)", ((i+1), sizes[i][0] , sizes[i][1]))
+            cur.execute("INSERT INTO nail_sizes (sku, shortname, longname) \
+                VALUES (%s, %s, %s)", ((i+1), sizes[i][0] , sizes[i][1]))
     print("Size table populated.")
 
     # Create table: recent
@@ -246,7 +249,8 @@ def initialize_database(conn):
     types_data = cur.fetchall()
     if not types_data:
         for i in range(len(types)):
-            cur.execute("INSERT INTO nail_types (name, sku) VALUES (%s, %s)", (types[i][0], types[i][1]))
+            cur.execute("INSERT INTO nail_types (name, sku) VALUES (%s, %s)",
+            (types[i][0], types[i][1]))
     print("Products table setup.")
 
     # Shirts
@@ -268,7 +272,8 @@ def initialize_database(conn):
     shirts_data = cur.fetchall()
     if not shirts_data:
         for i in range(len(shirts)):
-            cur.execute("INSERT INTO nail_shirts (nombre, sku) VALUES (%s, %s)", (shirts[i][0], shirts[i][1]))
+            cur.execute("INSERT INTO nail_shirts (nombre, sku) VALUES (%s, %s)",
+            (shirts[i][0], shirts[i][1]))
     print("Shirts table populated.")
 
     # Create table: boxes
@@ -335,7 +340,8 @@ def initialize_database(conn):
     if not event_data:
         # Seed table with Default Event
         time = datetime.datetime.utcnow().isoformat()
-        cur.execute("INSERT INTO nail_cycles (name, created_on, current) VALUES ('Default Event', %s, 'TRUE')", (time,))
+        cur.execute("INSERT INTO nail_cycles (name, created_on, current) \
+            VALUES ('Default Event', %s, 'TRUE')", (time,))
 
     conn.commit()
     cur.close()
@@ -415,7 +421,8 @@ def migrate_events(conn):
     # add new projections
     print("projetions formatted")
     print(projections_formatted)
-    query = "INSERT INTO nail_projections (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES %s"
+    query = "INSERT INTO nail_projections \
+        (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES %s"
     psycopg2.extras.execute_values (
         cur, query, projections_formatted, template=None, page_size=100 
     )
@@ -457,8 +464,9 @@ def restore_items(conn):
                 print(f"Found:{sku}")
 
                 # TODO update to use SKU, not spreadsheet values
-                cur.execute("INSERT INTO nail_items (name, size, a_color, b_color, c_color, qty) VALUES \
-                (%s, %s, %s, %s, %s, %s)", (row[1], row[2], row[3], row[4], row[5], row[7]))
+                cur.execute("INSERT INTO nail_items \
+                    (name, size, a_color, b_color, c_color, qty) VALUES (%s, %s, %s, %s, %s, %s)",
+                    (row[1], row[2], row[3], row[4], row[5], row[7]))
 
             else:
                 skipped += 1
@@ -583,7 +591,8 @@ def restore_event(conn, event):
 
         # TODO ensure no duplicate SKUs
         cur.execute("DELETE FROM nail_projections WHERE cycle=%s", (event,))
-        query = "INSERT INTO nail_projections (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES %s"
+        query = "INSERT INTO nail_projections \
+            (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES %s"
         psycopg2.extras.execute_values (
             cur, query, values, template=None, page_size=100 
         )
