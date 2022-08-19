@@ -5,7 +5,7 @@ from database import tupleToDict
 load_dotenv()
 
 ALLOWED_EXTENSIONS = {'csv'}
-
+367
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -61,7 +61,8 @@ def build_production(conn, templates):
 
     cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
-    cur.execute("SELECT * FROM nail_projections WHERE cycle=(SELECT id FROM nail_cycles WHERE current='TRUE')")
+    cur.execute("SELECT * FROM nail_projections \
+        WHERE cycle=(SELECT id FROM nail_cycles WHERE current='TRUE')")
     projections = tupleToDict(cur.fetchall())
     
     cur.execute("SELECT * FROM nail_items")
@@ -94,14 +95,15 @@ def build_production(conn, templates):
 
     # print(f"projections:{projections}")
 
-    # Add each projections required parts to production queue, minus items already on hand in inventory
+    # Add each projections required parts to production queue, minus items already in inventory
     # (parts will be subtracted later)
     for projection in projections:
 
         progress['item_projection'] += projection['qty']
 
         print("-" * 80)
-        print(f"Projection:{projection['qty']} {projection['name']} {projection['size']} {projection['a_color']}/{projection['b_color']}/{projection['c_color']}")
+        print(f"Projection:{projection['qty']} {projection['name']} {projection['size']} \
+            {projection['a_color']}/{projection['b_color']}/{projection['c_color']}")
 
         # total_projections += projection['qty']
 
@@ -143,7 +145,8 @@ def build_production(conn, templates):
                 projection['qty'] -= item['qty']
                 progress['item_inventory'] += item['qty']
 
-                print (f"{item['qty']} {item['size']} {item['name']} {item['a_color']}/{item['b_color']}/{item['c_color']} already in inventory")
+                print (f"{item['qty']} {item['size']} {item['name']} \
+                    {item['a_color']}/{item['b_color']}/{item['c_color']} already in inventory")
 
         # Add to production all parts that existing items inventory does not satisfy
         if projection['qty'] > 0:
@@ -162,7 +165,8 @@ def build_production(conn, templates):
                         'backs': projection['qty']
                     }
 
-                    print(f"Checking parts inventory for {loteria['a']}, {loteria['b']}, {loteria['c']}, {loteria['backs']}")
+                    print(f"Checking parts inventory for \
+                        {loteria['a']}, {loteria['b']}, {loteria['c']}, {loteria['backs']}")
                     # print(qtys)
 
 
@@ -342,11 +346,11 @@ def build_production(conn, templates):
     cur.execute("DELETE FROM nail_queueItems")
 
     if projectionItems:
-        query = "INSERT INTO nail_queueItems (name, size, a_color, b_color, c_color, qty) VALUES %s"
+        query = "INSERT INTO nail_queueItems \
+            (name, size, a_color, b_color, c_color, qty) VALUES %s"
         psycopg2.extras.execute_values (
             cur, query, projectionItems, template=None, page_size=100 
         )
-
 
 
     # Subtract existing parts from queue
