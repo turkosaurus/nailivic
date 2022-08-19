@@ -173,7 +173,7 @@ def dashboard():
                 cur.execute("SELECT sum(qty) FROM nail_boxprod")
                 boxprod = fetchDict(cur)
 
-                if boxprod[0]['sum'] is not None:
+                if boxprod[0]['sum'] != 0:
                     grand_total += boxprod[0]['sum']
                     totals[0].append(boxprod[0]['sum'])
 
@@ -612,7 +612,7 @@ def items():
                             conn.commit()
 
                     # Deplete c
-                    if c is not None:
+                    if c != '':
                         # Update inventory
                         cur.execute("SELECT qty FROM nail_parts WHERE name=%s AND size=%s AND color=%s", (names[0]['c'], size, c))
                         c_onhand = fetchDict(cur)
@@ -631,7 +631,7 @@ def items():
 
                 # How many items are already on hand?
                 # When c part exists, identify how many items exist in inventory
-                if c is not None:
+                if c != '':
                     cur.execute("SELECT qty FROM nail_items WHERE name=%s AND size=%s AND a_color=%s AND b_color=%s AND c_color=%s",
                                 (item, size, a, b, c))
                     items_onhand = fetchDict(cur)
@@ -1065,7 +1065,6 @@ def admin():
 @login_required
 # @reconnect
 def config(path):
-    
 
     if request.method == 'GET':
         # Not a valid admin route
@@ -1193,8 +1192,10 @@ def config(path):
 
                     results = restore_event(conn, event)
 
+                    print(results)
+
                     flash(f"""Processed {results['added']}/{results['total']} items from "{filename_user}" into database for event \
-                        "{results['cycle_name']['0']['name']}." {results['skipped']} failures on lines {results['err_lines']} {results['errors']}""")
+                        "{results['cycle_name'][0]['name']}." {results['skipped']} failures on lines {results['err_lines']} {results['errors']}""")
 
                 else:
                     flash("Unknown file type error.")
@@ -1230,10 +1231,12 @@ def config(path):
                         print(f"filename:{filename}")
                         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-                        results = restore_items()
+                        results = restore_items(conn)
 
-                        flash(f"""Deleted {results.deleted} old inventory items. Processed "{filename_user}" into items inventory. \
-                            {results.skipped}/{results.total} failed (no SKU).""")
+                        print(f'results:{results}')
+
+                        flash(f"""Deleted {results['deleted']} old inventory items. Processed "{filename_user}" into items inventory. \
+                            {results['skipped']}/{results['total']} failed (no SKU).""")
 
                     else:
                         flash("File processing error. Filename may be disallowed.")
