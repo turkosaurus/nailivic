@@ -19,7 +19,7 @@ This file contains all the secrets, including database connections and authorize
 `$ pip install -r requirements.txt`
 
 ### Run the application
-From the shell, enter `flask run`, then open the link to view the page.
+`$ flask run` to launch, then click the link to view in browser.
 
 ---
 
