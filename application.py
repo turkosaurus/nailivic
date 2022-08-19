@@ -410,7 +410,8 @@ def parts(part):
                                     name=%s AND size=%s", (part, size))
                             conn.commit()
 
-                        # Update entry to new depleted quantity after accouting for newly produced parts
+                        # Update entry to new depleted quantity
+                        # after accouting for newly produced parts
                         else:
                             cur.execute("UPDATE nail_queueParts SET qty=%s WHERE \
                                     name=%s AND size=%s", (new_partsprod, part, size))
@@ -620,8 +621,9 @@ def items():
 
                     # Deplete a
                     # Update inventory
-                    cur.execute("SELECT qty FROM nail_parts WHERE name=%s AND size=%s AND color=%s",
-                    (names[0]['a'], size, a))
+                    cur.execute("SELECT qty FROM nail_parts \
+                        WHERE name=%s AND size=%s AND color=%s",
+                        (names[0]['a'], size, a))
                     a_onhand = fetchDict(cur)
 
                     if a_onhand:
@@ -653,20 +655,23 @@ def items():
 
                         # Remove entry if update would be cause qty to be less than 1
                         if new_qty < 1:
-                            cur.execute("DELETE FROM nail_parts WHERE name=%s AND size=%s AND color=%s",
-                            (names[0]['b'], size, b))
+                            cur.execute("DELETE FROM nail_parts \
+                                WHERE name=%s AND size=%s AND color=%s",
+                                (names[0]['b'], size, b))
                             conn.commit()
 
                         # Update existing entry
                         else:
-                            cur.execute("UPDATE nail_parts SET qty=%s WHERE name=%s AND size=%s AND color=%s",
-                            (new_qty, names[0]['b'], size, b))
+                            cur.execute("UPDATE nail_parts SET qty=%s \
+                                WHERE name=%s AND size=%s AND color=%s",
+                                (new_qty, names[0]['b'], size, b))
                             conn.commit()
 
                     # Deplete c
                     if c:
                         # Update inventory
-                        cur.execute("SELECT qty FROM nail_parts WHERE name=%s AND size=%s AND color=%s",
+                        cur.execute("SELECT qty FROM nail_parts \
+                            WHERE name=%s AND size=%s AND color=%s",
                         (names[0]['c'], size, c))
                         c_onhand = fetchDict(cur)
                         if c_onhand:
@@ -1019,12 +1024,14 @@ def box():
                         conn.commit()
 
                     else:
-                        cur.execute("UPDATE nail_boxes SET qty=%s WHERE name=%s", (qty_onhand, name))
+                        cur.execute("UPDATE nail_boxes SET qty=%s WHERE name=%s",
+                            (qty_onhand, name))
                         conn.commit()
 
                 ## Make a new box invetory entry
                 else:
-                    cur.execute("INSERT INTO nail_boxes (name, qty) VALUES (%s, %s)", (name, qty))
+                    cur.execute("INSERT INTO nail_boxes (name, qty) VALUES (%s, %s)",
+                        (name, qty))
                     conn.commit()
 
                 # Adjust production
@@ -1035,7 +1042,8 @@ def box():
 
                     # Update existing entry if >0
                     if qty_prod > 0:
-                        cur.execute("UPDATE nail_boxprod SET qty=%s WHERE name=%s", (qty_prod, name))
+                        cur.execute("UPDATE nail_boxprod SET qty=%s WHERE name=%s",
+                            (qty_prod, name))
                         conn.commit()
 
                     # Delete existing entry if <=0
@@ -1063,7 +1071,8 @@ def box():
                     # Deplete box inventory
                     new_qty = boxes[0]['qty'] - qty
                     if new_qty > 0:
-                        cur.execute("UPDATE nail_boxes SET qty=%s WHERE name=%s", (new_qty, name,))
+                        cur.execute("UPDATE nail_boxes SET qty=%s WHERE name=%s",
+                            (new_qty, name,))
                         conn.commit()
 
                     else:
@@ -1076,17 +1085,20 @@ def box():
                     # Calculate new quantity and update boxused inventory
                     new_qty = boxused[0]['qty'] + qty
                     if new_qty > 0:
-                        cur.execute("UPDATE nail_boxused SET qty=%s WHERE name=%s", (new_qty, name))
+                        cur.execute("UPDATE nail_boxused SET qty=%s WHERE name=%s",
+                            (new_qty, name))
                         conn.commit()
 
                     else:
-                        cur.execute("DELETE FROM nail_boxused WHERE name=%s", (name,))
+                        cur.execute("DELETE FROM nail_boxused WHERE name=%s",
+                            (name,))
                         conn.commit()
 
 
                 # Make new boxused inventory
                 else:
-                    cur.execute("INSERT INTO nail_boxused (name, qty) VALUES (%s, %s)", (name, qty))
+                    cur.execute("INSERT INTO nail_boxused (name, qty) VALUES (%s, %s)",
+                        (name, qty))
                     conn.commit()
 
                 if qty == 1:
@@ -1195,7 +1207,8 @@ def config(path):
 
                 file = request.files['inputfile']
 
-                # If the user does not select a file, the browser submits an empty file without a filename.
+                # If the user does not select a file
+                # the browser submits an empty file without a filename
                 if file.filename == '':
                     flash('No selected file')
                     return redirect("/admin")
@@ -1262,7 +1275,8 @@ def config(path):
 
                 file = request.files['inputfile']
 
-                # If the user does not select a file, the browser submits an empty file without a filename.
+                # If the user does not select a file
+                # the browser submits an empty file without a filename.
                 if file.filename == '':
                     flash('No selected file')
                     return redirect("/admin")
@@ -1306,13 +1320,14 @@ def config(path):
 
                     file = request.files['inputfile']
 
-                    # If the user does not select a file, the browser submits an empty file without a filename.
+                    # If the user does not select a file
+                    # the browser submits an empty file without a filename.
                     if file.filename == '':
                         flash('No selected file')
                         return redirect("/admin")
 
                     if file and allowed_file(file.filename):
-                        filename_user = secure_filename(file.filename) # User supplied filenames kept
+                        filename_user = secure_filename(file.filename) # User filename kept
                         filename = 'items_inventory.csv'
                         print(f"filename:{filename}")
                         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -1341,13 +1356,14 @@ def config(path):
 
                     file = request.files['inputfile']
 
-                    # If the user does not select a file, the browser submits an empty file without a filename.
+                    # If the user does not select a file
+                    # the browser submits an empty file without a filename.
                     if file.filename == '':
                         flash('No selected file')
                         return redirect("/admin")
 
                     if file and allowed_file(file.filename):
-                        filename_user = secure_filename(file.filename) # User supplied filenames kept
+                        filename_user = secure_filename(file.filename) # User filename kept
                         filename = 'parts_inventory.csv'
                         print(f"filename:{filename}")
                         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -1399,7 +1415,8 @@ def config(path):
                         # Write projections into csv
                         print("Scribe is writing a row...")
                         scribe.writerow([row['name'], row['size'], sku, 
-                            row['a_color'], row['b_color'], row['c_color'], '', row['qty'], row['cycle']])
+                            row['a_color'], row['b_color'], row['c_color'], '',
+                            row['qty'], row['cycle']])
 
 
                 time = datetime.datetime.utcnow().isoformat()
@@ -1439,8 +1456,10 @@ def config(path):
                         #     return redirect('/admin')
 
                         # Write headers
-                        # Skulet is a little sku missing the first two digits for the item identifier. 
-                            # It associates colors and sizes, but does not associate the part name by means of numbers
+                        # Skulet is a little sku missing
+                        # the first two digits for the item identifier. 
+                            # It associates colors and sizes
+                            # but does not associate the part name by means of numbers
                         scribe.writerow(['skulet', 'name', 'size',  'color', 'qty'])
 
                         # Write parts into csv
@@ -1691,7 +1710,8 @@ def config(path):
                 templates = gather_templates(conn)
                 item = generate_item(templates, sku)
 
-                flash(f"{sku['sku']}: {item['item']} - {item['a']}/{item['b']}/{item['c']} ({item['size']})")
+                flash(f"{sku['sku']}: {item['item']} - \
+                    {item['a']}/{item['b']}/{item['c']} ({item['size']})")
                 return redirect('/admin')
 
 
