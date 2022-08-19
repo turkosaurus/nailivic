@@ -1,7 +1,7 @@
 # from difflib import restore
 import os
 import requests
-# import urllib.parse 
+# import urllib.parse
 import time
 import datetime
 import csv
@@ -10,7 +10,8 @@ import json
 import psycopg2
 import psycopg2.extras
 from psycopg2 import pool
-from flask import Flask, redirect, render_template, request, session, url_for, flash, send_from_directory, Markup, g
+from flask import Flask, redirect, render_template, request, session, \
+    url_for, flash, send_from_directory, Markup, g
 from flask_session import Session
 from tempfile import mkdtemp
 from functools import wraps
@@ -19,8 +20,10 @@ from werkzeug.exceptions import default_exceptions, HTTPException, InternalServe
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
-from helpers import allowed_file, parse_sku, build_production, build_totals, generate_item, generate_sku
-from database import migrate_users, migrate_events, restore_event, fetchDict, gather_templates, drop_tables, initialize_database, setup_loterias, restore_items, restore_parts
+from helpers import allowed_file, parse_sku, build_production, build_totals, \
+    generate_item, generate_sku
+from database import migrate_users, migrate_events, restore_event, fetchDict, gather_templates, \
+    drop_tables, initialize_database, setup_loterias, restore_items, restore_parts
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -136,7 +139,7 @@ def dashboard():
                 if not cycle:
                     # set default as active
                     try:
-                        cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=1 RETURNING *") 
+                        cur.execute("UPDATE nail_cycles SET current='TRUE' WHERE id=1 RETURNING *")
                         cycle = fetchDict(cur)
                         conn.commit()
                     except Exception as e:
@@ -173,7 +176,7 @@ def dashboard():
                 cur.execute("SELECT sum(qty) FROM nail_boxprod")
                 boxprod = fetchDict(cur)
 
-                if boxprod[0]['sum'] != 0:
+                if boxprod[0]['sum'] != 0: # recently change from "is not None"
                     grand_total += boxprod[0]['sum']
                     totals[0].append(boxprod[0]['sum'])
 
@@ -487,13 +490,12 @@ def items():
                 a = request.form.get("color_a")
                 b = request.form.get("color_b")
                 c = request.form.get("color_c")
+                if c == "None":
+                    c = None
                 qty = int(request.form.get("qty"))
                 deplete = request.form.get("deplete")
 
                 cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
-
-                if c == "None":
-                    c = ''
 
                 # Force boolean state
                 if deplete != 'true':
@@ -612,7 +614,7 @@ def items():
                             conn.commit()
 
                     # Deplete c
-                    if c != '':
+                    if c:
                         # Update inventory
                         cur.execute("SELECT qty FROM nail_parts WHERE name=%s AND size=%s AND color=%s", (names[0]['c'], size, c))
                         c_onhand = fetchDict(cur)
@@ -631,7 +633,7 @@ def items():
 
                 # How many items are already on hand?
                 # When c part exists, identify how many items exist in inventory
-                if c != '':
+                if c:
                     cur.execute("SELECT qty FROM nail_items WHERE name=%s AND size=%s AND a_color=%s AND b_color=%s AND c_color=%s",
                                 (item, size, a, b, c))
                     items_onhand = fetchDict(cur)
