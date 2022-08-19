@@ -317,7 +317,13 @@ def parts(part):
                         'emoji': '📦'
                     }
 
-                    return render_template('boxes.html', cur_color=cur_color, templates=templates, boxes=boxes, boxprod=boxprod, boxused=boxused, box_prod_total=box_prod_total)
+                    return render_template('boxes.html',
+                        cur_color=cur_color,
+                        templates=templates,
+                        boxes=boxes,
+                        boxprod=boxprod,
+                        boxused=boxused,
+                        box_prod_total=box_prod_total)
 
                 else:
                     flash("Invalid part descriptor")
