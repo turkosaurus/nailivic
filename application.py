@@ -534,7 +534,7 @@ def items():
                 c = request.form.get("color_c")
                 if c == None:
                     c = ''
-                    print("*" * 8000)
+                    print("*" * 80)
                     print(f"c:{c}")
 
                 qty = int(request.form.get("qty"))
