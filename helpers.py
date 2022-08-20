@@ -173,6 +173,17 @@ def build_production(conn, templates):
                     "<--- already in inventory"
                     ))
 
+            else:
+                print('%5s | %-15s| %-5s| %-15s| %-15s| %-15s| %-35s' % \
+                    (item['qty'],
+                    item['name'],
+                    item['size'],
+                    item['a_color'],
+                    item['b_color'],
+                    item['c_color'],
+                    "<--- no match"
+                    ))
+
         # Add to production all parts that existing items inventory does not satisfy
         if projection['qty'] > 0:
 
