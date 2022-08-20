@@ -101,9 +101,27 @@ def build_production(conn, templates):
 
         progress['item_projection'] += projection['qty']
 
-        print("-" * 80)
-        print(f"Projection:{projection['qty']} {projection['name']} {projection['size']} \
-            {projection['a_color']}/{projection['b_color']}/{projection['c_color']}")
+        # print(' %(qty)5s | %(name)-10s| %(size)-10s| %(a_color)-10s| %(b_color)-10s| %(c_color)-10s |' % \
+        #     {"qty": projection['qty'],
+        #     "name": projection['name'],
+        #     "size": projection['size'],
+        #     "a_color": projection['a_color'],
+        #     "b_color": projection['b_color'],
+        #     "c_color": projection['c_color']
+        #     })
+
+        print("--- projections.projection ", end="")
+        print("-" * 60)
+
+        print('%5s | %-15s| %-5s| %-15s| %-15s| %-15s| %-35s' % \
+            (projection['qty'],
+            projection['name'],
+            projection['size'],
+            projection['a_color'],
+            projection['b_color'],
+            projection['c_color'],
+            "<--- in projections"
+            ))
 
         # total_projections += projection['qty']
 
@@ -145,13 +163,29 @@ def build_production(conn, templates):
                 projection['qty'] -= item['qty']
                 progress['item_inventory'] += item['qty']
 
-                print (f"{item['qty']} {item['size']} {item['name']} \
-                    {item['a_color']}/{item['b_color']}/{item['c_color']} already in inventory")
+                print('%5s | %-15s| %-5s| %-15s| %-15s| %-15s| %-35s' % \
+                    (item['qty'],
+                    item['name'],
+                    item['size'],
+                    item['a_color'],
+                    item['b_color'],
+                    item['c_color'],
+                    "<--- already in inventory"
+                    ))
 
         # Add to production all parts that existing items inventory does not satisfy
         if projection['qty'] > 0:
 
-            print(f"{projection['qty']} {projection['name']} unmet by items inventory.")
+            print('%5s | %-15s| %-5s| %-15s| %-15s| %-15s| %-35s' % \
+                (projection['qty'],
+                projection['name'],
+                projection['size'],
+                projection['a_color'],
+                projection['b_color'],
+                projection['c_color'],
+                "<--- unmet by items inventory"
+                ))
+
             # print(f"projections.qty > 0 and queue:{queue}")
 
             # Match name to existing loteria template
@@ -165,13 +199,16 @@ def build_production(conn, templates):
                         'backs': projection['qty']
                     }
 
-                    print(f"Checking parts inventory for \
-                        {loteria['a']}, {loteria['b']}, {loteria['c']}, {loteria['backs']}")
-                    # print(qtys)
+                    print('%-29s | %-15s| %-15s| %-15s| %-15s' % \
+                        ("        Parts to find:",
+                        loteria['a'],
+                        loteria['b'],
+                        loteria['c'],
+                        loteria['backs']))
 
-
-                    print("queue")
-                    print(queue)
+                    # print("queue")
+                    # print(queue)
+                    # print("endqueue")
 
 
                 # Add A
@@ -188,10 +225,12 @@ def build_production(conn, templates):
 
                             found_existing = True
 
-                            # print(f"FOUND MATCHING EXISTING A:")
-                            # print(f"queue:{line}")
-                            # print(f"projection:{projection}")
-                            # print('-' * 80)
+                            print('%-29s | %-15s| %-15s| %-15s| %-15s' % \
+                                ("        Adding TO parts:",
+                                qtys['a'],
+                                "",
+                                "",
+                                ""))
 
 
                     if found_existing == False:
@@ -210,6 +249,14 @@ def build_production(conn, templates):
                         queue[i].append(f'{qtys["a"]}')
         
                         i += 1
+                    
+                        print('%-29s | %-15s| %-15s| %-15s| %-15s' % \
+                            ("        Adding NEW parts:",
+                            qtys['a'],
+                            "",
+                            "",
+                            ""))
+
 
                     # Add B
 
@@ -224,6 +271,14 @@ def build_production(conn, templates):
                             line[3] = int(line[3]) + qtys['b']
 
                             found_existing = True
+
+                            print('%-29s | %-15s| %-15s| %-15s| %-15s' % \
+                                ("        Adding TO parts:",
+                                "",
+                                qtys['b'],
+                                "",
+                                ""))
+
                             # print("FOUND EXISTING B")
 
                     if found_existing == False:
@@ -245,6 +300,14 @@ def build_production(conn, templates):
         
                         i += 1
 
+                        print('%-29s | %-15s| %-15s| %-15s| %-15s' % \
+                            ("        Adding NEW parts:",
+                            "",
+                            qtys['b'],
+                            "",
+                            ""))
+
+
                     # Add C
 
                     if loteria['c'] != '':
@@ -260,6 +323,14 @@ def build_production(conn, templates):
                                 line[3] = int(line[3]) + qtys['c']
 
                                 found_existing = True
+
+                                print('%-29s | %-15s| %-15s| %-15s| %-15s' % \
+                                    ("        Adding TO parts:",
+                                    "",
+                                    "",
+                                    qtys['c'],
+                                    ""))
+
                                 # print("FOUND EXISTING C")
 
                         if found_existing == False:
@@ -279,23 +350,35 @@ def build_production(conn, templates):
             
                             i += 1
 
+                            print('%-29s | %-15s| %-15s| %-15s| %-15s' % \
+                                ("        Adding NEW parts:",
+                                "",
+                                "",
+                                qtys['c'],
+                                ""))
+
+
                     # Add Backs
 
                     # Update existing entry
                     found_existing = False
                     for line in queue:
-                        print(line)
+                        # print(line)
                         if line[0] == loteria['backs'] and \
                             line[1] == projection['size']:
 
                             line[3] = int(line[3]) + qtys['backs']
 
                             found_existing = True
-                            print("FOUND EXISTING BACK")
+
+                            print('%-29s | %-15s| %-15s| %-15s| %-15s' % \
+                                ("        Adding TO backs:",
+                                "",
+                                "",
+                                "",
+                                qtys['backs']))
 
                     if found_existing == False:
-
-                        print("MAKING NEW BACK")
 
                         # Add a new list for the part to be made
                         queue.append([])
@@ -310,30 +393,37 @@ def build_production(conn, templates):
         
                         i += 1
 
+                        print('%-29s | %-15s| %-15s| %-15s| %-15s' % \
+                            ("        Adding NEW backs:",
+                            "",
+                            "",
+                            "",
+                            qtys['backs']))
 
 
-                    print("queue")
-                    print(queue)
-                    print("---")
+                    # print("queue")
+                    # print(queue)
+                    # print("endqueue")
 
 
     print('*' * 80)
     print("PODUCTION QUEUE BUILT WITH ITEMS, NOW REMOVING EXISTING PARTS INVENTORY")
+    print('*' * 80)
     # print(len(queue))
     # print(queue)
 
 
-
     # Populate Items Queue
     # projectionItems = projections
-    print(projections)
+    # print(projections)
 
     # Remove cycle and sku
     projectionItems = []
     i = 0
+    print("--- projections unmet by items inventory " + "-" * 60)
     for item in projections:
         if item['qty'] > 0:
-            print(f"projectionItems={projectionItems}")
+            # print(f"projectionItems={projectionItems}")
             projectionItems.append([])
             j = 0
             for attribute in item.values():
@@ -342,7 +432,18 @@ def build_production(conn, templates):
                 j += 1
             i += 1
 
+            print('%5s | %-15s| %-5s| %-15s| %-15s| %-15s| %-35s' % \
+                (item['qty'],
+                item['name'],
+                item['size'],
+                item['a_color'],
+                item['b_color'],
+                item['c_color'],
+                " <--- adding to queueItems"
+                ))
+
     # Item Production
+    print("--- deleting queueItems from database " + "-" * 60)
     cur.execute("DELETE FROM nail_queueItems")
 
     if projectionItems:
@@ -351,31 +452,48 @@ def build_production(conn, templates):
         psycopg2.extras.execute_values (
             cur, query, projectionItems, template=None, page_size=100 
         )
+    print("--- inserted new queueItems into database " + "-" * 60)
 
 
     # Subtract existing parts from queue
     for q in queue:
-        # q = ['Frida Flowers', 'S', 'red', '2']
-        print(f"Adding to parts projection: {q[3]} from {q}")
         progress['parts_projection'] += int(q[3])
 
-        print("---")
-        print(f"q:{q}")
+        print("--- queue.q " + "-" * 75)
+
+        print('%5s | %-15s| %-5s| %-15s| %-15s| %-15s| %-35s' % \
+            (q[3], #qty
+            q[0], #name
+            q[1], #size
+            q[2], #color
+            "",
+            "",
+            " <--- searching parts to satisfy"
+            ))
 
         for part in parts:
 
-            print(f"{part['name']} {part['size']} {part['color']} (part)")
+            # print(f"{part['name']} {part['size']} {part['color']} (part)")
+
             # Matching part found in inventory
             if part['name'] == q[0] and \
                 part['size'] == q[1] and \
                 ((part['color'] == q[2]) or (part['color'] == None)):
 
+                print('%5s | %-15s| %-5s| %-15s| %-15s| %-14s| %-35s' % \
+                    (part['qty'], #qty
+                    part['name'], #name
+                    part['size'], #size
+                    part['color'], #color
+                    "",
+                    "✅",
+                    " <--- matching inventory part"
+                    ))
 
 
-
-                print("Matches")
-                print(f"{q[0]} {q[1]} {q[2]} (q)")
-                print(f"Need {q[3]}, have {part['qty']}")
+                # print("Matches")
+                # print(f"{q[0]} {q[1]} {q[2]} (q)")
+                # print(f"Need {q[3]}, have {part['qty']}")
 
                 if int(q[3]) > part['qty']:
                     progress['parts_inventory'] += part['qty']
@@ -411,18 +529,29 @@ def build_production(conn, templates):
                     q[3] = 0
                     part['qty'] -= used
 
-                print(f"Adjusted to")
-                print(f"Need {q[3]}, have {part['qty']}")
-                print(f"---")
+                # print(f"Adjusted to")
+                # print(f"Need {q[3]}, have {part['qty']}")
+                # print(f"---")
 
-            else:
-                print("Does not match")
-                print(f"{q[0]} {q[1]} {q[2]} (q)")
-                print("---")
+            else: # no match
+                # print('%5s | %-15s| %-5s| %-15s| %-15s| %-14s| %-35s' % \
+                #     (part['qty'], #qty
+                #     part['name'], #name
+                #     part['size'], #size
+                #     part['color'], #color
+                #     "",
+                #     "❌",
+                #     " <--- no match"
+                #     ))
+                pass
+
+                # print("Does not match")
+                # print(f"{q[0]} {q[1]} {q[2]} (q)")
+                # print("---")
 
 
-    print("---")
-    print("AFTER SUBTRACTING PARTS")
+    print("*" * 80)
+    print("INVENTORY PARTS SUBTRACTED FROM PARTS QUEUE") # TODO better name?
     # print(len(queue))
     # print(queue)
     print("*" * 80)
@@ -469,32 +598,8 @@ def build_production(conn, templates):
 
     box_queue = tmp
 
-    # Convert list to string
-    # boxes
-    print("Box List:")
-    # for row in box_queue:
-        # print(row)
-
-
-    print(f"before:{box_queue}")
-    # box_queue = sql_cat(box_queue)
-    print(f"after:{box_queue}")
-
-    # print(f"String:{box_queue}")
-
-    # parts
-    print("Parts List:")
-    # for row in queue:
-        # print(row)
-
-    # queue = sql_cat(queue)
-    # print(f"String:{queue}")
-
-    # queue = tuplefy(queue)
-    # print(f"Tuples:{queue}")
-
-    box_added = 0
-    part_added = 0
+    # box_added = 0
+    # part_added = 0
 
     # Wipe Box Produciton
     cur.execute("DELETE FROM nail_boxprod")
@@ -507,11 +612,12 @@ def build_production(conn, templates):
         psycopg2.extras.execute_values (
             cur, query, box_queue, template=None, page_size=100 
         )
-    
+
+    print("--- nail_boxprod added to database " + "-" * 60)
+
+
     # Wipe production
     cur.execute("DELETE FROM nail_queueParts")
-
-    print(f"trying to insert to queue:\n{queue}")
 
     # New Part Production
     if queue:
@@ -519,6 +625,9 @@ def build_production(conn, templates):
         psycopg2.extras.execute_values (
             cur, query, queue, template=None, page_size=100 
         )
+
+    print("--- nail_queueParts added to database " + "-" * 60)
+
 
     conn.commit()
     cur.close()
