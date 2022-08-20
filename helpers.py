@@ -5,7 +5,7 @@ from database import tupleToDict
 load_dotenv()
 
 ALLOWED_EXTENSIONS = {'csv'}
-367
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
