@@ -489,7 +489,7 @@ def build_production(conn, templates):
             # Matching part found in inventory
             if part['name'] == q[0] and \
                 part['size'] == q[1] and \
-                ((part['color'] == q[2]) or (part['color'] == None)):
+                ((part['color'] == q[2]) or (part['color'] is None)):
 
                 print('%5s | %-15s| %-5s| %-15s| %-15s| %-14s| %-35s' % \
                     (part['qty'], #qty
