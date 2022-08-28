@@ -76,7 +76,6 @@ authusers.append(os.getenv('USERC'))
 ###### DATABASE ######
 
 # Setup PostgreSQL database connection
-conn = None
 og = os.getenv('DATABASE_URL')
 dev = os.getenv('HEROKU_POSTGRESQL_PURPLE_URL')
 prod = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
@@ -92,13 +91,14 @@ else:
     print("Connecting to PRODUCTION database...", end="")
     db = prod
 
-# # Cold Start Initialization
+# # Cold Start Initialization # TODO test that cold start works since refactor
 # if int(os.getenv('COLD_START')) == 1:
-#     print("Dropping Tables and Initializing Database...", end="")
-#     drop_tables(conn)
-#     initialize_database(conn)
-#     print("done.")
-
+#     with psycopg2.connect(db) as conn:
+#         with conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor) as cur:
+#             print("Dropping Tables and Initializing Database...", end="")
+#             drop_tables(conn)
+#             initialize_database(conn)
+#             print("done.")
 
 ###### APP FUNCTIONS ######
 

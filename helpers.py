@@ -64,13 +64,13 @@ def build_production(conn, templates):
     cur.execute("SELECT * FROM nail_projections \
         WHERE cycle=(SELECT id FROM nail_cycles WHERE current='TRUE')")
     projections = tupleToDict(cur.fetchall())
-    
+
     cur.execute("SELECT * FROM nail_items")
     items = tupleToDict(cur.fetchall())
 
     cur.execute("SELECT * FROM nail_parts")    
     parts = tupleToDict(cur.fetchall())
-    
+
     cur.execute("SELECT * FROM nail_boxes UNION SELECT * FROM nail_boxused")
     boxes = tupleToDict(cur.fetchall())
 
@@ -100,15 +100,6 @@ def build_production(conn, templates):
     for projection in projections:
 
         progress['item_projection'] += projection['qty']
-
-        # print(' %(qty)5s | %(name)-10s| %(size)-10s| %(a_color)-10s| %(b_color)-10s| %(c_color)-10s |' % \
-        #     {"qty": projection['qty'],
-        #     "name": projection['name'],
-        #     "size": projection['size'],
-        #     "a_color": projection['a_color'],
-        #     "b_color": projection['b_color'],
-        #     "c_color": projection['c_color']
-        #     })
 
         print("--- projections.projection ", end="")
         print("-" * 60)
