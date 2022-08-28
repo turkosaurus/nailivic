@@ -5,6 +5,7 @@
   --xtdark: rgb(2, 2, 2);
 }
 
+
 /* Fixing Chrome emoji styling bullshit */
 /* https://codepen.io/niklass/pen/MXzJBQ */
 [data-emoji] {
