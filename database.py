@@ -1,8 +1,11 @@
+"""
+Handles all database setup and related database functions
+"""
 import os
 import csv
+import datetime
 import psycopg2
 import psycopg2.extras
-import datetime
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -10,6 +13,9 @@ load_dotenv()
 # HELPERS #
 
 def tupleToDict(tuple_in):
+    """
+    Converts tuple to dict for data format consistency
+    """
     result = []
     for row in tuple_in:
         result.append(dict(row._asdict()))
@@ -379,7 +385,7 @@ def migrate_users(conn, source):
 
     except Exception as e:
         status = f"Unable to migrate. {e}"
-    
+
     return status
 
 

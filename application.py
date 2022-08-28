@@ -30,15 +30,11 @@ load_dotenv()
 
 
 ###### DEFINITIONS ######
-"""
-item: fully assembled woodcut item
-part: constituent piece that comprises an item, usually one of two or three
-loteria: woodcut loteria pieces
-cycle: a single event or series of events, used for creating projections
-event: renamed cycles for clarity
-"""
-
-# print(f"Fork: {os.fork()}")
+# item: fully assembled woodcut item
+# part: constituent piece that comprises an item, usually one of two or three
+# loteria: woodcut loteria pieces
+# cycle: a single event or series of events, used for creating projections
+# event: renamed cycles for clarity
 
 ###### CONFIGURATION ######
 
@@ -244,7 +240,7 @@ def parts(part):
 
                     #TODO eliminate like?
                     part_like = cur_color['name']
-                    part_like = '%' + part
+                    part_like = '%' + part # TODO is this wrong
                     # part_like = part
                     cur.execute("SELECT * FROM nail_queueParts WHERE color LIKE %s \
                         ORDER BY qty DESC", (part_like,))
@@ -1602,7 +1598,7 @@ def config(path):
                 conn.commit()
                 event = fetchDict(cur)
                 cur.close()
-                flash(f"Active event changed to {event}") # TODO confirm that RETURNING works?
+                flash(f"Active event changed to {event}") #TODO confirm that RETURNING works?
                 return redirect('/production')
 
 
