@@ -113,8 +113,12 @@
 
         {% if get_flashed_messages() %}
             <header>
-                <div class="alert alert-primary border text-center" role="alert">
+                <div class="alert alert-primary border text-center fixed-bottom" role="alert">
+                    <!-- add "fixed-bottom" to class if that is better than a hold at the top for message" -->
                     {{ get_flashed_messages() | join(" ") }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
             </header>
         {% endif %}
