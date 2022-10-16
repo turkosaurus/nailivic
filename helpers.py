@@ -68,7 +68,7 @@ def build_production(conn, templates):
     cur.execute("SELECT * FROM nail_items")
     items = tupleToDict(cur.fetchall())
 
-    cur.execute("SELECT * FROM nail_parts")    
+    cur.execute("SELECT * FROM nail_parts")
     parts = tupleToDict(cur.fetchall())
 
     cur.execute("SELECT * FROM nail_boxes UNION SELECT * FROM nail_boxused")
@@ -235,7 +235,7 @@ def build_production(conn, templates):
                                 ""))
 
 
-                    if found_existing == False:
+                    if not found_existing:
 
                         # print(f"MAKING NEW A:")
 
@@ -249,9 +249,9 @@ def build_production(conn, templates):
                         queue[i].append(projection['a_color'])
                         # qty
                         queue[i].append(f'{qtys["a"]}')
-        
+
                         i += 1
-                    
+
                         print('%-29s | %-15s| %-15s| %-15s| %-15s' % \
                             ("        Adding NEW parts:",
                             qtys['a'],
@@ -283,7 +283,7 @@ def build_production(conn, templates):
 
                             # print("FOUND EXISTING B")
 
-                    if found_existing == False:
+                    if not found_existing:
 
                         # Add a new list for the part to be made
                         # print(f"MAKING NEW B:")
@@ -299,7 +299,7 @@ def build_production(conn, templates):
                         queue[i].append(projection['b_color'])
                         # qty
                         queue[i].append(f'{qtys["b"]}')
-        
+
                         i += 1
 
                         print('%-29s | %-15s| %-15s| %-15s| %-15s' % \
@@ -349,7 +349,7 @@ def build_production(conn, templates):
                             queue[i].append(projection['c_color'])
                             # qty
                             queue[i].append(f'{qtys["c"]}')
-            
+
                             i += 1
 
                             print('%-29s | %-15s| %-15s| %-15s| %-15s' % \
@@ -380,7 +380,7 @@ def build_production(conn, templates):
                                 "",
                                 qtys['backs']))
 
-                    if found_existing == False:
+                    if not found_existing:
 
                         # Add a new list for the part to be made
                         queue.append([])
@@ -392,7 +392,7 @@ def build_production(conn, templates):
                         queue[i].append('')
                         # qty
                         queue[i].append(f'{qtys["backs"]}')
-        
+
                         i += 1
 
                         print('%-29s | %-15s| %-15s| %-15s| %-15s' % \
@@ -452,7 +452,7 @@ def build_production(conn, templates):
         query = "INSERT INTO nail_queueItems \
             (name, size, a_color, b_color, c_color, qty) VALUES %s"
         psycopg2.extras.execute_values (
-            cur, query, projectionItems, template=None, page_size=100 
+            cur, query, projectionItems, template=None, page_size=100
         )
     print("--- inserted new queueItems into database " + "-" * 60)
 
@@ -509,9 +509,9 @@ def build_production(conn, templates):
                 elif int(q[3]) == part['qty']:
                     q[3] = 0
                     part['qty'] = 0
-                
+
                 # Demand greater than inventory
-                elif int(q[3]) > part['qty']:                        
+                elif int(q[3]) > part['qty']:
 
                     # How many will be used?
                     used = part['qty']
@@ -570,7 +570,7 @@ def build_production(conn, templates):
     # Consolidate duplicate box_queue entries and subtract existing box inventory
     tmp = []
     i = 0
-    
+
     for loteria in templates['loterias']:
 
         total = 0
@@ -612,7 +612,7 @@ def build_production(conn, templates):
         print(box_queue)
         query = "INSERT INTO nail_boxprod (name, qty) VALUES %s"
         psycopg2.extras.execute_values (
-            cur, query, box_queue, template=None, page_size=100 
+            cur, query, box_queue, template=None, page_size=100
         )
 
     print("--- nail_boxprod added to database " + "-" * 60)
@@ -625,7 +625,7 @@ def build_production(conn, templates):
     if queue:
         query = "INSERT INTO nail_queueParts (name, size, color, qty) VALUES %s"
         psycopg2.extras.execute_values (
-            cur, query, queue, template=None, page_size=100 
+            cur, query, queue, template=None, page_size=100
         )
 
     print("--- nail_queueParts added to database " + "-" * 60)
@@ -638,7 +638,7 @@ def build_production(conn, templates):
     # data = ((1, 2), (3, 4), (5, 6), (7, 8))
     # query = "INSERT INTO foo (a, b) VALUES %s"
     # psycopg2.extras.execute_values (
-    #     cur, query, data, template=None, page_size=100 
+    #     cur, query, data, template=None, page_size=100
     # )
 
     # conn.commit()
@@ -670,7 +670,7 @@ def build_production(conn, templates):
     return progress
 
 
-def build_totals(production, templates):            
+def build_totals(production, templates):
 
     # Build totals arrays
     totals = []
@@ -689,7 +689,7 @@ def build_totals(production, templates):
             # Make a list to hold the color totoals
             totals[i].append([])
             # print(f"totals:{totals}")
-            
+
             totals[i][j] = 0
 
         # Append one more for backs
@@ -713,7 +713,7 @@ def build_totals(production, templates):
                 for j in range(len(templates['colors'])):
 
                     # Sanitize "None" into ''
-                    if row['color'] == None:
+                    if row['color'] is None:
                         row['color'] = ''
 
                     # print(f"comparing {templates['colors'][j]['name']} {row['color']}")
@@ -780,10 +780,10 @@ def generate_item(templates, sku):
     for size in templates['sizes']:
         if size['sku'] == sku['size']:
             named['size'] = size['shortname']
-    
+
     if 'size' not in named.keys():
         named['error'] = 'SKU Error: Invalid size number.'
-    
+
     return named
 
 
@@ -850,7 +850,7 @@ def generate_sku(templates, item):
             if type['name'] == item['type']:
                 print(type['sku'])
                 type_num = type['sku']
-    
+
     except:
         type_num = 0 # Laser Cuts do not specify their type, default to 0
 
@@ -867,4 +867,3 @@ def generate_sku(templates, item):
     print(f"valid:{valid}")
 
     return sku
-
