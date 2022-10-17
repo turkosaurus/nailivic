@@ -24,7 +24,7 @@
         <script src="/static/scripts.js"></script>
 
         <!-- Atlassian Widget -->
-        <script data-jsd-embedded data-key="6c863194-0b66-4f27-8d85-fb82ad0ad74f" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script>
+        <!-- <script data-jsd-embedded data-key="6c863194-0b66-4f27-8d85-fb82ad0ad74f" data-base-url="https://jsd-widget.atlassian.com" src="https://jsd-widget.atlassian.com/assets/embed.js"></script> -->
 
         <title>{% block title %}{% endblock %}Nailivic</title>
 
@@ -113,8 +113,12 @@
 
         {% if get_flashed_messages() %}
             <header>
-                <div class="alert alert-primary border text-center" role="alert">
+                <div class="alert alert-primary border text-center fixed-bottom" role="alert">
+                    <!-- add "fixed-bottom" to class if that is better than a hold at the top for message" -->
                     {{ get_flashed_messages() | join(" ") }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
             </header>
         {% endif %}
@@ -129,9 +133,9 @@
         <footer class="small text-center text-muted">
             thanks <a target="_blank" href="https://fontawesome.com/license">Font Awesome</a> & <a target="_blank" href="https://getbootstrap.com/">Bootstrap</a>
         </footer>
-        <footer class="small text-center text-muted">
+        <!-- <footer class="small text-center text-muted">
             visit the <a target="_blank" href="https://team-1619658490404.atlassian.net/servicedesk/customer/portal/1"> Helpdesk</a>
-        </footer>
+        </footer> -->
         <footer><br></footer>
     </body>
 </html>

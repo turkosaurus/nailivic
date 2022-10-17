@@ -72,6 +72,7 @@ authusers.append(os.getenv('USERC'))
 ###### DATABASE ######
 
 # Setup PostgreSQL database connection
+conn = None
 og = os.getenv('DATABASE_URL')
 dev = os.getenv('HEROKU_POSTGRESQL_PURPLE_URL')
 prod = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
@@ -342,6 +343,8 @@ def parts(part):
                     'color': color,
                     'qty': qty
                 }
+
+                print(f"Sumission: {part}, {size}, {color}, {qty}, {session['recent_part']}")
 
                 if not size:
 
@@ -1893,6 +1896,10 @@ def login():
                 (time, session["user_id"]))
                 conn.commit()
                 cur.close()
+
+                session['recent_item'] = {
+                    'deplete': 'true'
+                }
 
                 # Send developer directly to Admin
                 if request.form.get("username") == 'Turkosaurus':
