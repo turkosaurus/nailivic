@@ -30,13 +30,11 @@ load_dotenv()
 
 
 ###### DEFINITIONS ######
-"""
-item: fully assembled woodcut item
-part: constituent piece that comprises an item, usually one of two or three
-loteria: woodcut loteria pieces
-cycle: a single event or series of events, used for creating projections
-event: renamed cycles for clarity
-"""
+# item: fully assembled woodcut item
+# part: constituent piece that comprises an item, usually one of two or three
+# loteria: woodcut loteria pieces
+# cycle: a single event or series of events, used for creating projections
+# event: renamed cycles for clarity
 
 # print(f"Fork: {os.fork()}")
 
@@ -76,7 +74,7 @@ authusers.append(os.getenv('USERC'))
 ###### DATABASE ######
 
 # Setup PostgreSQL database connection
-conn = None
+CONN = None
 og = os.getenv('DATABASE_URL')
 dev = os.getenv('HEROKU_POSTGRESQL_PURPLE_URL')
 prod = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
@@ -346,6 +344,8 @@ def parts(part):
                     'color': color,
                     'qty': qty
                 }
+
+                print(f"Sumission: {part}, {size}, {color}, {qty}, {session['recent_part']}")
 
                 if not size:
 
@@ -1897,6 +1897,10 @@ def login():
                 (time, session["user_id"]))
                 conn.commit()
                 cur.close()
+
+                session['recent_item'] = {
+                    'deplete': 'true'
+                }
 
                 # Send developer directly to Admin
                 if request.form.get("username") == 'Turkosaurus':

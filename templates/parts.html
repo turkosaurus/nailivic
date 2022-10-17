@@ -56,7 +56,7 @@ Items
                         <div class="form-group">
                             <label for="part">Name</label>
                             {% if cur_color.name == 'backs' %}
-                                <select class="form-control" name="part" id="part">
+                                <select class="form-control" name="name" id="part">
                                     {% for loteria in templates.loterias %}
                                         {% if recent.part == loteria.backs %}
                                             <option value="{{ loteria.backs }}" selected>{{ loteria.backs }}</option>
@@ -66,29 +66,9 @@ Items
                                     {% endfor %}
                                 </select>
                             {% else %}
-                                <select class="form-control" name="part" id="part">
+                                <select class="form-control" name="name" id="part">
                                     {% for loteria in templates.loterias %}
-                                        <optgroup label="{{ loteria.nombre }}">
-                                            {% if recent.part == loteria.a %}
-                                                <option value="{{ loteria.a }}" selected>{{ loteria.a }}</option>
-                                            {% else %}
-                                                <option value="{{ loteria.a }}">{{ loteria.a }}</option>
-                                            {% endif %}
-
-                                            {% if recent.part == loteria.b %}
-                                                <option selected value="{{ loteria.b }}">{{ loteria.b }}</option>
-                                            {% else %}
-                                                <option value="{{ loteria.b }}">{{ loteria.b }}</option>
-                                            {% endif %}
-
-                                            {% if loteria.c != '' %}
-                                                {% if recent.part == loteria.c %}
-                                                    <option selected value="{{ loteria.c }}">{{ loteria.c }}</option>
-                                                {% else %}
-                                                    <option value="{{ loteria.c }}">{{ loteria.c }}</option>
-                                                {% endif %}
-                                            {% endif %}
-                                        </optgroup>
+                                        <option value="{{ loteria.nombre }}">{{ loteria.nombre }}</option>
                                     {% endfor %}
                                 </select>
                             {% endif %}
@@ -99,20 +79,20 @@ Items
                     <div class="col-md-3 col-xs-6">
                         <div class="form-group">
                             <h6>Parts</h6>
-                            <!--  -->
+                                <!-- Part A -->
                                 <div class="custom-control custom-radio">
-                                    <input class="form-check-input" type="radio">
-                                    <label>FooBar Baz</label>
+                                    <input name="part" id="colorA" value="" class="form-check-input" type="radio">
+                                    <label id="colorAlabel" for="colorA">-</label>
                                 </div>
                                 <!-- Part B -->
                                 <div class="custom-control custom-radio">
-                                    <input class="form-check-input" type="radio">
-                                    <label>Fizz Buzz Fizzbuzz</label>
+                                    <input name="part" id="colorB" value="" class="form-check-input" type="radio">
+                                    <label id="colorBlabel" for="colorB">-</label>
                                 </div>
                                 <!-- Part C -->
                                 <div class="custom-control custom-radio">
-                                    <input class="form-check-input" type="radio">
-                                    <label>Sometimes Honk</label>
+                                    <input name="part" id="colorC" value="" class="form-check-input" type="radio">
+                                    <label id="colorClabel" for="colorC">-</label>
                                 </div>
                         </div>
                     </div>
@@ -126,16 +106,18 @@ Items
                             <!-- <h4>Size</h4> -->
                             <label for="size">Size</label>
                             {% for size in templates.sizes %}
-                                {% if recent.size == size.shortname %}
+                                {% if size.sku < 4 %}
+                                    {% if recent.size == size.shortname %}
                                     <div class="custom-control custom-radio">
                                         <input checked="checked" class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.shortname }}">
                                         <label for="{{ size.longname }}">{{ size.longname }}</label>
                                     </div>
-                                {% else %}
+                                    {% else %}
                                     <div class="custom-control custom-radio">
                                         <input class="form-check-input" type="radio" id="{{ size.longname }}" name="size" value="{{ size.shortname }}">
                                         <label for="{{ size.longname }}">{{ size.longname }}</label>
                                     </div>
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                         </div>
@@ -169,7 +151,7 @@ Items
         </div>    
 
 
-        <div class="col-md-6 col-sm-12"    
+        <div class="col-md-6 col-sm-12">
             <br>
             <h4 style="text-transform: capitalize">{{ cur_color.name }} Parts Inventory</h4>
             <table class="table table-sm table-hover table-dark">
@@ -260,4 +242,11 @@ Items
     </div>
     <br>
 </container>
+
+<script type="text/javascript">
+    const templateData = '{{ templates|tojson }}'
+</script>
+
+<script src="../static/loteriasParts.js" defer></script>
+
 {% endblock %}
