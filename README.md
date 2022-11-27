@@ -71,8 +71,10 @@ Producing parts and making items and boxes updates the laser production queue in
 
 
 # Version History
+## v1.3.0
+- user requested UI changes implementeed
 
-## v1.2.1 (in development)
+## v1.2.1
 - bugfix: 2-color items
 - design improvements
 
