@@ -166,16 +166,16 @@ def initialize_database(conn):
         )")
 
     colors = [
-        ['black', '⬛', 'black'], 
-        ['red', '🟥', 'red'], 
-        ['TQ', '🟦', 'turquoise'], 
-        ['yellow', '🟨', 'yellow'], 
-        ['green', '🟩', 'green'], 
-        ['purple', '🟪', 'purple'], 
+        ['black', '⬛', 'black'],
+        ['red', '🟥', 'red'],
+        ['TQ', '🟦', 'turquoise'],
+        ['yellow', '🟨', 'yellow'],
+        ['green', '🟩', 'green'],
+        ['purple', '🟪', 'purple'],
         ['white', '⬜', 'white'],
         ['grey', '🔲', 'grey'],
         ['gold', '🥇', 'gold'],
-        ['rose', '🌹', 'pink']        
+        ['rose', '🌹', 'pink']
         ]
 
     cur.execute("SELECT * FROM nail_colors")
@@ -248,7 +248,7 @@ def initialize_database(conn):
         ['Tank Top', '2'],
         ['Hoodie', '3'],
         ['Screen Print', '10'],
-        ['Greeting Card', '11'] 
+        ['Greeting Card', '11']
         ]
 
     cur.execute("SELECT * FROM nail_types")
@@ -377,7 +377,7 @@ def migrate_users(conn, source):
         cur = conn.cursor()
         query = "INSERT INTO nail_users (id, username, password, created_on, last_login) VALUES %s"
         psycopg2.extras.execute_values (
-            cur, query, users_formatted, template=None, page_size=100 
+            cur, query, users_formatted, template=None, page_size=100
         )
         conn.commit()
         cur.close()
@@ -420,7 +420,7 @@ def migrate_events(conn):
     print(cycles_formatted)
     query = "INSERT INTO nail_cycles (name, created_on) VALUES %s"
     psycopg2.extras.execute_values (
-        cur, query, cycles_formatted, template=None, page_size=100 
+        cur, query, cycles_formatted, template=None, page_size=100
     )
     status = f"Migrated {i} cycles."
 
@@ -430,12 +430,12 @@ def migrate_events(conn):
     query = "INSERT INTO nail_projections \
         (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES %s"
     psycopg2.extras.execute_values (
-        cur, query, projections_formatted, template=None, page_size=100 
+        cur, query, projections_formatted, template=None, page_size=100
     )
     conn.commit()
     cur.close()
     status = f"Migrated {i} projections."
-    
+
     return status
 
 
@@ -600,7 +600,7 @@ def restore_event(conn, event):
         query = "INSERT INTO nail_projections \
             (name, size, a_color, b_color, c_color, qty, cycle, sku) VALUES %s"
         psycopg2.extras.execute_values (
-            cur, query, values, template=None, page_size=100 
+            cur, query, values, template=None, page_size=100
         )
 
         cur.execute("SELECT name FROM nail_cycles WHERE id=%s", (event,))
