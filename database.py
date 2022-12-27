@@ -619,4 +619,3 @@ def restore_event(conn, event):
         }
 
     return results
-
