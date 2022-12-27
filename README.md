@@ -72,6 +72,10 @@ Producing parts and making items and boxes updates the laser production queue in
 
 # Version History
 ## v1.3.0
+- added Open GitHub Issue dropdown
+- removed inactive database due to heroku removing free dbs
+
+## v1.2.2
 - user requested UI changes implementeed
 
 ## v1.2.1

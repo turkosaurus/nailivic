@@ -73,20 +73,21 @@ authusers.append(os.getenv('USERC'))
 
 # Setup PostgreSQL database connection
 conn = None
-og = os.getenv('DATABASE_URL')
-dev = os.getenv('HEROKU_POSTGRESQL_PURPLE_URL')
-prod = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
+db = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
+# og = os.getenv('DATABASE_URL')
+# dev = os.getenv('HEROKU_POSTGRESQL_PURPLE_URL')
+# prod = os.getenv('HEROKU_POSTGRESQL_BLUE_URL')
 
 
-# Testing
-if os.getenv('FLASK_ENV') == 'development':
-    print("Starting in DEBUG. Connecting to DEVELOPMENT database...", end="")
-    db = dev
+# # Testing
+# if os.getenv('FLASK_ENV') == 'development':
+#     print("Starting in DEBUG. Connecting to DEVELOPMENT database...", end="")
+#     db = dev
 
-# Production
-else:
-    print("Connecting to PRODUCTION database...", end="")
-    db = prod
+# # Production
+# else:
+#     print("Connecting to PRODUCTION database...", end="")
+#     db = prod
 
 # # Cold Start Initialization # TODO test that cold start works since refactor
 # if int(os.getenv('COLD_START')) == 1:
