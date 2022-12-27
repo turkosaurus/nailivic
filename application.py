@@ -470,7 +470,7 @@ def parts(part):
                                     name=%s AND size=%s AND color=%s",
                                     (part, size, color))
                             conn.commit()
-                        # Update entry to new depleted quantity 
+                        # Update entry to new depleted quantity
                         # after accouting for newly produced parts
                         else:
                             cur.execute("UPDATE nail_queueParts SET qty=%s WHERE \
@@ -495,7 +495,7 @@ def items():
         with conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor) as cur:
 
             if request.method == 'GET':
-                
+
                 templates = gather_templates(conn)
                 results = build_production(conn, templates)
                 print(f"progress results:{results}")
@@ -585,7 +585,7 @@ def items():
                 # No c is given
                 if not c:
                     # But there should be a c
-                    if ctest[0]['c'] != '':                
+                    if ctest[0]['c'] != '':
                         flash('Invalid entry. Color C required for this item.')
                         return redirect('/items')
 
@@ -777,7 +777,7 @@ def projections():
         with conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor) as cur:
 
             if request.method == 'GET':
-            
+
                 # cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
                 # Check for "current" cycle
@@ -801,10 +801,10 @@ def projections():
 
                 # List all available non-current cycles
                 cur.execute("SELECT id, name, created_on FROM nail_cycles WHERE current='FALSE'")
-                cycles = fetchDict(cur) 
+                cycles = fetchDict(cur)
 
                 cur.execute("SELECT * FROM nail_projections")
-                all_projections = fetchDict(cur) 
+                all_projections = fetchDict(cur)
 
                 # Sum total for inactive cycles
                 for cycle in cycles:
@@ -818,7 +818,7 @@ def projections():
                 # for projection in all_projections:
                 #     if projection['cycle'] == current[0]['id']:
                 #         current[0]['total'] += projection['qty']
-                
+
                 print(f"cycles:{cycles}")
 
                 cur.execute("SELECT sum(qty) FROM nail_projections where cycle=%s", (active,))
@@ -909,7 +909,7 @@ def projections():
                 templates = gather_templates(conn)
                 sku = generate_sku(templates, itemdata)
                 print(f"sku:{sku}")
-                    
+
                 # Identify current cycle
                 cur.execute("SELECT id, name, created_on FROM nail_cycles WHERE current='TRUE'")
                 active = fetchDict(cur)
@@ -958,7 +958,7 @@ def projections():
                                 name=%s AND size=%s AND a_color=%s AND b_color=%s AND cycle=%s",
                                 (updated, item, size, a, b, cycle))
                             conn.commit()
-            
+
                         flash(f"Added to projections: {qty} {size} {item} ({a}, {b})")
 
                     else:
@@ -980,7 +980,7 @@ def projections():
                         flash(f"Added to projections: {qty} {size} {item} ({a}, {b}, {c})")
 
                     print("Existing projection updated.")
-                
+
                 cur.close()
                 build_production(conn, templates)
                 return redirect('/projections')
@@ -997,7 +997,7 @@ def production():
         # Query for current cycle's projections
         templates = gather_templates(conn)
         build_production(conn, templates)
-        
+
         flash(f"Projections (re)calculated.")
         return redirect("/projections")
 
@@ -1065,7 +1065,7 @@ def box():
                     flash(f"{qty} {name} box made.")
                 else:
                     flash(f"{qty} {name} boxes made.")
-            
+
 
             # Use a box
             if action == 'use':
@@ -1184,7 +1184,7 @@ def config(path):
                 status = migrate_events(conn)
                 flash(status)
                 return redirect("/admin")
-            
+
             if path == 'migrate-users':
                 status = migrate_users(conn)
                 flash(status)
@@ -1262,7 +1262,7 @@ def config(path):
                     conn.commit()
                     cur.close()
                     flash(f'Created new event "{name}"')
-                
+
                 return redirect('/admin')
 
 
@@ -1406,7 +1406,7 @@ def config(path):
 
                     # Pull all projections data
                     templates = gather_templates(conn)
-    
+
                     cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
                     cur.execute("SELECT * FROM nail_cycles WHERE id=%s", (cycle,))
                     cycle = fetchDict(cur)
@@ -1415,7 +1415,7 @@ def config(path):
                     cur.close()
 
                     # Headers
-                    scribe.writerow(['name', 'size', 'sku', 
+                    scribe.writerow(['name', 'size', 'sku',
                         'a_color', 'b_color', 'c_color', 'd_unused', 'qty', 'cycle'])
 
                     for row in projections:
@@ -1424,7 +1424,7 @@ def config(path):
 
                         # Write projections into csv
                         print("Scribe is writing a row...")
-                        scribe.writerow([row['name'], row['size'], sku, 
+                        scribe.writerow([row['name'], row['size'], sku,
                             row['a_color'], row['b_color'], row['c_color'], '',
                             row['qty'], row['cycle']])
 
@@ -1444,7 +1444,7 @@ def config(path):
                 type = request.form.get("type")
 
                 if type == 'parts':
-                    
+
                     cycle = request.form.get("backup-parts")
                     templates = gather_templates(conn)
 
@@ -1467,7 +1467,7 @@ def config(path):
 
                         # Write headers
                         # Skulet is a little sku missing
-                        # the first two digits for the item identifier. 
+                        # the first two digits for the item identifier.
                             # It associates colors and sizes
                             # but does not associate the part name by means of numbers
                         scribe.writerow(['skulet', 'name', 'size',  'color', 'qty'])
@@ -1608,7 +1608,7 @@ def config(path):
 
             if path == 'wipe':
                 print("/admin/wipe")
-            
+
                 cur = conn.cursor(cursor_factory=psycopg2.extras.NamedTupleCursor)
 
                 items = request.form.get("wipe-items")
@@ -1641,7 +1641,7 @@ def config(path):
                 if usedboxes == 'true':
                     # Wipe boxes
                     cur.execute("DELETE FROM nail_boxes")
-                    
+
                     message = message + str(removed) + " boxes deleted from inventory. "
 
                 if projections == 'true':
@@ -1703,7 +1703,7 @@ def config(path):
 
                 else:
                     flash("Default Event may not be deleted.")
-                    return redirect("/admin") 
+                    return redirect("/admin")
 
         # SKU
 
@@ -1712,7 +1712,7 @@ def config(path):
                 print("/test")
                 sku = request.form.get("sku")
                 print(f"sku:{sku}")
-                
+
                 # Convert string into dict object with integers
                 sku = parse_sku(sku)
                 print(sku)
@@ -1730,7 +1730,7 @@ def config(path):
 
 
             if path == 'make-sku':
-                
+
                 nombre = str(request.form.get("nombre")).zfill(2)
                 a = str(request.form.get("a")).zfill(2)
                 b = str(request.form.get("b")).zfill(2)
@@ -1745,10 +1745,10 @@ def config(path):
                 <div class="row justify-content-center">
                     <form class="form-inline">
                         <label for="sku">SKU: </label>
-                        <input type="text" readonly class="form-control" id="sku" value="{sku}"> 
+                        <input type="text" readonly class="form-control" id="sku" value="{sku}">
                         <button type="submit" class="btn btn-primary" id="copy">Copy</button>
                     </form>
-                </div>            
+                </div>
                 """)
 
                 flash(message)
@@ -1932,7 +1932,7 @@ def logout():
 # @app.route('/shopifytest', methods=['GET', 'POST'])
 # @login_required
 # def test():
-    
+
 #     # Establish connection to Shopify
 #     # https://shopify.github.io/shopify_python_api/
 #     api_version = "2022-01"
@@ -1942,7 +1942,7 @@ def logout():
 #     shopify.ShopifyResource.set_site(shop_url)
 #     shop = shopify.Shop.current
 
-    
+
 #     # Fuck it we'll do it live
 
 #     route = f"admin/api/{api_version}/products.json"
@@ -1961,7 +1961,7 @@ def logout():
 
 #     extracted_data = []
 #     for i in content:
-        
+
 #         data = [i['id'], i['title'], i['variants'][0]['sku'], i['variants'][0]['inventory_quantity']]
 #         extracted_data.append(data)
 
