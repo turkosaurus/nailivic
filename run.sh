@@ -5,7 +5,7 @@ if ! apt install python3-pip -y; then
   exit 1
 fi
 
-if ! apt install postgresql-server-dev-all; then
+if ! apt install postgresql-server-dev-all -y; then
   echo "Error getting postgres tools"
   exit 2
 fi
